@@ -87,7 +87,7 @@ Functional shorthand, if that's how you operate.
     $ npm test
 
 [![Testling Matrix](http://ci.testling.com/shannonmoeller/toga.png)](http://ci.testling.com/shannonmoeller/toga)
-[![Sauce Labs Matrix](https://saucelabs.com/browser-matrix/grunt-sauce.svg)](https://saucelabs.com/u/grunt-sauce)
+[![Sauce Labs Matrix](https://saucelabs.com/browser-matrix/smoeller-github-toga.svg)](https://saucelabs.com/u/smoeller-github-toga)
 
 ## License
 
