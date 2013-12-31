@@ -63,6 +63,36 @@ module.exports = function(grunt) {
             }
         },
 
+        'saucelabs-mocha': {
+            all: {
+                options: {
+                    urls: ['http://127.0.0.1:9999/test/runner.html'],
+                    tunnelTimeout: 5,
+                    build: process.env.TRAVIS_JOB_ID,
+                    concurrency: 3,
+                    browsers: [
+                        { browserName: 'chrome',            platform: 'WIN8' },
+                        { browserName: 'firefox',           platform: 'WIN8' },
+                        { browserName: 'internet explorer', platform: 'XP',        version: '8' },
+                        { browserName: 'internet explorer', platform: 'VISTA',     version: '9' },
+                        { browserName: 'internet explorer', platform: 'WIN8',      version: '10' },
+                        { broswerName: 'safari',            platform: 'OS X 10.9', version: '7' }
+                    ],
+                    testname: 'mocha tests',
+                    tags: ['master']
+                }
+            }
+        },
+
+        connect: {
+            server: {
+                options: {
+                    base: '',
+                    port: 9999
+                }
+            }
+        },
+
         watch: {
             options: {
                 livereload: true
@@ -81,5 +111,5 @@ module.exports = function(grunt) {
     grunt.registerTask('lint', ['jshint']);
     grunt.registerTask('build', ['browserify:build']);
     grunt.registerTask('cover', ['browserify:cover', 'simplemocha:cover']);
-    grunt.registerTask('test', ['browserify:test', 'simplemocha:test']);
+    grunt.registerTask('test', ['browserify:test', 'simplemocha:test', 'connect', 'saucelabs-mocha']);
 };
