@@ -87,6 +87,8 @@ Functional shorthand, if that's how you operate.
     $ npm test
 
 [![Browser Support](http://ci.testling.com/shannonmoeller/toga.png)](http://ci.testling.com/shannonmoeller/toga)
+[![Selenium Status](https://saucelabs.com/buildstatus/grunt-sauce)](https://saucelabs.com/u/grunt-sauce)
+[![Selenium Matrix](https://saucelabs.com/browser-matrix/grunt-sauce.svg)](https://saucelabs.com/u/grunt-sauce)
 
 ## License
 
