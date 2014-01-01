@@ -1,28 +1,16 @@
 !function(e){"object"==typeof exports?module.exports=e():"function"==typeof define&&define.amd?define(e):"undefined"!=typeof window?window.toga=e():"undefined"!=typeof global?global.toga=e():"undefined"!=typeof self&&(self.toga=e())}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var copier = require('copier');
-
 /**
- * Matches start of each line. Useful for getting a count of all lines.
+ * Line matching patterns.
  *
- * @type {RegExp}
+ * @type {Object.<String,RegExp>}
  */
-var linePattern = /^/gm;
-
-/**
- * Matches empty lines. Useful for getting a count of empty lines.
- *
- * @type {RegExp}
- */
-var emptyLinePattern = /^$/gm;
-
-/**
- * Matches surrounding empty lines to be trimmed.
- *
- * @type {RegExp}
- */
-var edgeEmptyLinesPattern = /^[\t ]*\n|\n[\t ]*$/g;
+var matchLines = {
+    any: /^/gm,
+    empty: /^$/gm,
+    edge: /^[\t ]*\n|\n[\t ]*$/g
+};
 
 /**
  * Default C-style grammar.
@@ -30,22 +18,11 @@ var edgeEmptyLinesPattern = /^[\t ]*\n|\n[\t ]*$/g;
  * @type {Object.<String,RegExp>}
  */
 var defaultGrammar = {
-    // Matches block delimiters
     blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
-
-    // Matches block content
     blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
-
-    // Matches indent characters
     indent: /^[\t \*]/gm,
-
-    // Matches tag delimiters
     tagSplit: /^[\t ]*@/m,
-
-    // Matches tag content `tag {Type} [name] - Description.`
     tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
-
-    // Matches tags that should include a name property
     named: /^(arg(ument)?|augments|class|extends|method|param|prop(erty)?)$/
 };
 
@@ -56,6 +33,33 @@ var defaultGrammar = {
  */
 var defaultOptions = {
     raw: false
+};
+
+/**
+ * Copies the enumerable properties of one or more objects to a target object.
+ *
+ * @type {Function}
+ * @param {Object} target Target object.
+ * @param {Object} [objs...] Objects with properties to copy.
+ * @return {Object} Target object, augmented.
+ */
+var copier = function(target) {
+    var arg;
+    var key;
+    var len = arguments.length;
+    var i = 1;
+
+    for (; i < len; i++) {
+        arg = arguments[i];
+
+        for (key in arg) {
+            if (arg.hasOwnProperty(key)) {
+                target[key] = arg[key];
+            }
+        }
+    }
+
+    return target;
 };
 
 /**
@@ -75,7 +79,7 @@ var defaultOptions = {
  */
 function Toga(block, grammar) {
     // Make `block` optional
-    if (arguments.length === 1 && block && typeof block === 'object') {
+    if (arguments.length === 1 && typeof block === 'object' && block) {
         grammar = block;
         block = undefined;
     }
@@ -176,20 +180,20 @@ Toga.prototype.normalizeDocBlock = function(block) {
 
     block = String(block)
         .replace(blockParse, '$1')
-        .replace(edgeEmptyLinesPattern, '');
+        .replace(matchLines.edge, '');
 
     // Unindent content
     var emptyLines;
     var indentedLines;
     var indent = grammar.indent;
-    var lines = block.match(linePattern).length;
+    var lines = block.match(matchLines.any).length;
 
     while (lines > 0) {
-        emptyLines = (block.match(emptyLinePattern) || []).length;
+        emptyLines = (block.match(matchLines.empty) || []).length;
         indentedLines = (block.match(indent) || []).length;
 
         if (indentedLines && (emptyLines + indentedLines === lines)) {
-            // Strip leading indent character
+            // Strip leading indent characters
             block = block.replace(indent, '');
         } else {
             // Not indented anymore
@@ -208,14 +212,15 @@ Toga.prototype.normalizeDocBlock = function(block) {
 Toga.prototype.parseTag = function(block) {
     var grammar = this.grammar;
     var parts = String(block).match(grammar.tagParse);
-    var id = parts[1];
+    var tag = parts[1];
     var type = parts[2];
     var name = parts[3] || '';
     var description = parts[4] || '';
     var token = {};
 
     // Handle named tags
-    if (!grammar.named.test(id)) {
+
+    if (!grammar.named.test(tag)) {
         if (name && description) {
             description = name + ' ' + description;
         } else if (name) {
@@ -227,8 +232,8 @@ Toga.prototype.parseTag = function(block) {
 
     // Keep tokens light
 
-    if (id) {
-        token.tag = id;
+    if (tag) {
+        token.tag = tag;
     }
 
     if (type) {
@@ -247,42 +252,6 @@ Toga.prototype.parseTag = function(block) {
 };
 
 module.exports = Toga;
-
-},{"copier":2}],2:[function(require,module,exports){
-/*jshint node:true */
-/**
- * @fileOverview
- * copy Declaration File
- *
- * @author Shannon Moeller
- * @version 1.0
- */
-
-'use strict';
-
-/**
- * Copies the enumerable properties of one or more objects to a target object.
- *
- * @param {Object} target Target object.
- * @param {...Object} objs Objects with properties to copy.
- * @return {Object} Target object, augmented.
- */
-module.exports = function copy(target) {
-    var arg, i, key, len;
-    var args = arguments;
-
-    for (i = 1, len = args.length; i < len; i += 1) {
-        arg = args[i];
-
-        for (key in arg) {
-            if (arg.hasOwnProperty(key)) {
-                target[key] = arg[key];
-            }
-        }
-    }
-
-    return target;
-};
 
 },{}]},{},[1])
 (1)

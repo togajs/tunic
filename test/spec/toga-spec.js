@@ -141,9 +141,7 @@ describe('Toga', function () {
 
     it('should handle indention', function() {
         var indent = fs.readFileSync(__dirname + '/../fixtures/indent.js', 'utf8');
-
         var standardParser = new Toga();
-
         var tokens = standardParser.parse(indent, {
             raw: true
         });

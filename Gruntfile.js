@@ -2,7 +2,7 @@
 
 module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
-    require('time-grunt')(grunt);
+    // require('time-grunt')(grunt);
 
     grunt.initConfig({
         pkg: require('./package.json'),
@@ -18,15 +18,12 @@ module.exports = function(grunt) {
             build: {
                 src: 'lib/**/*.js'
             },
-            test: {
+            unit: {
                 src: 'test/**/*-spec.js'
             }
         },
 
         browserify: {
-            options: {
-                transform: ['brfs']
-            },
             build: {
                 options: {
                     standalone: '<%= pkg.name %>'
@@ -38,78 +35,94 @@ module.exports = function(grunt) {
                 options: {
                     transform: ['brfs', 'coverify']
                 },
-                src: '<%= jshint.test.src %>',
+                src: '<%= jshint.unit.src %>',
                 dest: 'test/cover.js'
             },
-            test: {
+            unit: {
                 options: {
-                    debug: true
+                    debug: true,
+                    transform: ['brfs']
                 },
-                src: '<%= jshint.test.src %>',
-                dest: 'test/index.js'
+                src: '<%= jshint.unit.src %>',
+                dest: 'test/unit.js'
             }
         },
 
         simplemocha: {
             options: {
                 reporter: 'spec',
+                require: ['expect.js'],
                 ui: 'bdd'
             },
             cover: {
                 src: '<%= browserify.cover.dest %>'
             },
-            test: {
-                src: '<%= browserify.test.dest %>'
+            unit: {
+                src: '<%= browserify.unit.dest %>'
             }
         },
 
-        'saucelabs-mocha': {
-            all: {
-                options: {
-                    urls: ['http://127.0.0.1:9999/test/runner.html'],
-                    tunnelTimeout: 5,
-                    build: process.env.TRAVIS_JOB_ID,
-                    concurrency: 3,
-                    browsers: [
-                        { browserName: 'chrome',            platform: 'WIN8' },
-                        { browserName: 'firefox',           platform: 'WIN8' },
-                        { browserName: 'internet explorer', platform: 'XP',        version: '8' },
-                        { browserName: 'internet explorer', platform: 'VISTA',     version: '9' },
-                        { browserName: 'internet explorer', platform: 'WIN8',      version: '10' },
-                        { broswerName: 'safari',            platform: 'OS X 10.9', version: '7' }
-                    ],
-                    testname: 'mocha tests',
-                    tags: ['master']
-                }
+        karma: {
+            options: {
+                port: 9999,
+                autoWatch: false,
+                frameworks: ['mocha', 'expect'],
+                files: ['<%= browserify.unit.dest %>'],
+            },
+            dev: {
+                singleRun: false,
+                browsers: ['Chrome', 'Firefox', 'Safari']
+            },
+            sauce: {
+                singleRun: true,
+                customLaunchers: {
+                    sIE10: {
+                        base: 'SauceLabs',
+                        browserName: 'internet explorer',
+                        platform: 'WIN8',
+                        version: '10'
+                    }
+                },
+                browsers: ['sIE10']
             }
         },
 
-        connect: {
-            server: {
-                options: {
-                    base: '',
-                    port: 9999
-                }
-            }
+        clean: {
+            build: ['<%= browserify.build.dest %>'],
+            cover: ['<%= browserify.cover.dest %>'],
+            unit: ['<%= browserify.unit.dest %>']
         },
 
         watch: {
             options: {
                 livereload: true
             },
-            all: {
+            dev: {
                 files: [
                     '<%= jshint.build.src %>',
-                    '<%= jshint.test.src %>'
+                    '<%= jshint.unit.src %>'
                 ],
-                tasks: ['default']
+                tasks: ['lint', 'test', 'karma:dev:run', 'build']
+            }
+        },
+
+        concurrent: {
+            options: {
+                logConcurrentOutput: true
+            },
+            dev: {
+                tasks: ['karma:dev', 'watch:dev']
             }
         }
     });
 
     grunt.registerTask('default', ['lint', 'test', 'build']);
+
     grunt.registerTask('lint', ['jshint']);
-    grunt.registerTask('build', ['browserify:build']);
-    grunt.registerTask('cover', ['browserify:cover', 'simplemocha:cover']);
-    grunt.registerTask('test', ['browserify:test', 'simplemocha:test', 'connect', 'saucelabs-mocha']);
+    grunt.registerTask('test', ['clean:unit', 'browserify:unit', 'simplemocha:unit']);
+    grunt.registerTask('build', ['clean:build', 'browserify:build']);
+
+    grunt.registerTask('dev', ['concurrent:dev']);
+    grunt.registerTask('travis', ['simplemocha:unit', 'karma:sauce']);
+    grunt.registerTask('cover', ['clean:cover', 'browserify:cover', 'simplemocha:cover']);
 };

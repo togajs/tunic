@@ -2,9 +2,9 @@
   "name": "toga",
   "version": "0.1.1",
   "description": "The stupid doc-block parser.",
-  "main": "index.js",
+  "main": "lib/toga.js",
   "scripts": {
-    "test": "grunt"
+    "test": "grunt travis"
   },
   "repository": {
     "type": "git",
@@ -24,9 +24,7 @@
     "url": "https://github.com/shannonmoeller/toga/issues"
   },
   "homepage": "https://github.com/shannonmoeller/toga",
-  "dependencies": {
-    "copier": "0.0.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "brfs": "0.0.8",
     "browserify": "~3.14.0",
@@ -34,30 +32,21 @@
     "expect.js": "~0.2.0",
     "grunt": "~0.4.2",
     "grunt-browserify": "~1.3.0",
-    "grunt-contrib-connect": "~0.6.0",
+    "grunt-concurrent": "~0.4.2",
+    "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-jshint": "~0.7.2",
     "grunt-contrib-watch": "~0.5.3",
-    "grunt-saucelabs": "~4.1.2",
+    "grunt-karma": "~0.6.2",
     "grunt-simple-mocha": "~0.4.0",
+    "karma": "~0.10.9",
+    "karma-chrome-launcher": "~0.1.2",
+    "karma-expect": "~1.0.0",
+    "karma-firefox-launcher": "~0.1.3",
+    "karma-mocha": "~0.1.1",
+    "karma-phantomjs-launcher": "~0.1.1",
+    "karma-safari-launcher": "~0.1.1",
+    "karma-sauce-launcher": "~0.1.7",
     "load-grunt-tasks": "~0.2.1",
-    "mocha": "~1.16.2",
     "time-grunt": "~0.2.5"
-  },
-  "testling": {
-    "harness": "mocha",
-    "scripts": "test/index.js",
-    "browsers": [
-      "ie/8..latest",
-      "firefox/16..latest",
-      "firefox/nightly",
-      "chrome/22..latest",
-      "chrome/canary",
-      "opera/12..latest",
-      "opera/next",
-      "safari/5.1..latest",
-      "ipad/6.0..latest",
-      "iphone/6.0..latest",
-      "android-browser/4.2..latest"
-    ]
   }
 }

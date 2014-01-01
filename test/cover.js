@@ -1,52 +1,29 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/lib/toga.js\"" + " " + "[[0,13],[28,45],[28,45],[15,46],[167,172],[149,173],[294,300],[271,301],[410,432],[382,433],[529,1116],[529,1116],[508,1117],[1189,1207],[1189,1207],[1168,1208],[1782,1798],[1782,1804],[1782,1813],[1817,1829],[1817,1842],[1782,1842],[1854,1869],[1854,1870],[1879,1896],[1879,1897],[1975,1979],[1975,1995],[1973,1996],[2015,2032],[2015,2045],[2078,2082],[2100,2102],[2078,2128],[2078,2129],[2134,2138],[2156,2158],[2134,2175],[2134,2176],[2205,2209],[2218,2222],[2218,2228],[2234,2238],[2205,2239],[2205,2240],[2245,2249],[2263,2267],[2263,2278],[2284,2288],[2245,2289],[2245,2290],[2295,2299],[2312,2316],[2312,2326],[2332,2336],[2295,2337],[2295,2338],[2343,2347],[2364,2368],[2364,2382],[2388,2392],[2343,2393],[2343,2394],[2399,2403],[2415,2419],[2415,2428],[2434,2438],[2399,2439],[2399,2440],[2543,2557],[2601,2617],[2601,2623],[2635,2639],[2657,2659],[2635,2685],[2635,2686],[2705,2718],[2734,2738],[2734,2746],[2705,2758],[2772,2776],[2705,2788],[2543,2791],[2543,2792],[2871,2885],[2925,2929],[2925,2937],[2925,2948],[2925,2960],[2979,2983],[2979,3004],[3024,3028],[3024,3045],[2871,3048],[2871,3049],[3127,3141],[3221,3234],[3183,3240],[3127,3243],[3127,3244],[3326,3340],[3379,3400],[3379,3401],[3418,3422],[3418,3456],[3472,3476],[3472,3484],[3418,3494],[3418,3494],[3407,3495],[3562,3574],[3599,3603],[3590,3613],[3513,3619],[3513,3619],[3501,3620],[3630,3634],[3630,3642],[3630,3646],[3658,3675],[3658,3676],[3326,3703],[3326,3704],[3788,3802],[3859,3863],[3859,3871],[3859,3871],[3845,3872],[3924,3942],[3924,3942],[3907,3943],[3957,3970],[3957,4005],[3949,4049],[3949,4050],[4080,4095],[4100,4118],[4136,4150],[4136,4150],[4123,4151],[4168,4192],[4168,4199],[4168,4199],[4156,4200],[4213,4222],[4248,4277],[4281,4283],[4248,4283],[4234,4291],[4234,4292],[4318,4337],[4341,4343],[4318,4343],[4301,4351],[4301,4352],[4384,4410],[4384,4420],[4366,4421],[4483,4516],[4483,4517],[3788,4626],[3788,4627],[4704,4718],[4766,4770],[4766,4778],[4766,4778],[4752,4779],[4796,4809],[4796,4833],[4796,4833],[4784,4834],[4848,4856],[4848,4856],[4839,4857],[4873,4881],[4873,4881],[4862,4882],[4898,4906],[4898,4912],[4898,4912],[4887,4913],[4936,4944],[4936,4950],[4936,4950],[4918,4951],[4968,4970],[4968,4970],[4956,4971],[5007,5020],[5007,5029],[5006,5029],[5045,5064],[5094,5104],[5080,5118],[5080,5119],[5159,5177],[5159,5178],[5198,5214],[5198,5215],[5271,5285],[5271,5286],[5318,5335],[5318,5336],[5368,5385],[5368,5386],[5425,5456],[5425,5457],[4704,5484],[4704,5485],[5487,5508],[5487,5509]]");var __coverage = {"0":[0,13],"1":[28,45],"2":[28,45],"3":[15,46],"4":[167,172],"5":[149,173],"6":[294,300],"7":[271,301],"8":[410,432],"9":[382,433],"10":[529,1116],"11":[529,1116],"12":[508,1117],"13":[1189,1207],"14":[1189,1207],"15":[1168,1208],"16":[1782,1798],"17":[1782,1804],"18":[1782,1813],"19":[1817,1829],"20":[1817,1842],"21":[1782,1842],"22":[1854,1869],"23":[1854,1870],"24":[1879,1896],"25":[1879,1897],"26":[1975,1979],"27":[1975,1995],"28":[1973,1996],"29":[2015,2032],"30":[2015,2045],"31":[2078,2082],"32":[2100,2102],"33":[2078,2128],"34":[2078,2129],"35":[2134,2138],"36":[2156,2158],"37":[2134,2175],"38":[2134,2176],"39":[2205,2209],"40":[2218,2222],"41":[2218,2228],"42":[2234,2238],"43":[2205,2239],"44":[2205,2240],"45":[2245,2249],"46":[2263,2267],"47":[2263,2278],"48":[2284,2288],"49":[2245,2289],"50":[2245,2290],"51":[2295,2299],"52":[2312,2316],"53":[2312,2326],"54":[2332,2336],"55":[2295,2337],"56":[2295,2338],"57":[2343,2347],"58":[2364,2368],"59":[2364,2382],"60":[2388,2392],"61":[2343,2393],"62":[2343,2394],"63":[2399,2403],"64":[2415,2419],"65":[2415,2428],"66":[2434,2438],"67":[2399,2439],"68":[2399,2440],"69":[2543,2557],"70":[2601,2617],"71":[2601,2623],"72":[2635,2639],"73":[2657,2659],"74":[2635,2685],"75":[2635,2686],"76":[2705,2718],"77":[2734,2738],"78":[2734,2746],"79":[2705,2758],"80":[2772,2776],"81":[2705,2788],"82":[2543,2791],"83":[2543,2792],"84":[2871,2885],"85":[2925,2929],"86":[2925,2937],"87":[2925,2948],"88":[2925,2960],"89":[2979,2983],"90":[2979,3004],"91":[3024,3028],"92":[3024,3045],"93":[2871,3048],"94":[2871,3049],"95":[3127,3141],"96":[3221,3234],"97":[3183,3240],"98":[3127,3243],"99":[3127,3244],"100":[3326,3340],"101":[3379,3400],"102":[3379,3401],"103":[3418,3422],"104":[3418,3456],"105":[3472,3476],"106":[3472,3484],"107":[3418,3494],"108":[3418,3494],"109":[3407,3495],"110":[3562,3574],"111":[3599,3603],"112":[3590,3613],"113":[3513,3619],"114":[3513,3619],"115":[3501,3620],"116":[3630,3634],"117":[3630,3642],"118":[3630,3646],"119":[3658,3675],"120":[3658,3676],"121":[3326,3703],"122":[3326,3704],"123":[3788,3802],"124":[3859,3863],"125":[3859,3871],"126":[3859,3871],"127":[3845,3872],"128":[3924,3942],"129":[3924,3942],"130":[3907,3943],"131":[3957,3970],"132":[3957,4005],"133":[3949,4049],"134":[3949,4050],"135":[4080,4095],"136":[4100,4118],"137":[4136,4150],"138":[4136,4150],"139":[4123,4151],"140":[4168,4192],"141":[4168,4199],"142":[4168,4199],"143":[4156,4200],"144":[4213,4222],"145":[4248,4277],"146":[4281,4283],"147":[4248,4283],"148":[4234,4291],"149":[4234,4292],"150":[4318,4337],"151":[4341,4343],"152":[4318,4343],"153":[4301,4351],"154":[4301,4352],"155":[4384,4410],"156":[4384,4420],"157":[4366,4421],"158":[4483,4516],"159":[4483,4517],"160":[3788,4626],"161":[3788,4627],"162":[4704,4718],"163":[4766,4770],"164":[4766,4778],"165":[4766,4778],"166":[4752,4779],"167":[4796,4809],"168":[4796,4833],"169":[4796,4833],"170":[4784,4834],"171":[4848,4856],"172":[4848,4856],"173":[4839,4857],"174":[4873,4881],"175":[4873,4881],"176":[4862,4882],"177":[4898,4906],"178":[4898,4912],"179":[4898,4912],"180":[4887,4913],"181":[4936,4944],"182":[4936,4950],"183":[4936,4950],"184":[4918,4951],"185":[4968,4970],"186":[4968,4970],"187":[4956,4971],"188":[5007,5020],"189":[5007,5029],"190":[5006,5029],"191":[5045,5064],"192":[5094,5104],"193":[5080,5118],"194":[5080,5119],"195":[5159,5177],"196":[5159,5178],"197":[5198,5214],"198":[5198,5215],"199":[5271,5285],"200":[5271,5286],"201":[5318,5335],"202":[5318,5336],"203":[5368,5385],"204":[5368,5386],"205":[5425,5456],"206":[5425,5457],"207":[4704,5484],"208":[4704,5485],"209":[5487,5508],"210":[5487,5509]};var __coverageWrap = function (index, value) {if (__coverage[index]) console.log("COVERED " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/lib/toga.js\"" + " " + index);delete __coverage[index];return value};
+console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/lib/toga.js\"" + " " + "[[0,13],[104,175],[104,175],[87,176],[272,612],[272,612],[251,613],[685,703],[685,703],[664,704],[1001,1009],[1014,1022],[1037,1053],[1037,1053],[1027,1054],[1067,1068],[1059,1069],[1082,1089],[1091,1094],[1106,1124],[1106,1125],[1170,1193],[1213,1235],[1213,1236],[978,1288],[978,1288],[965,1289],[1863,1879],[1863,1885],[1889,1901],[1889,1914],[1863,1914],[1863,1923],[1935,1950],[1935,1951],[1960,1977],[1960,1978],[2056,2060],[2056,2076],[2054,2077],[2096,2113],[2096,2126],[2159,2163],[2181,2183],[2159,2209],[2159,2210],[2215,2219],[2237,2239],[2215,2256],[2215,2257],[2286,2290],[2299,2303],[2299,2309],[2315,2319],[2286,2320],[2286,2321],[2326,2330],[2344,2348],[2344,2359],[2365,2369],[2326,2370],[2326,2371],[2376,2380],[2393,2397],[2393,2407],[2413,2417],[2376,2418],[2376,2419],[2424,2428],[2445,2449],[2445,2463],[2469,2473],[2424,2474],[2424,2475],[2480,2484],[2496,2500],[2496,2509],[2515,2519],[2480,2520],[2480,2521],[2624,2638],[2682,2698],[2682,2704],[2716,2720],[2738,2740],[2716,2766],[2716,2767],[2786,2799],[2815,2819],[2815,2827],[2786,2839],[2853,2857],[2786,2869],[2624,2872],[2624,2873],[2952,2966],[3006,3010],[3006,3018],[3006,3029],[3006,3041],[3060,3064],[3060,3085],[3105,3109],[3105,3126],[2952,3129],[2952,3130],[3208,3222],[3302,3315],[3264,3321],[3208,3324],[3208,3325],[3407,3421],[3460,3481],[3460,3482],[3499,3503],[3499,3537],[3553,3557],[3553,3565],[3499,3575],[3499,3575],[3488,3576],[3643,3655],[3680,3684],[3671,3694],[3594,3700],[3594,3700],[3582,3701],[3711,3715],[3711,3723],[3711,3727],[3739,3756],[3739,3757],[3407,3784],[3407,3785],[3869,3883],[3940,3944],[3940,3952],[3940,3952],[3926,3953],[4005,4023],[4005,4023],[3988,4024],[4038,4051],[4038,4086],[4030,4124],[4030,4125],[4155,4170],[4175,4193],[4211,4225],[4211,4225],[4198,4226],[4243,4270],[4243,4277],[4243,4277],[4231,4278],[4291,4300],[4326,4355],[4359,4361],[4326,4361],[4312,4369],[4312,4370],[4396,4415],[4419,4421],[4396,4421],[4379,4429],[4379,4430],[4462,4488],[4462,4498],[4444,4499],[4562,4595],[4562,4596],[3869,4705],[3869,4706],[4783,4797],[4845,4849],[4845,4857],[4845,4857],[4831,4858],[4875,4888],[4875,4912],[4875,4912],[4863,4913],[4928,4936],[4928,4936],[4918,4937],[4953,4961],[4953,4961],[4942,4962],[4978,4986],[4978,4992],[4978,4992],[4967,4993],[5016,5024],[5016,5030],[5016,5030],[4998,5031],[5048,5050],[5048,5050],[5036,5051],[5088,5101],[5088,5111],[5087,5111],[5127,5146],[5176,5186],[5162,5200],[5162,5201],[5241,5259],[5241,5260],[5280,5296],[5280,5297],[5354,5369],[5354,5370],[5402,5419],[5402,5420],[5452,5469],[5452,5470],[5509,5540],[5509,5541],[4783,5568],[4783,5569],[5571,5592],[5571,5593]]");var __coverage = {"0":[0,13],"1":[104,175],"2":[104,175],"3":[87,176],"4":[272,612],"5":[272,612],"6":[251,613],"7":[685,703],"8":[685,703],"9":[664,704],"10":[1001,1009],"11":[1014,1022],"12":[1037,1053],"13":[1037,1053],"14":[1027,1054],"15":[1067,1068],"16":[1059,1069],"17":[1082,1089],"18":[1091,1094],"19":[1106,1124],"20":[1106,1125],"21":[1170,1193],"22":[1213,1235],"23":[1213,1236],"24":[978,1288],"25":[978,1288],"26":[965,1289],"27":[1863,1879],"28":[1863,1885],"29":[1889,1901],"30":[1889,1914],"31":[1863,1914],"32":[1863,1923],"33":[1935,1950],"34":[1935,1951],"35":[1960,1977],"36":[1960,1978],"37":[2056,2060],"38":[2056,2076],"39":[2054,2077],"40":[2096,2113],"41":[2096,2126],"42":[2159,2163],"43":[2181,2183],"44":[2159,2209],"45":[2159,2210],"46":[2215,2219],"47":[2237,2239],"48":[2215,2256],"49":[2215,2257],"50":[2286,2290],"51":[2299,2303],"52":[2299,2309],"53":[2315,2319],"54":[2286,2320],"55":[2286,2321],"56":[2326,2330],"57":[2344,2348],"58":[2344,2359],"59":[2365,2369],"60":[2326,2370],"61":[2326,2371],"62":[2376,2380],"63":[2393,2397],"64":[2393,2407],"65":[2413,2417],"66":[2376,2418],"67":[2376,2419],"68":[2424,2428],"69":[2445,2449],"70":[2445,2463],"71":[2469,2473],"72":[2424,2474],"73":[2424,2475],"74":[2480,2484],"75":[2496,2500],"76":[2496,2509],"77":[2515,2519],"78":[2480,2520],"79":[2480,2521],"80":[2624,2638],"81":[2682,2698],"82":[2682,2704],"83":[2716,2720],"84":[2738,2740],"85":[2716,2766],"86":[2716,2767],"87":[2786,2799],"88":[2815,2819],"89":[2815,2827],"90":[2786,2839],"91":[2853,2857],"92":[2786,2869],"93":[2624,2872],"94":[2624,2873],"95":[2952,2966],"96":[3006,3010],"97":[3006,3018],"98":[3006,3029],"99":[3006,3041],"100":[3060,3064],"101":[3060,3085],"102":[3105,3109],"103":[3105,3126],"104":[2952,3129],"105":[2952,3130],"106":[3208,3222],"107":[3302,3315],"108":[3264,3321],"109":[3208,3324],"110":[3208,3325],"111":[3407,3421],"112":[3460,3481],"113":[3460,3482],"114":[3499,3503],"115":[3499,3537],"116":[3553,3557],"117":[3553,3565],"118":[3499,3575],"119":[3499,3575],"120":[3488,3576],"121":[3643,3655],"122":[3680,3684],"123":[3671,3694],"124":[3594,3700],"125":[3594,3700],"126":[3582,3701],"127":[3711,3715],"128":[3711,3723],"129":[3711,3727],"130":[3739,3756],"131":[3739,3757],"132":[3407,3784],"133":[3407,3785],"134":[3869,3883],"135":[3940,3944],"136":[3940,3952],"137":[3940,3952],"138":[3926,3953],"139":[4005,4023],"140":[4005,4023],"141":[3988,4024],"142":[4038,4051],"143":[4038,4086],"144":[4030,4124],"145":[4030,4125],"146":[4155,4170],"147":[4175,4193],"148":[4211,4225],"149":[4211,4225],"150":[4198,4226],"151":[4243,4270],"152":[4243,4277],"153":[4243,4277],"154":[4231,4278],"155":[4291,4300],"156":[4326,4355],"157":[4359,4361],"158":[4326,4361],"159":[4312,4369],"160":[4312,4370],"161":[4396,4415],"162":[4419,4421],"163":[4396,4421],"164":[4379,4429],"165":[4379,4430],"166":[4462,4488],"167":[4462,4498],"168":[4444,4499],"169":[4562,4595],"170":[4562,4596],"171":[3869,4705],"172":[3869,4706],"173":[4783,4797],"174":[4845,4849],"175":[4845,4857],"176":[4845,4857],"177":[4831,4858],"178":[4875,4888],"179":[4875,4912],"180":[4875,4912],"181":[4863,4913],"182":[4928,4936],"183":[4928,4936],"184":[4918,4937],"185":[4953,4961],"186":[4953,4961],"187":[4942,4962],"188":[4978,4986],"189":[4978,4992],"190":[4978,4992],"191":[4967,4993],"192":[5016,5024],"193":[5016,5030],"194":[5016,5030],"195":[4998,5031],"196":[5048,5050],"197":[5048,5050],"198":[5036,5051],"199":[5088,5101],"200":[5088,5111],"201":[5087,5111],"202":[5127,5146],"203":[5176,5186],"204":[5162,5200],"205":[5162,5201],"206":[5241,5259],"207":[5241,5260],"208":[5280,5296],"209":[5280,5297],"210":[5354,5369],"211":[5354,5370],"212":[5402,5419],"213":[5402,5420],"214":[5452,5469],"215":[5452,5470],"216":[5509,5540],"217":[5509,5541],"218":[4783,5568],"219":[4783,5569],"220":[5571,5592],"221":[5571,5593]};var __coverageWrap = function (index, value) {if (__coverage[index]) console.log("COVERED " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/lib/toga.js\"" + " " + index);delete __coverage[index];return value};
 { __coverageWrap(0);'use strict';};
 
-{ __coverageWrap(3);var copier = __coverageWrap(2,__coverageWrap(1,require('copier')));};
-
 /**
- * Matches start of each line. Useful for getting a count of all lines.
+ * Line matching patterns.
  *
- * @type {RegExp}
+ * @type {Object.<String,RegExp>}
  */
-{ __coverageWrap(5);var linePattern = __coverageWrap(4,/^/gm);};
-
-/**
- * Matches empty lines. Useful for getting a count of empty lines.
- *
- * @type {RegExp}
- */
-{ __coverageWrap(7);var emptyLinePattern = __coverageWrap(6,/^$/gm);};
-
-/**
- * Matches surrounding empty lines to be trimmed.
- *
- * @type {RegExp}
- */
-{ __coverageWrap(9);var edgeEmptyLinesPattern = __coverageWrap(8,/^[\t ]*\n|\n[\t ]*$/g);};
+{ __coverageWrap(3);var matchLines = __coverageWrap(2,__coverageWrap(1,{
+    any: /^/gm,
+    empty: /^$/gm,
+    edge: /^[\t ]*\n|\n[\t ]*$/g
+}));};
 
 /**
  * Default C-style grammar.
  *
  * @type {Object.<String,RegExp>}
  */
-{ __coverageWrap(12);var defaultGrammar = __coverageWrap(11,__coverageWrap(10,{
-    // Matches block delimiters
+{ __coverageWrap(6);var defaultGrammar = __coverageWrap(5,__coverageWrap(4,{
     blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
-
-    // Matches block content
     blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
-
-    // Matches indent characters
     indent: /^[\t \*]/gm,
-
-    // Matches tag delimiters
     tagSplit: /^[\t ]*@/m,
-
-    // Matches tag content `tag {Type} [name] - Description.`
     tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
-
-    // Matches tags that should include a name property
     named: /^(arg(ument)?|augments|class|extends|method|param|prop(erty)?)$/
 }));};
 
@@ -55,8 +32,35 @@ console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/li
  *
  * @type {Object}
  */
-{ __coverageWrap(15);var defaultOptions = __coverageWrap(14,__coverageWrap(13,{
+{ __coverageWrap(9);var defaultOptions = __coverageWrap(8,__coverageWrap(7,{
     raw: false
+}));};
+
+/**
+ * Copies the enumerable properties of one or more objects to a target object.
+ *
+ * @type {Function}
+ * @param {Object} target Target object.
+ * @param {Object} [objs...] Objects with properties to copy.
+ * @return {Object} Target object, augmented.
+ */
+{ __coverageWrap(26);var copier = __coverageWrap(25,__coverageWrap(24,function(target) {
+    { __coverageWrap(10);var arg;};
+    { __coverageWrap(11);var key;};
+    { __coverageWrap(14);var len = __coverageWrap(13,__coverageWrap(12,arguments.length));};
+    { __coverageWrap(16);var i = __coverageWrap(15,1);};
+
+    for (; __coverageWrap(17,i < len); __coverageWrap(18,i++)) {
+        { __coverageWrap(20);__coverageWrap(19,arg = arguments[i]);};
+
+        for (key in arg) {
+            if (__coverageWrap(21,arg.hasOwnProperty(key))) {
+                { __coverageWrap(23);__coverageWrap(22,target[key] = arg[key]);};
+            }
+        }
+    }
+
+    return target;
 }));};
 
 /**
@@ -76,26 +80,26 @@ console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/li
  */
 function Toga(block, grammar) {
     // Make `block` optional
-    if (__coverageWrap(21,__coverageWrap(18,__coverageWrap(17,__coverageWrap(16,arguments.length) === 1) && block) && __coverageWrap(20,__coverageWrap(19,typeof block) === 'object'))) {
-        { __coverageWrap(23);__coverageWrap(22,grammar = block);};
-        { __coverageWrap(25);__coverageWrap(24,block = undefined);};
+    if (__coverageWrap(32,__coverageWrap(31,__coverageWrap(28,__coverageWrap(27,arguments.length) === 1) && __coverageWrap(30,__coverageWrap(29,typeof block) === 'object')) && block)) {
+        { __coverageWrap(34);__coverageWrap(33,grammar = block);};
+        { __coverageWrap(36);__coverageWrap(35,block = undefined);};
     }
 
     // Support functional execution: `toga(block, grammar)`
-    if (__coverageWrap(28,!(__coverageWrap(27,__coverageWrap(26,this) instanceof Toga)))) {
-        return __coverageWrap(30,__coverageWrap(29,new Toga(grammar)).parse(block));
+    if (__coverageWrap(39,!(__coverageWrap(38,__coverageWrap(37,this) instanceof Toga)))) {
+        return __coverageWrap(41,__coverageWrap(40,new Toga(grammar)).parse(block));
     }
 
     // Set defaults
-    { __coverageWrap(34);__coverageWrap(33,__coverageWrap(31,this).grammar = copier(__coverageWrap(32,{}), defaultGrammar, grammar));};
-    { __coverageWrap(38);__coverageWrap(37,__coverageWrap(35,this).options = copier(__coverageWrap(36,{}), defaultOptions));};
+    { __coverageWrap(45);__coverageWrap(44,__coverageWrap(42,this).grammar = copier(__coverageWrap(43,{}), defaultGrammar, grammar));};
+    { __coverageWrap(49);__coverageWrap(48,__coverageWrap(46,this).options = copier(__coverageWrap(47,{}), defaultOptions));};
 
     // Enforce context
-    { __coverageWrap(44);__coverageWrap(43,__coverageWrap(39,this).parse = __coverageWrap(41,__coverageWrap(40,this).parse).bind(__coverageWrap(42,this)));};
-    { __coverageWrap(50);__coverageWrap(49,__coverageWrap(45,this).parseBlock = __coverageWrap(47,__coverageWrap(46,this).parseBlock).bind(__coverageWrap(48,this)));};
-    { __coverageWrap(56);__coverageWrap(55,__coverageWrap(51,this).parseCode = __coverageWrap(53,__coverageWrap(52,this).parseCode).bind(__coverageWrap(54,this)));};
-    { __coverageWrap(62);__coverageWrap(61,__coverageWrap(57,this).parseDocBlock = __coverageWrap(59,__coverageWrap(58,this).parseDocBlock).bind(__coverageWrap(60,this)));};
-    { __coverageWrap(68);__coverageWrap(67,__coverageWrap(63,this).parseTag = __coverageWrap(65,__coverageWrap(64,this).parseTag).bind(__coverageWrap(66,this)));};
+    { __coverageWrap(55);__coverageWrap(54,__coverageWrap(50,this).parse = __coverageWrap(52,__coverageWrap(51,this).parse).bind(__coverageWrap(53,this)));};
+    { __coverageWrap(61);__coverageWrap(60,__coverageWrap(56,this).parseBlock = __coverageWrap(58,__coverageWrap(57,this).parseBlock).bind(__coverageWrap(59,this)));};
+    { __coverageWrap(67);__coverageWrap(66,__coverageWrap(62,this).parseCode = __coverageWrap(64,__coverageWrap(63,this).parseCode).bind(__coverageWrap(65,this)));};
+    { __coverageWrap(73);__coverageWrap(72,__coverageWrap(68,this).parseDocBlock = __coverageWrap(70,__coverageWrap(69,this).parseDocBlock).bind(__coverageWrap(71,this)));};
+    { __coverageWrap(79);__coverageWrap(78,__coverageWrap(74,this).parseTag = __coverageWrap(76,__coverageWrap(75,this).parseTag).bind(__coverageWrap(77,this)));};
 }
 
 /**
@@ -104,14 +108,14 @@ function Toga(block, grammar) {
  * @param {String} [options]
  * @return {String}
  */
-{ __coverageWrap(83);__coverageWrap(82,__coverageWrap(69,Toga.prototype).parse = function(block, options) {
-    if (__coverageWrap(71,__coverageWrap(70,arguments.length) === 2)) {
-        { __coverageWrap(75);__coverageWrap(74,__coverageWrap(72,this).options = copier(__coverageWrap(73,{}), defaultOptions, options));};
+{ __coverageWrap(94);__coverageWrap(93,__coverageWrap(80,Toga.prototype).parse = function(block, options) {
+    if (__coverageWrap(82,__coverageWrap(81,arguments.length) === 2)) {
+        { __coverageWrap(86);__coverageWrap(85,__coverageWrap(83,this).options = copier(__coverageWrap(84,{}), defaultOptions, options));};
     }
 
-    return __coverageWrap(81,__coverageWrap(79,__coverageWrap(76,String(block))
-        .split(__coverageWrap(78,__coverageWrap(77,this).grammar).blockSplit))
-        .map(__coverageWrap(80,this).parseBlock));
+    return __coverageWrap(92,__coverageWrap(90,__coverageWrap(87,String(block))
+        .split(__coverageWrap(89,__coverageWrap(88,this).grammar).blockSplit))
+        .map(__coverageWrap(91,this).parseBlock));
 });};
 
 /**
@@ -119,12 +123,12 @@ function Toga(block, grammar) {
  * @param {String} [block]
  * @return {Object}
  */
-{ __coverageWrap(94);__coverageWrap(93,__coverageWrap(84,Toga.prototype).parseBlock = function(block) {
-    if (__coverageWrap(88,__coverageWrap(87,__coverageWrap(86,__coverageWrap(85,this).grammar).blockParse).test(block))) {
-        return __coverageWrap(90,__coverageWrap(89,this).parseDocBlock(block));
+{ __coverageWrap(105);__coverageWrap(104,__coverageWrap(95,Toga.prototype).parseBlock = function(block) {
+    if (__coverageWrap(99,__coverageWrap(98,__coverageWrap(97,__coverageWrap(96,this).grammar).blockParse).test(block))) {
+        return __coverageWrap(101,__coverageWrap(100,this).parseDocBlock(block));
     }
 
-    return __coverageWrap(92,__coverageWrap(91,this).parseCode(block));
+    return __coverageWrap(103,__coverageWrap(102,this).parseCode(block));
 });};
 
 /**
@@ -132,10 +136,10 @@ function Toga(block, grammar) {
  * @param {String} [block]
  * @return {Object}
  */
-{ __coverageWrap(99);__coverageWrap(98,__coverageWrap(95,Toga.prototype).parseCode = function(block) {
-    return __coverageWrap(97,{
+{ __coverageWrap(110);__coverageWrap(109,__coverageWrap(106,Toga.prototype).parseCode = function(block) {
+    return __coverageWrap(108,{
         type: 'Code',
-        body: __coverageWrap(96,String(block))
+        body: __coverageWrap(107,String(block))
     });
 });};
 
@@ -144,21 +148,21 @@ function Toga(block, grammar) {
  * @param {String} [block]
  * @return {Object}
  */
-{ __coverageWrap(122);__coverageWrap(121,__coverageWrap(100,Toga.prototype).parseDocBlock = function(block) {
-    { __coverageWrap(102);__coverageWrap(101,block = String(block));};
+{ __coverageWrap(133);__coverageWrap(132,__coverageWrap(111,Toga.prototype).parseDocBlock = function(block) {
+    { __coverageWrap(113);__coverageWrap(112,block = String(block));};
 
-    { __coverageWrap(109);var tags = __coverageWrap(108,__coverageWrap(107,__coverageWrap(104,__coverageWrap(103,this)
+    { __coverageWrap(120);var tags = __coverageWrap(119,__coverageWrap(118,__coverageWrap(115,__coverageWrap(114,this)
         .normalizeDocBlock(block))
-        .split(__coverageWrap(106,__coverageWrap(105,this).grammar).tagSplit)));};
+        .split(__coverageWrap(117,__coverageWrap(116,this).grammar).tagSplit)));};
 
-    { __coverageWrap(115);var token = __coverageWrap(114,__coverageWrap(113,{
+    { __coverageWrap(126);var token = __coverageWrap(125,__coverageWrap(124,{
         type: 'DocBlock',
-        description: __coverageWrap(110,tags.shift()),
-        tags: __coverageWrap(112,tags.map(__coverageWrap(111,this).parseTag))
+        description: __coverageWrap(121,tags.shift()),
+        tags: __coverageWrap(123,tags.map(__coverageWrap(122,this).parseTag))
     }));};
 
-    if (__coverageWrap(118,__coverageWrap(117,__coverageWrap(116,this).options).raw)) {
-        { __coverageWrap(120);__coverageWrap(119,token.raw = block);};
+    if (__coverageWrap(129,__coverageWrap(128,__coverageWrap(127,this).options).raw)) {
+        { __coverageWrap(131);__coverageWrap(130,token.raw = block);};
     }
 
     return token;
@@ -169,29 +173,29 @@ function Toga(block, grammar) {
  * @param {String} block
  * @return {String}
  */
-{ __coverageWrap(161);__coverageWrap(160,__coverageWrap(123,Toga.prototype).normalizeDocBlock = function(block) {
-    { __coverageWrap(127);var grammar = __coverageWrap(126,__coverageWrap(125,__coverageWrap(124,this).grammar));};
+{ __coverageWrap(172);__coverageWrap(171,__coverageWrap(134,Toga.prototype).normalizeDocBlock = function(block) {
+    { __coverageWrap(138);var grammar = __coverageWrap(137,__coverageWrap(136,__coverageWrap(135,this).grammar));};
 
     // Trim comment wrappers
-    { __coverageWrap(130);var blockParse = __coverageWrap(129,__coverageWrap(128,grammar.blockParse));};
+    { __coverageWrap(141);var blockParse = __coverageWrap(140,__coverageWrap(139,grammar.blockParse));};
 
-    { __coverageWrap(134);__coverageWrap(133,block = __coverageWrap(132,__coverageWrap(131,String(block))
+    { __coverageWrap(145);__coverageWrap(144,block = __coverageWrap(143,__coverageWrap(142,String(block))
         .replace(blockParse, '$1'))
-        .replace(edgeEmptyLinesPattern, ''));};
+        .replace(matchLines.edge, ''));};
 
     // Unindent content
-    { __coverageWrap(135);var emptyLines;};
-    { __coverageWrap(136);var indentedLines;};
-    { __coverageWrap(139);var indent = __coverageWrap(138,__coverageWrap(137,grammar.indent));};
-    { __coverageWrap(143);var lines = __coverageWrap(142,__coverageWrap(141,__coverageWrap(140,block.match(linePattern)).length));};
+    { __coverageWrap(146);var emptyLines;};
+    { __coverageWrap(147);var indentedLines;};
+    { __coverageWrap(150);var indent = __coverageWrap(149,__coverageWrap(148,grammar.indent));};
+    { __coverageWrap(154);var lines = __coverageWrap(153,__coverageWrap(152,__coverageWrap(151,block.match(matchLines.any)).length));};
 
-    while (__coverageWrap(144,lines > 0)) {
-        { __coverageWrap(149);__coverageWrap(148,emptyLines = (__coverageWrap(147,__coverageWrap(145,block.match(emptyLinePattern)) || __coverageWrap(146,[]))).length);};
-        { __coverageWrap(154);__coverageWrap(153,indentedLines = (__coverageWrap(152,__coverageWrap(150,block.match(indent)) || __coverageWrap(151,[]))).length);};
+    while (__coverageWrap(155,lines > 0)) {
+        { __coverageWrap(160);__coverageWrap(159,emptyLines = (__coverageWrap(158,__coverageWrap(156,block.match(matchLines.empty)) || __coverageWrap(157,[]))).length);};
+        { __coverageWrap(165);__coverageWrap(164,indentedLines = (__coverageWrap(163,__coverageWrap(161,block.match(indent)) || __coverageWrap(162,[]))).length);};
 
-        if (__coverageWrap(157,indentedLines && (__coverageWrap(156,__coverageWrap(155,emptyLines + indentedLines) === lines)))) {
-            // Strip leading indent character
-            { __coverageWrap(159);__coverageWrap(158,block = block.replace(indent, ''));};
+        if (__coverageWrap(168,indentedLines && (__coverageWrap(167,__coverageWrap(166,emptyLines + indentedLines) === lines)))) {
+            // Strip leading indent characters
+            { __coverageWrap(170);__coverageWrap(169,block = block.replace(indent, ''));};
         } else {
             // Not indented anymore
             break;
@@ -206,50 +210,51 @@ function Toga(block, grammar) {
  * @param {String} [block]
  * @return {Object}
  */
-{ __coverageWrap(208);__coverageWrap(207,__coverageWrap(162,Toga.prototype).parseTag = function(block) {
-    { __coverageWrap(166);var grammar = __coverageWrap(165,__coverageWrap(164,__coverageWrap(163,this).grammar));};
-    { __coverageWrap(170);var parts = __coverageWrap(169,__coverageWrap(168,__coverageWrap(167,String(block)).match(grammar.tagParse)));};
-    { __coverageWrap(173);var id = __coverageWrap(172,__coverageWrap(171,parts[1]));};
-    { __coverageWrap(176);var type = __coverageWrap(175,__coverageWrap(174,parts[2]));};
-    { __coverageWrap(180);var name = __coverageWrap(179,__coverageWrap(178,__coverageWrap(177,parts[3]) || ''));};
-    { __coverageWrap(184);var description = __coverageWrap(183,__coverageWrap(182,__coverageWrap(181,parts[4]) || ''));};
-    { __coverageWrap(187);var token = __coverageWrap(186,__coverageWrap(185,{}));};
+{ __coverageWrap(219);__coverageWrap(218,__coverageWrap(173,Toga.prototype).parseTag = function(block) {
+    { __coverageWrap(177);var grammar = __coverageWrap(176,__coverageWrap(175,__coverageWrap(174,this).grammar));};
+    { __coverageWrap(181);var parts = __coverageWrap(180,__coverageWrap(179,__coverageWrap(178,String(block)).match(grammar.tagParse)));};
+    { __coverageWrap(184);var tag = __coverageWrap(183,__coverageWrap(182,parts[1]));};
+    { __coverageWrap(187);var type = __coverageWrap(186,__coverageWrap(185,parts[2]));};
+    { __coverageWrap(191);var name = __coverageWrap(190,__coverageWrap(189,__coverageWrap(188,parts[3]) || ''));};
+    { __coverageWrap(195);var description = __coverageWrap(194,__coverageWrap(193,__coverageWrap(192,parts[4]) || ''));};
+    { __coverageWrap(198);var token = __coverageWrap(197,__coverageWrap(196,{}));};
 
     // Handle named tags
-    if (__coverageWrap(190,!__coverageWrap(189,__coverageWrap(188,grammar.named).test(id)))) {
-        if (__coverageWrap(191,name && description)) {
-            { __coverageWrap(194);__coverageWrap(193,description = __coverageWrap(192,name + ' ') + description);};
+
+    if (__coverageWrap(201,!__coverageWrap(200,__coverageWrap(199,grammar.named).test(tag)))) {
+        if (__coverageWrap(202,name && description)) {
+            { __coverageWrap(205);__coverageWrap(204,description = __coverageWrap(203,name + ' ') + description);};
         } else if (name) {
-            { __coverageWrap(196);__coverageWrap(195,description = name);};
+            { __coverageWrap(207);__coverageWrap(206,description = name);};
         }
 
-        { __coverageWrap(198);__coverageWrap(197,name = undefined);};
+        { __coverageWrap(209);__coverageWrap(208,name = undefined);};
     }
 
     // Keep tokens light
 
-    if (id) {
-        { __coverageWrap(200);__coverageWrap(199,token.tag = id);};
+    if (tag) {
+        { __coverageWrap(211);__coverageWrap(210,token.tag = tag);};
     }
 
     if (type) {
-        { __coverageWrap(202);__coverageWrap(201,token.type = type);};
+        { __coverageWrap(213);__coverageWrap(212,token.type = type);};
     }
 
     if (name) {
-        { __coverageWrap(204);__coverageWrap(203,token.name = name);};
+        { __coverageWrap(215);__coverageWrap(214,token.name = name);};
     }
 
     if (description) {
-        { __coverageWrap(206);__coverageWrap(205,token.description = description);};
+        { __coverageWrap(217);__coverageWrap(216,token.description = description);};
     }
 
     return token;
 });};
 
-{ __coverageWrap(210);__coverageWrap(209,module.exports = Toga);};
+{ __coverageWrap(221);__coverageWrap(220,module.exports = Toga);};
 
-},{"copier":4}],2:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 
 },{}],3:[function(require,module,exports){
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"PcZj9L":[function(require,module,exports){
@@ -2097,42 +2102,6 @@ function packF32(v) { return packIEEE754(v, 8, 23); }
 ;;module.exports=require("native-buffer-browserify").Buffer
 
 },{}],4:[function(require,module,exports){
-/*jshint node:true */
-/**
- * @fileOverview
- * copy Declaration File
- *
- * @author Shannon Moeller
- * @version 1.0
- */
-
-'use strict';
-
-/**
- * Copies the enumerable properties of one or more objects to a target object.
- *
- * @param {Object} target Target object.
- * @param {...Object} objs Objects with properties to copy.
- * @return {Object} Target object, augmented.
- */
-module.exports = function copy(target) {
-    var arg, i, key, len;
-    var args = arguments;
-
-    for (i = 1, len = args.length; i < len; i += 1) {
-        arg = args[i];
-
-        for (key in arg) {
-            if (arg.hasOwnProperty(key)) {
-                target[key] = arg[key];
-            }
-        }
-    }
-
-    return target;
-};
-
-},{}],5:[function(require,module,exports){
 var Buffer=require("__browserify_Buffer");
 (function (global, module) {
 
@@ -3387,8 +3356,8 @@ var Buffer=require("__browserify_Buffer");
   , 'undefined' != typeof exports ? exports : {}
 );
 
-},{"__browserify_Buffer":3}],6:[function(require,module,exports){
-console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/specs/toga-spec.js\"" + " " + "[[25,38],[49,62],[49,62],[40,63],[77,97],[77,97],[64,98],[110,135],[110,135],[99,136],[148,152],[137,153],[255,487],[242,488],[505,517],[498,518],[498,521],[540,802],[526,812],[498,813],[498,814],[221,820],[190,821],[190,822],[893,941],[881,942],[959,965],[952,966],[952,969],[988,1027],[974,1037],[952,1038],[952,1039],[1056,1066],[1049,1067],[1049,1070],[1089,1123],[1075,1133],[1049,1134],[1049,1135],[1152,1160],[1145,1161],[1145,1164],[1183,1213],[1169,1223],[1145,1224],[1145,1225],[1242,1253],[1235,1254],[1235,1257],[1276,1312],[1375,1377],[1326,1379],[1393,1425],[1488,1490],[1439,1492],[1506,1538],[1601,1603],[1552,1605],[1619,1651],[1714,1716],[1665,1718],[1732,1764],[1262,1774],[1235,1775],[1235,1776],[860,1782],[828,1783],[828,1784],[1854,1924],[1843,1925],[1942,1952],[1935,1953],[1935,1956],[1975,2005],[2079,2081],[2019,2083],[2097,2129],[2203,2205],[2143,2207],[2221,2253],[2327,2329],[2267,2331],[2345,2377],[1961,2387],[1935,2388],[1935,2389],[1822,2395],[1790,2396],[1790,2397],[2458,2605],[2448,2606],[2623,2632],[2616,2633],[2616,2636],[2655,2685],[2749,2819],[2748,2820],[2699,2822],[2836,2868],[2932,3002],[2931,3003],[2882,3005],[3019,3051],[3115,3162],[3114,3163],[3065,3165],[3179,3211],[3275,3322],[3274,3323],[3225,3325],[3339,3371],[3435,3451],[3434,3452],[3385,3454],[3468,3500],[2641,3510],[2616,3511],[2616,3512],[2427,3518],[2403,3519],[2403,3520],[3581,3965],[3571,3966],[3983,3992],[3976,3993],[3976,3996],[4015,4045],[4109,4192],[4108,4193],[4059,4195],[4209,4241],[4305,4388],[4304,4389],[4255,4391],[4405,4437],[4501,4582],[4500,4583],[4451,4585],[4599,4631],[4695,4776],[4694,4777],[4645,4779],[4793,4825],[4889,4941],[4888,4942],[4839,4944],[4958,4990],[5054,5104],[5053,5105],[5004,5107],[5121,5153],[5217,5282],[5216,5283],[5167,5285],[5299,5331],[5395,5460],[5394,5461],[5345,5463],[5477,5509],[5573,5636],[5572,5637],[5523,5639],[5653,5685],[5749,5812],[5748,5813],[5699,5815],[5829,5861],[5925,5959],[5924,5960],[5875,5962],[5976,6008],[6072,6104],[6071,6105],[6022,6107],[6121,6153],[4001,6163],[3976,6164],[3976,6165],[3550,6171],[3526,6172],[3526,6173],[6236,6395],[6225,6396],[6413,6423],[6406,6424],[6406,6427],[6446,6476],[6540,6574],[6539,6575],[6490,6577],[6591,6623],[6687,6730],[6686,6731],[6637,6733],[6747,6779],[6843,6903],[6842,6904],[6793,6906],[6920,6952],[7016,7103],[7015,7104],[6966,7106],[7120,7152],[6432,7162],[6406,7163],[6406,7164],[6204,7170],[6179,7171],[6179,7172],[7235,7334],[7224,7335],[7352,7362],[7345,7363],[7345,7366],[7385,7415],[7479,7511],[7478,7512],[7429,7514],[7528,7560],[7624,7658],[7623,7659],[7574,7661],[7675,7707],[7771,7808],[7770,7809],[7721,7811],[7825,7857],[7921,7969],[7920,7970],[7871,7972],[7986,8018],[7371,8028],[7345,8029],[7345,8030],[7203,8036],[7178,8037],[7178,8038],[8108,11339],[8095,11340],[11371,11381],[11371,11381],[11350,11382],[11434,11467],[11405,11468],[11405,11468],[11392,11469],[11479,11493],[11479,11496],[11515,11545],[11853,11936],[11958,12089],[12111,12275],[12297,12366],[12388,12404],[11831,12422],[11559,12981],[12995,13029],[13337,13420],[13442,13573],[13595,13759],[13781,13850],[13872,13888],[13315,13906],[13043,14396],[14410,14444],[14752,14835],[14857,14988],[15010,15174],[15196,15265],[15287,15303],[14730,15321],[14458,15879],[15893,15927],[16235,16318],[16340,16471],[16493,16657],[16679,16748],[16770,16786],[16213,16804],[15941,17475],[17489,17523],[17831,17914],[17936,18067],[18089,18253],[18275,18344],[18366,18382],[17809,18400],[17537,18966],[18980,19014],[19322,19405],[19427,19558],[19580,19744],[19766,19835],[19857,19873],[19300,19891],[19028,20524],[20538,20570],[11501,20580],[11479,20581],[11479,20582],[8074,20588],[8044,20589],[8044,20590],[20673,24625],[20660,24626],[24667,24902],[24658,24903],[24658,24903],[24636,24904],[24957,24990],[24927,24991],[24927,24991],[24914,24992],[25002,25016],[25002,25019],[25038,25068],[25373,25456],[25478,25609],[25631,25795],[25817,25954],[25976,26013],[25351,26031],[25082,26704],[26718,26752],[27057,27140],[27162,27293],[27315,27479],[27501,27638],[27660,27676],[27035,27694],[26766,28253],[28267,28301],[28610,28693],[28715,28846],[28868,29032],[29054,29191],[29213,29229],[28588,29247],[28315,29894],[29908,29942],[30247,30330],[30352,30483],[30505,30669],[30691,30828],[30850,30887],[30225,30905],[29956,31706],[31720,31754],[32059,32142],[32164,32295],[32317,32481],[32503,32640],[32662,32678],[32037,32696],[31768,33347],[33361,33395],[33704,33787],[33809,33940],[33962,34126],[34148,34285],[34307,34323],[33682,34341],[33409,35080],[35094,35230],[25024,35240],[25002,35241],[25002,35242],[20639,35248],[20596,35249],[20596,35250],[35327,35842],[35314,35843],[35879,36047],[35870,36048],[35870,36048],[35853,36049],[36097,36130],[36072,36131],[36072,36131],[36059,36132],[36142,36156],[36142,36159],[36178,36262],[36570,36653],[36675,36806],[36828,36992],[37014,37081],[37103,37119],[36548,37137],[36276,37629],[37643,37675],[36164,37685],[36142,37686],[36142,37687],[35293,37693],[35256,37694],[35256,37695],[172,37697],[155,37698],[155,37699]]");var __coverage = {"0":[25,38],"1":[49,62],"2":[49,62],"3":[40,63],"4":[77,97],"5":[77,97],"6":[64,98],"7":[110,135],"8":[110,135],"9":[99,136],"10":[148,152],"11":[137,153],"12":[255,487],"13":[242,488],"14":[505,517],"15":[498,518],"16":[498,521],"17":[540,802],"18":[526,812],"19":[498,813],"20":[498,814],"21":[221,820],"22":[190,821],"23":[190,822],"24":[893,941],"25":[881,942],"26":[959,965],"27":[952,966],"28":[952,969],"29":[988,1027],"30":[974,1037],"31":[952,1038],"32":[952,1039],"33":[1056,1066],"34":[1049,1067],"35":[1049,1070],"36":[1089,1123],"37":[1075,1133],"38":[1049,1134],"39":[1049,1135],"40":[1152,1160],"41":[1145,1161],"42":[1145,1164],"43":[1183,1213],"44":[1169,1223],"45":[1145,1224],"46":[1145,1225],"47":[1242,1253],"48":[1235,1254],"49":[1235,1257],"50":[1276,1312],"51":[1375,1377],"52":[1326,1379],"53":[1393,1425],"54":[1488,1490],"55":[1439,1492],"56":[1506,1538],"57":[1601,1603],"58":[1552,1605],"59":[1619,1651],"60":[1714,1716],"61":[1665,1718],"62":[1732,1764],"63":[1262,1774],"64":[1235,1775],"65":[1235,1776],"66":[860,1782],"67":[828,1783],"68":[828,1784],"69":[1854,1924],"70":[1843,1925],"71":[1942,1952],"72":[1935,1953],"73":[1935,1956],"74":[1975,2005],"75":[2079,2081],"76":[2019,2083],"77":[2097,2129],"78":[2203,2205],"79":[2143,2207],"80":[2221,2253],"81":[2327,2329],"82":[2267,2331],"83":[2345,2377],"84":[1961,2387],"85":[1935,2388],"86":[1935,2389],"87":[1822,2395],"88":[1790,2396],"89":[1790,2397],"90":[2458,2605],"91":[2448,2606],"92":[2623,2632],"93":[2616,2633],"94":[2616,2636],"95":[2655,2685],"96":[2749,2819],"97":[2748,2820],"98":[2699,2822],"99":[2836,2868],"100":[2932,3002],"101":[2931,3003],"102":[2882,3005],"103":[3019,3051],"104":[3115,3162],"105":[3114,3163],"106":[3065,3165],"107":[3179,3211],"108":[3275,3322],"109":[3274,3323],"110":[3225,3325],"111":[3339,3371],"112":[3435,3451],"113":[3434,3452],"114":[3385,3454],"115":[3468,3500],"116":[2641,3510],"117":[2616,3511],"118":[2616,3512],"119":[2427,3518],"120":[2403,3519],"121":[2403,3520],"122":[3581,3965],"123":[3571,3966],"124":[3983,3992],"125":[3976,3993],"126":[3976,3996],"127":[4015,4045],"128":[4109,4192],"129":[4108,4193],"130":[4059,4195],"131":[4209,4241],"132":[4305,4388],"133":[4304,4389],"134":[4255,4391],"135":[4405,4437],"136":[4501,4582],"137":[4500,4583],"138":[4451,4585],"139":[4599,4631],"140":[4695,4776],"141":[4694,4777],"142":[4645,4779],"143":[4793,4825],"144":[4889,4941],"145":[4888,4942],"146":[4839,4944],"147":[4958,4990],"148":[5054,5104],"149":[5053,5105],"150":[5004,5107],"151":[5121,5153],"152":[5217,5282],"153":[5216,5283],"154":[5167,5285],"155":[5299,5331],"156":[5395,5460],"157":[5394,5461],"158":[5345,5463],"159":[5477,5509],"160":[5573,5636],"161":[5572,5637],"162":[5523,5639],"163":[5653,5685],"164":[5749,5812],"165":[5748,5813],"166":[5699,5815],"167":[5829,5861],"168":[5925,5959],"169":[5924,5960],"170":[5875,5962],"171":[5976,6008],"172":[6072,6104],"173":[6071,6105],"174":[6022,6107],"175":[6121,6153],"176":[4001,6163],"177":[3976,6164],"178":[3976,6165],"179":[3550,6171],"180":[3526,6172],"181":[3526,6173],"182":[6236,6395],"183":[6225,6396],"184":[6413,6423],"185":[6406,6424],"186":[6406,6427],"187":[6446,6476],"188":[6540,6574],"189":[6539,6575],"190":[6490,6577],"191":[6591,6623],"192":[6687,6730],"193":[6686,6731],"194":[6637,6733],"195":[6747,6779],"196":[6843,6903],"197":[6842,6904],"198":[6793,6906],"199":[6920,6952],"200":[7016,7103],"201":[7015,7104],"202":[6966,7106],"203":[7120,7152],"204":[6432,7162],"205":[6406,7163],"206":[6406,7164],"207":[6204,7170],"208":[6179,7171],"209":[6179,7172],"210":[7235,7334],"211":[7224,7335],"212":[7352,7362],"213":[7345,7363],"214":[7345,7366],"215":[7385,7415],"216":[7479,7511],"217":[7478,7512],"218":[7429,7514],"219":[7528,7560],"220":[7624,7658],"221":[7623,7659],"222":[7574,7661],"223":[7675,7707],"224":[7771,7808],"225":[7770,7809],"226":[7721,7811],"227":[7825,7857],"228":[7921,7969],"229":[7920,7970],"230":[7871,7972],"231":[7986,8018],"232":[7371,8028],"233":[7345,8029],"234":[7345,8030],"235":[7203,8036],"236":[7178,8037],"237":[7178,8038],"238":[8108,11339],"239":[8095,11340],"240":[11371,11381],"241":[11371,11381],"242":[11350,11382],"243":[11434,11467],"244":[11405,11468],"245":[11405,11468],"246":[11392,11469],"247":[11479,11493],"248":[11479,11496],"249":[11515,11545],"250":[11853,11936],"251":[11958,12089],"252":[12111,12275],"253":[12297,12366],"254":[12388,12404],"255":[11831,12422],"256":[11559,12981],"257":[12995,13029],"258":[13337,13420],"259":[13442,13573],"260":[13595,13759],"261":[13781,13850],"262":[13872,13888],"263":[13315,13906],"264":[13043,14396],"265":[14410,14444],"266":[14752,14835],"267":[14857,14988],"268":[15010,15174],"269":[15196,15265],"270":[15287,15303],"271":[14730,15321],"272":[14458,15879],"273":[15893,15927],"274":[16235,16318],"275":[16340,16471],"276":[16493,16657],"277":[16679,16748],"278":[16770,16786],"279":[16213,16804],"280":[15941,17475],"281":[17489,17523],"282":[17831,17914],"283":[17936,18067],"284":[18089,18253],"285":[18275,18344],"286":[18366,18382],"287":[17809,18400],"288":[17537,18966],"289":[18980,19014],"290":[19322,19405],"291":[19427,19558],"292":[19580,19744],"293":[19766,19835],"294":[19857,19873],"295":[19300,19891],"296":[19028,20524],"297":[20538,20570],"298":[11501,20580],"299":[11479,20581],"300":[11479,20582],"301":[8074,20588],"302":[8044,20589],"303":[8044,20590],"304":[20673,24625],"305":[20660,24626],"306":[24667,24902],"307":[24658,24903],"308":[24658,24903],"309":[24636,24904],"310":[24957,24990],"311":[24927,24991],"312":[24927,24991],"313":[24914,24992],"314":[25002,25016],"315":[25002,25019],"316":[25038,25068],"317":[25373,25456],"318":[25478,25609],"319":[25631,25795],"320":[25817,25954],"321":[25976,26013],"322":[25351,26031],"323":[25082,26704],"324":[26718,26752],"325":[27057,27140],"326":[27162,27293],"327":[27315,27479],"328":[27501,27638],"329":[27660,27676],"330":[27035,27694],"331":[26766,28253],"332":[28267,28301],"333":[28610,28693],"334":[28715,28846],"335":[28868,29032],"336":[29054,29191],"337":[29213,29229],"338":[28588,29247],"339":[28315,29894],"340":[29908,29942],"341":[30247,30330],"342":[30352,30483],"343":[30505,30669],"344":[30691,30828],"345":[30850,30887],"346":[30225,30905],"347":[29956,31706],"348":[31720,31754],"349":[32059,32142],"350":[32164,32295],"351":[32317,32481],"352":[32503,32640],"353":[32662,32678],"354":[32037,32696],"355":[31768,33347],"356":[33361,33395],"357":[33704,33787],"358":[33809,33940],"359":[33962,34126],"360":[34148,34285],"361":[34307,34323],"362":[33682,34341],"363":[33409,35080],"364":[35094,35230],"365":[25024,35240],"366":[25002,35241],"367":[25002,35242],"368":[20639,35248],"369":[20596,35249],"370":[20596,35250],"371":[35327,35842],"372":[35314,35843],"373":[35879,36047],"374":[35870,36048],"375":[35870,36048],"376":[35853,36049],"377":[36097,36130],"378":[36072,36131],"379":[36072,36131],"380":[36059,36132],"381":[36142,36156],"382":[36142,36159],"383":[36178,36262],"384":[36570,36653],"385":[36675,36806],"386":[36828,36992],"387":[37014,37081],"388":[37103,37119],"389":[36548,37137],"390":[36276,37629],"391":[37643,37675],"392":[36164,37685],"393":[36142,37686],"394":[36142,37687],"395":[35293,37693],"396":[35256,37694],"397":[35256,37695],"398":[172,37697],"399":[155,37698],"400":[155,37699]};var __coverageWrap = function (index, value) {if (__coverage[index]) console.log("COVERED " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/specs/toga-spec.js\"" + " " + index);delete __coverage[index];return value};
+},{"__browserify_Buffer":3}],5:[function(require,module,exports){
+console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/spec/toga-spec.js\"" + " " + "[[25,38],[49,62],[49,62],[40,63],[77,97],[77,97],[64,98],[110,135],[110,135],[99,136],[148,152],[137,153],[255,487],[242,488],[505,517],[498,518],[498,521],[540,802],[526,812],[498,813],[498,814],[221,820],[190,821],[190,822],[893,941],[881,942],[959,965],[952,966],[952,969],[988,1027],[974,1037],[952,1038],[952,1039],[1056,1066],[1049,1067],[1049,1070],[1089,1123],[1075,1133],[1049,1134],[1049,1135],[1152,1160],[1145,1161],[1145,1164],[1183,1213],[1169,1223],[1145,1224],[1145,1225],[1242,1253],[1235,1254],[1235,1257],[1276,1312],[1375,1377],[1326,1379],[1393,1425],[1488,1490],[1439,1492],[1506,1538],[1601,1603],[1552,1605],[1619,1651],[1714,1716],[1665,1718],[1732,1764],[1262,1774],[1235,1775],[1235,1776],[860,1782],[828,1783],[828,1784],[1854,1924],[1843,1925],[1942,1952],[1935,1953],[1935,1956],[1975,2005],[2079,2081],[2019,2083],[2097,2129],[2203,2205],[2143,2207],[2221,2253],[2327,2329],[2267,2331],[2345,2377],[1961,2387],[1935,2388],[1935,2389],[1822,2395],[1790,2396],[1790,2397],[2458,2605],[2448,2606],[2623,2632],[2616,2633],[2616,2636],[2655,2685],[2749,2819],[2748,2820],[2699,2822],[2836,2868],[2932,3002],[2931,3003],[2882,3005],[3019,3051],[3115,3162],[3114,3163],[3065,3165],[3179,3211],[3275,3322],[3274,3323],[3225,3325],[3339,3371],[3435,3451],[3434,3452],[3385,3454],[3468,3500],[2641,3510],[2616,3511],[2616,3512],[2427,3518],[2403,3519],[2403,3520],[3581,3965],[3571,3966],[3983,3992],[3976,3993],[3976,3996],[4015,4045],[4109,4192],[4108,4193],[4059,4195],[4209,4241],[4305,4388],[4304,4389],[4255,4391],[4405,4437],[4501,4582],[4500,4583],[4451,4585],[4599,4631],[4695,4776],[4694,4777],[4645,4779],[4793,4825],[4889,4941],[4888,4942],[4839,4944],[4958,4990],[5054,5104],[5053,5105],[5004,5107],[5121,5153],[5217,5282],[5216,5283],[5167,5285],[5299,5331],[5395,5460],[5394,5461],[5345,5463],[5477,5509],[5573,5636],[5572,5637],[5523,5639],[5653,5685],[5749,5812],[5748,5813],[5699,5815],[5829,5861],[5925,5959],[5924,5960],[5875,5962],[5976,6008],[6072,6104],[6071,6105],[6022,6107],[6121,6153],[4001,6163],[3976,6164],[3976,6165],[3550,6171],[3526,6172],[3526,6173],[6236,6395],[6225,6396],[6413,6423],[6406,6424],[6406,6427],[6446,6476],[6540,6574],[6539,6575],[6490,6577],[6591,6623],[6687,6730],[6686,6731],[6637,6733],[6747,6779],[6843,6903],[6842,6904],[6793,6906],[6920,6952],[7016,7103],[7015,7104],[6966,7106],[7120,7152],[6432,7162],[6406,7163],[6406,7164],[6204,7170],[6179,7171],[6179,7172],[7235,7334],[7224,7335],[7352,7362],[7345,7363],[7345,7366],[7385,7415],[7479,7511],[7478,7512],[7429,7514],[7528,7560],[7624,7658],[7623,7659],[7574,7661],[7675,7707],[7771,7808],[7770,7809],[7721,7811],[7825,7857],[7921,7969],[7920,7970],[7871,7972],[7986,8018],[7371,8028],[7345,8029],[7345,8030],[7203,8036],[7178,8037],[7178,8038],[8108,11339],[8095,11340],[11370,11380],[11370,11380],[11349,11381],[11432,11465],[11403,11466],[11403,11466],[11390,11467],[11477,11491],[11477,11494],[11513,11543],[11851,11934],[11956,12087],[12109,12273],[12295,12364],[12386,12402],[11829,12420],[11557,12979],[12993,13027],[13335,13418],[13440,13571],[13593,13757],[13779,13848],[13870,13886],[13313,13904],[13041,14394],[14408,14442],[14750,14833],[14855,14986],[15008,15172],[15194,15263],[15285,15301],[14728,15319],[14456,15877],[15891,15925],[16233,16316],[16338,16469],[16491,16655],[16677,16746],[16768,16784],[16211,16802],[15939,17473],[17487,17521],[17829,17912],[17934,18065],[18087,18251],[18273,18342],[18364,18380],[17807,18398],[17535,18964],[18978,19012],[19320,19403],[19425,19556],[19578,19742],[19764,19833],[19855,19871],[19298,19889],[19026,20522],[20536,20568],[11499,20578],[11477,20579],[11477,20580],[8074,20586],[8044,20587],[8044,20588],[20671,24623],[20658,24624],[24665,24900],[24656,24901],[24656,24901],[24634,24902],[24955,24988],[24925,24989],[24925,24989],[24912,24990],[25000,25014],[25000,25017],[25036,25066],[25371,25454],[25476,25607],[25629,25793],[25815,25952],[25974,26011],[25349,26029],[25080,26702],[26716,26750],[27055,27138],[27160,27291],[27313,27477],[27499,27636],[27658,27674],[27033,27692],[26764,28251],[28265,28299],[28608,28691],[28713,28844],[28866,29030],[29052,29189],[29211,29227],[28586,29245],[28313,29892],[29906,29940],[30245,30328],[30350,30481],[30503,30667],[30689,30826],[30848,30885],[30223,30903],[29954,31704],[31718,31752],[32057,32140],[32162,32293],[32315,32479],[32501,32638],[32660,32676],[32035,32694],[31766,33345],[33359,33393],[33702,33785],[33807,33938],[33960,34124],[34146,34283],[34305,34321],[33680,34339],[33407,35078],[35092,35228],[25022,35238],[25000,35239],[25000,35240],[20637,35246],[20594,35247],[20594,35248],[35325,35840],[35312,35841],[35877,36045],[35868,36046],[35868,36046],[35851,36047],[36095,36128],[36070,36129],[36070,36129],[36057,36130],[36140,36154],[36140,36157],[36176,36260],[36568,36651],[36673,36804],[36826,36990],[37012,37079],[37101,37117],[36546,37135],[36274,37627],[37641,37673],[36162,37683],[36140,37684],[36140,37685],[35291,37691],[35254,37692],[35254,37693],[172,37695],[155,37696],[155,37697]]");var __coverage = {"0":[25,38],"1":[49,62],"2":[49,62],"3":[40,63],"4":[77,97],"5":[77,97],"6":[64,98],"7":[110,135],"8":[110,135],"9":[99,136],"10":[148,152],"11":[137,153],"12":[255,487],"13":[242,488],"14":[505,517],"15":[498,518],"16":[498,521],"17":[540,802],"18":[526,812],"19":[498,813],"20":[498,814],"21":[221,820],"22":[190,821],"23":[190,822],"24":[893,941],"25":[881,942],"26":[959,965],"27":[952,966],"28":[952,969],"29":[988,1027],"30":[974,1037],"31":[952,1038],"32":[952,1039],"33":[1056,1066],"34":[1049,1067],"35":[1049,1070],"36":[1089,1123],"37":[1075,1133],"38":[1049,1134],"39":[1049,1135],"40":[1152,1160],"41":[1145,1161],"42":[1145,1164],"43":[1183,1213],"44":[1169,1223],"45":[1145,1224],"46":[1145,1225],"47":[1242,1253],"48":[1235,1254],"49":[1235,1257],"50":[1276,1312],"51":[1375,1377],"52":[1326,1379],"53":[1393,1425],"54":[1488,1490],"55":[1439,1492],"56":[1506,1538],"57":[1601,1603],"58":[1552,1605],"59":[1619,1651],"60":[1714,1716],"61":[1665,1718],"62":[1732,1764],"63":[1262,1774],"64":[1235,1775],"65":[1235,1776],"66":[860,1782],"67":[828,1783],"68":[828,1784],"69":[1854,1924],"70":[1843,1925],"71":[1942,1952],"72":[1935,1953],"73":[1935,1956],"74":[1975,2005],"75":[2079,2081],"76":[2019,2083],"77":[2097,2129],"78":[2203,2205],"79":[2143,2207],"80":[2221,2253],"81":[2327,2329],"82":[2267,2331],"83":[2345,2377],"84":[1961,2387],"85":[1935,2388],"86":[1935,2389],"87":[1822,2395],"88":[1790,2396],"89":[1790,2397],"90":[2458,2605],"91":[2448,2606],"92":[2623,2632],"93":[2616,2633],"94":[2616,2636],"95":[2655,2685],"96":[2749,2819],"97":[2748,2820],"98":[2699,2822],"99":[2836,2868],"100":[2932,3002],"101":[2931,3003],"102":[2882,3005],"103":[3019,3051],"104":[3115,3162],"105":[3114,3163],"106":[3065,3165],"107":[3179,3211],"108":[3275,3322],"109":[3274,3323],"110":[3225,3325],"111":[3339,3371],"112":[3435,3451],"113":[3434,3452],"114":[3385,3454],"115":[3468,3500],"116":[2641,3510],"117":[2616,3511],"118":[2616,3512],"119":[2427,3518],"120":[2403,3519],"121":[2403,3520],"122":[3581,3965],"123":[3571,3966],"124":[3983,3992],"125":[3976,3993],"126":[3976,3996],"127":[4015,4045],"128":[4109,4192],"129":[4108,4193],"130":[4059,4195],"131":[4209,4241],"132":[4305,4388],"133":[4304,4389],"134":[4255,4391],"135":[4405,4437],"136":[4501,4582],"137":[4500,4583],"138":[4451,4585],"139":[4599,4631],"140":[4695,4776],"141":[4694,4777],"142":[4645,4779],"143":[4793,4825],"144":[4889,4941],"145":[4888,4942],"146":[4839,4944],"147":[4958,4990],"148":[5054,5104],"149":[5053,5105],"150":[5004,5107],"151":[5121,5153],"152":[5217,5282],"153":[5216,5283],"154":[5167,5285],"155":[5299,5331],"156":[5395,5460],"157":[5394,5461],"158":[5345,5463],"159":[5477,5509],"160":[5573,5636],"161":[5572,5637],"162":[5523,5639],"163":[5653,5685],"164":[5749,5812],"165":[5748,5813],"166":[5699,5815],"167":[5829,5861],"168":[5925,5959],"169":[5924,5960],"170":[5875,5962],"171":[5976,6008],"172":[6072,6104],"173":[6071,6105],"174":[6022,6107],"175":[6121,6153],"176":[4001,6163],"177":[3976,6164],"178":[3976,6165],"179":[3550,6171],"180":[3526,6172],"181":[3526,6173],"182":[6236,6395],"183":[6225,6396],"184":[6413,6423],"185":[6406,6424],"186":[6406,6427],"187":[6446,6476],"188":[6540,6574],"189":[6539,6575],"190":[6490,6577],"191":[6591,6623],"192":[6687,6730],"193":[6686,6731],"194":[6637,6733],"195":[6747,6779],"196":[6843,6903],"197":[6842,6904],"198":[6793,6906],"199":[6920,6952],"200":[7016,7103],"201":[7015,7104],"202":[6966,7106],"203":[7120,7152],"204":[6432,7162],"205":[6406,7163],"206":[6406,7164],"207":[6204,7170],"208":[6179,7171],"209":[6179,7172],"210":[7235,7334],"211":[7224,7335],"212":[7352,7362],"213":[7345,7363],"214":[7345,7366],"215":[7385,7415],"216":[7479,7511],"217":[7478,7512],"218":[7429,7514],"219":[7528,7560],"220":[7624,7658],"221":[7623,7659],"222":[7574,7661],"223":[7675,7707],"224":[7771,7808],"225":[7770,7809],"226":[7721,7811],"227":[7825,7857],"228":[7921,7969],"229":[7920,7970],"230":[7871,7972],"231":[7986,8018],"232":[7371,8028],"233":[7345,8029],"234":[7345,8030],"235":[7203,8036],"236":[7178,8037],"237":[7178,8038],"238":[8108,11339],"239":[8095,11340],"240":[11370,11380],"241":[11370,11380],"242":[11349,11381],"243":[11432,11465],"244":[11403,11466],"245":[11403,11466],"246":[11390,11467],"247":[11477,11491],"248":[11477,11494],"249":[11513,11543],"250":[11851,11934],"251":[11956,12087],"252":[12109,12273],"253":[12295,12364],"254":[12386,12402],"255":[11829,12420],"256":[11557,12979],"257":[12993,13027],"258":[13335,13418],"259":[13440,13571],"260":[13593,13757],"261":[13779,13848],"262":[13870,13886],"263":[13313,13904],"264":[13041,14394],"265":[14408,14442],"266":[14750,14833],"267":[14855,14986],"268":[15008,15172],"269":[15194,15263],"270":[15285,15301],"271":[14728,15319],"272":[14456,15877],"273":[15891,15925],"274":[16233,16316],"275":[16338,16469],"276":[16491,16655],"277":[16677,16746],"278":[16768,16784],"279":[16211,16802],"280":[15939,17473],"281":[17487,17521],"282":[17829,17912],"283":[17934,18065],"284":[18087,18251],"285":[18273,18342],"286":[18364,18380],"287":[17807,18398],"288":[17535,18964],"289":[18978,19012],"290":[19320,19403],"291":[19425,19556],"292":[19578,19742],"293":[19764,19833],"294":[19855,19871],"295":[19298,19889],"296":[19026,20522],"297":[20536,20568],"298":[11499,20578],"299":[11477,20579],"300":[11477,20580],"301":[8074,20586],"302":[8044,20587],"303":[8044,20588],"304":[20671,24623],"305":[20658,24624],"306":[24665,24900],"307":[24656,24901],"308":[24656,24901],"309":[24634,24902],"310":[24955,24988],"311":[24925,24989],"312":[24925,24989],"313":[24912,24990],"314":[25000,25014],"315":[25000,25017],"316":[25036,25066],"317":[25371,25454],"318":[25476,25607],"319":[25629,25793],"320":[25815,25952],"321":[25974,26011],"322":[25349,26029],"323":[25080,26702],"324":[26716,26750],"325":[27055,27138],"326":[27160,27291],"327":[27313,27477],"328":[27499,27636],"329":[27658,27674],"330":[27033,27692],"331":[26764,28251],"332":[28265,28299],"333":[28608,28691],"334":[28713,28844],"335":[28866,29030],"336":[29052,29189],"337":[29211,29227],"338":[28586,29245],"339":[28313,29892],"340":[29906,29940],"341":[30245,30328],"342":[30350,30481],"343":[30503,30667],"344":[30689,30826],"345":[30848,30885],"346":[30223,30903],"347":[29954,31704],"348":[31718,31752],"349":[32057,32140],"350":[32162,32293],"351":[32315,32479],"352":[32501,32638],"353":[32660,32676],"354":[32035,32694],"355":[31766,33345],"356":[33359,33393],"357":[33702,33785],"358":[33807,33938],"359":[33960,34124],"360":[34146,34283],"361":[34305,34321],"362":[33680,34339],"363":[33407,35078],"364":[35092,35228],"365":[25022,35238],"366":[25000,35239],"367":[25000,35240],"368":[20637,35246],"369":[20594,35247],"370":[20594,35248],"371":[35325,35840],"372":[35312,35841],"373":[35877,36045],"374":[35868,36046],"375":[35868,36046],"376":[35851,36047],"377":[36095,36128],"378":[36070,36129],"379":[36070,36129],"380":[36057,36130],"381":[36140,36154],"382":[36140,36157],"383":[36176,36260],"384":[36568,36651],"385":[36673,36804],"386":[36826,36990],"387":[37012,37079],"388":[37101,37117],"389":[36546,37135],"390":[36274,37627],"391":[37641,37673],"392":[36162,37683],"393":[36140,37684],"394":[36140,37685],"395":[35291,37691],"396":[35254,37692],"397":[35254,37693],"398":[172,37695],"399":[155,37696],"400":[155,37697]};var __coverageWrap = function (index, value) {if (__coverage[index]) console.log("COVERED " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/spec/toga-spec.js\"" + " " + index);delete __coverage[index];return value};
 /*jshint maxlen:false */
 { __coverageWrap(0);'use strict';};
 
@@ -3532,9 +3501,7 @@ console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/te
 
     { __coverageWrap(303);__coverageWrap(302,it('should handle indention', __coverageWrap(301,function() {
         { __coverageWrap(239);var indent = __coverageWrap(238,"/**\n * # Title\n *\n * Long description that spans multiple\n * lines and even has other markdown\n * type things.\n *\n * Like more paragraphs.\n *\n * * Like\n * * Lists\n *\n *     var code = 'samples';\n *\n * @arg {Type} name Description.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n *\n *   And has line breaks, etc.\n *\n * @example\n *\n *     var foo = 'bar';\n *\n * @tag\n */\n\n/**\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    var foo = 'bar';\n\n@tag\n */\n\n/**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = 'samples';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = 'bar';\n\n    @tag\n */\n\n    /**\n     * # Title\n     *\n     * Long description that spans multiple\n     * lines and even has other markdown\n     * type things.\n     *\n     * Like more paragraphs.\n     *\n     * * Like\n     * * Lists\n     *\n     *     var code = 'samples';\n     *\n     * @arg {Type} name Description.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     *\n     *   And has line breaks, etc.\n     *\n     * @example\n     *\n     *     var foo = 'bar';\n     *\n     * @tag\n     */\n\n    /**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = 'samples';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = 'bar';\n\n    @tag\n     */\n\n    /**\n        # Title\n\n        Long description that spans multiple\n        lines and even has other markdown\n        type things.\n\n        Like more paragraphs.\n\n        * Like\n        * Lists\n\n            var code = 'samples';\n\n        @arg {Type} name Description.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n\n          And has line breaks, etc.\n\n        @example\n\n            var foo = 'bar';\n\n        @tag\n    */\n");};
-
         { __coverageWrap(242);var standardParser = __coverageWrap(241,__coverageWrap(240,new Toga()));};
-
         { __coverageWrap(246);var tokens = __coverageWrap(245,__coverageWrap(244,standardParser.parse(indent, __coverageWrap(243,{
             raw: true
         }))));};
@@ -3751,4 +3718,4 @@ console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/te
     })));};
 })));};
 
-},{"../../lib/toga":1,"expect.js":5,"fs":2}]},{},[6])
+},{"../../lib/toga":1,"expect.js":4,"fs":2}]},{},[5])
