@@ -65,25 +65,52 @@ module.exports = function(grunt) {
         karma: {
             options: {
                 port: 9999,
-                autoWatch: false,
                 frameworks: ['mocha', 'expect'],
-                files: ['<%= browserify.unit.dest %>'],
+                files: ['<%= browserify.unit.dest %>']
             },
             dev: {
+                autoWatch: true,
                 singleRun: false,
+                reporters: ['mocha'],
                 browsers: ['Chrome', 'Firefox', 'Safari']
             },
             sauce: {
+                autoWatch: false,
                 singleRun: true,
+                reporters: ['mocha', 'saucelabs'],
+                sauseLabs: {
+                    testName: 'unit tests',
+                    tags: ['master']
+                },
                 customLaunchers: {
+                    sChrome: {
+                        base: 'SauceLabs',
+                        browserName: 'chrome',
+                        platform: 'WIN8'
+                    },
+                    sFirefox: {
+                        base: 'SauceLabs',
+                        browserName: 'firefox',
+                        platform: 'WIN8'
+                    },
                     sIE10: {
                         base: 'SauceLabs',
                         browserName: 'internet explorer',
                         platform: 'WIN8',
                         version: '10'
+                    },
+                    sOpera: {
+                        base: 'SauceLabs',
+                        browserName: 'opera',
+                        platform: 'WIN8'
+                    },
+                    sSafari: {
+                        base: 'SauceLabs',
+                        browserName: 'safari',
+                        version: '7'
                     }
                 },
-                browsers: ['sIE10']
+                browsers: ['sChrome', 'sFirefox', 'sIE10', 'sOpera', 'sSafari']
             }
         },
 
@@ -102,7 +129,7 @@ module.exports = function(grunt) {
                     '<%= jshint.build.src %>',
                     '<%= jshint.unit.src %>'
                 ],
-                tasks: ['lint', 'test', 'karma:dev:run', 'build']
+                tasks: ['lint', 'test', 'build']
             }
         },
 
