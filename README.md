@@ -90,7 +90,7 @@ Functional shorthand, if that's how you operate.
 
 Tested to work in the following environments:
 
-- Node (0.8, 0.10, 0.11)
+- Node (0.10)
 - Chrome (Latest, Canary)
 - Firefox (Latest, Nightly)
 - IE (9+)

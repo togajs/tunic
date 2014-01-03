@@ -1,8 +1,6 @@
 language: node_js
 node_js:
-- 0.11
 - 0.10
-- 0.8
 env:
   global:
   - secure: PU8Uhti+uDRNr4YK2zz6ykwxUQHggQVPhrS5kmSeMoltatGvDmH3OeKZ6WzBgxVHQqMDlTHqmE8gEqr2UFCRSp0s7XhuiDDX/0D1wAlWROAwTCCcz0J2VDXQl3te31HlMGsiW4CvQyGQV8Kpkz43vtxRA6PtskG/u3b6ljZZb0g=
