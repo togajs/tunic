@@ -1,8 +1,8 @@
 /*jshint maxlen:false */
 'use strict';
 
+var assert = require('assert');
 var fs = require('fs');
-var expect = require('expect.js');
 var toga = require('../../lib/toga');
 var Toga = toga;
 
@@ -10,7 +10,7 @@ describe('Toga', function () {
     it('should ignore non-blocks', function() {
         var ignore = fs.readFileSync(__dirname + '/../fixtures/ignore.js', 'utf8');
 
-        expect(toga(ignore)).to.eql([
+        assert.deepEqual(toga(ignore), [
             { 'type': 'Code', 'body': '// ignore\n/* ignore */\n/*! ignore */\n\n//\n// ignore\n//\n/*\n * ignore\n */\n/*!\n * ignore\n */\n\n// /** ignore\nvar ignore = \'/** ignore */\';\nvar foo = function(/** ignore */) {};\nconsole.log(foo(ignore));\n// ignore */\n' }
         ]);
     });
@@ -18,19 +18,19 @@ describe('Toga', function () {
     it('should parse empty blocks', function() {
         var empty = fs.readFileSync(__dirname + '/../fixtures/empty.js', 'utf8');
 
-        expect(toga()).to.eql([
+        assert.deepEqual(toga(), [
             { 'type': 'Code', 'body': 'undefined' }
         ]);
 
-        expect(toga(null)).to.eql([
+        assert.deepEqual(toga(null), [
             { 'type': 'Code', 'body': 'null' }
         ]);
 
-        expect(toga('')).to.eql([
+        assert.deepEqual(toga(''), [
             { 'type': 'Code', 'body': '' }
         ]);
 
-        expect(toga(empty)).to.eql([
+        assert.deepEqual(toga(empty), [
             { 'type': 'Code', 'body': '/**/\n' },
             { 'type': 'DocBlock', 'description': '', 'tags': [] },
             { 'type': 'Code', 'body': '\n' },
@@ -46,7 +46,7 @@ describe('Toga', function () {
     it('should parse descriptions', function() {
         var desc = fs.readFileSync(__dirname + '/../fixtures/desc.js', 'utf8');
 
-        expect(toga(desc)).to.eql([
+        assert.deepEqual(toga(desc), [
             { 'type': 'Code', 'body': '' },
             { 'type': 'DocBlock', 'description': 'description', 'tags': [] },
             { 'type': 'Code', 'body': '\n' },
@@ -60,7 +60,7 @@ describe('Toga', function () {
     it('should parse tags', function() {
         var tag = fs.readFileSync(__dirname + '/../fixtures/tag.js', 'utf8');
 
-        expect(toga(tag)).to.eql([
+        assert.deepEqual(toga(tag), [
             { 'type': 'Code', 'body': '' },
             { 'type': 'DocBlock', 'description': '', 'tags': [{ 'tag': 'tag', 'type': '{Type}', 'description': 'Description here.' }] },
             { 'type': 'Code', 'body': '\n' },
@@ -78,7 +78,7 @@ describe('Toga', function () {
     it('should parse args', function() {
         var arg = fs.readFileSync(__dirname + '/../fixtures/arg.js', 'utf8');
 
-        expect(toga(arg)).to.eql([
+        assert.deepEqual(toga(arg), [
             { 'type': 'Code', 'body': '' },
             { 'type': 'DocBlock', 'description': '', 'tags': [{ 'tag': 'arg', 'type': '{Type}', 'name': '[name]', 'description': 'Description.' }] },
             { 'type': 'Code', 'body': '\n' },
@@ -110,7 +110,7 @@ describe('Toga', function () {
     it('should parse types', function() {
         var type = fs.readFileSync(__dirname + '/../fixtures/type.js', 'utf8');
 
-        expect(toga(type)).to.eql([
+        assert.deepEqual(toga(type), [
             { 'type': 'Code', 'body': '' },
             { 'type': 'DocBlock', 'description': '', 'tags': [{ 'tag': 'arg', 'type': '{Type}' }] },
             { 'type': 'Code', 'body': '\n' },
@@ -126,7 +126,7 @@ describe('Toga', function () {
     it('should parse names', function() {
         var name = fs.readFileSync(__dirname + '/../fixtures/name.js', 'utf8');
 
-        expect(toga(name)).to.eql([
+        assert.deepEqual(toga(name), [
             { 'type': 'Code', 'body': '' },
             { 'type': 'DocBlock', 'description': '', 'tags': [{ 'tag': 'arg', 'name': 'name' }] },
             { 'type': 'Code', 'body': '\n' },
@@ -146,7 +146,7 @@ describe('Toga', function () {
             raw: true
         });
 
-        expect(tokens).to.eql([
+        assert.deepEqual(tokens, [
             { 'type': 'Code', 'body': '' },
             {
                 'type': 'DocBlock',
@@ -243,7 +243,7 @@ describe('Toga', function () {
             raw: true
         });
 
-        expect(tokens).to.eql([
+        assert.deepEqual(tokens, [
             { 'type': 'Code', 'body': '' },
             {
                 'type': 'DocBlock',
@@ -339,7 +339,7 @@ describe('Toga', function () {
             raw: true
         });
 
-        expect(tokens).to.eql([
+        assert.deepEqual(tokens, [
             { 'type': 'Code', 'body': 'use strict;\nuse warnings;\n\nprint "hello world";\n\n' },
             {
                 'type': 'DocBlock',

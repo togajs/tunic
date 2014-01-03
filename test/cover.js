@@ -257,3354 +257,1329 @@ function Toga(block, grammar) {
 },{}],2:[function(require,module,exports){
 
 },{}],3:[function(require,module,exports){
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"PcZj9L":[function(require,module,exports){
-var TA = require('typedarray')
-var xDataView = typeof DataView === 'undefined'
-  ? TA.DataView : DataView
-var xArrayBuffer = typeof ArrayBuffer === 'undefined'
-  ? TA.ArrayBuffer : ArrayBuffer
-var xUint8Array = typeof Uint8Array === 'undefined'
-  ? TA.Uint8Array : Uint8Array
+// http://wiki.commonjs.org/wiki/Unit_Testing/1.0
+//
+// THIS IS NOT TESTED NOR LIKELY TO WORK OUTSIDE V8!
+//
+// Originally from narwhal.js (http://narwhaljs.org)
+// Copyright (c) 2009 Thomas Robinson <280north.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the 'Software'), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+// ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-exports.Buffer = Buffer
-exports.SlowBuffer = Buffer
-exports.INSPECT_MAX_BYTES = 50
-Buffer.poolSize = 8192
+// when used in node, this will actually load the util module we depend on
+// versus loading the builtin util module as happens otherwise
+// this is a bug in node module loading as far as I am concerned
+var util = require('util/');
 
-var browserSupport
+var pSlice = Array.prototype.slice;
+var hasOwn = Object.prototype.hasOwnProperty;
 
-/**
- * Class: Buffer
- * =============
- *
- * The Buffer constructor returns instances of `Uint8Array` that are augmented
- * with function properties for all the node `Buffer` API functions. We use
- * `Uint8Array` so that square bracket notation works as expected -- it returns
- * a single octet.
- *
- * By augmenting the instances, we can avoid modifying the `Uint8Array`
- * prototype.
- *
- * Firefox is a special case because it doesn't allow augmenting "native" object
- * instances. See `ProxyBuffer` below for more details.
- */
-function Buffer (subject, encoding) {
-  var type = typeof subject
+// 1. The assert module provides functions that throw
+// AssertionError's when particular conditions are not met. The
+// assert module must conform to the following interface.
 
-  // Work-around: node's base64 implementation
-  // allows for non-padded strings while base64-js
-  // does not..
-  if (encoding === 'base64' && type === 'string') {
-    subject = stringtrim(subject)
-    while (subject.length % 4 !== 0) {
-      subject = subject + '='
-    }
-  }
+var assert = module.exports = ok;
 
-  // Find the length
-  var length
-  if (type === 'number')
-    length = coerce(subject)
-  else if (type === 'string')
-    length = Buffer.byteLength(subject, encoding)
-  else if (type === 'object')
-    length = coerce(subject.length) // Assume object is an array
-  else
-    throw new Error('First argument needs to be a number, array or string.')
+// 2. The AssertionError is defined in assert.
+// new assert.AssertionError({ message: message,
+//                             actual: actual,
+//                             expected: expected })
 
-  var buf = augment(new xUint8Array(length))
-  if (Buffer.isBuffer(subject)) {
-    // Speed optimization -- use set if we're copying from a Uint8Array
-    buf.set(subject)
-  } else if (isArrayIsh(subject)) {
-    // Treat array-ish objects as a byte array.
-    for (var i = 0; i < length; i++) {
-      if (Buffer.isBuffer(subject))
-        buf[i] = subject.readUInt8(i)
-      else
-        buf[i] = subject[i]
-    }
-  } else if (type === 'string') {
-    buf.write(subject, 0, encoding)
-  }
-
-  return buf
-}
-
-// STATIC METHODS
-// ==============
-
-Buffer.isEncoding = function(encoding) {
-  switch ((encoding + '').toLowerCase()) {
-    case 'hex':
-    case 'utf8':
-    case 'utf-8':
-    case 'ascii':
-    case 'binary':
-    case 'base64':
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-    case 'raw':
-      return true
-
-    default:
-      return false
-  }
-}
-
-Buffer.isBuffer = function isBuffer (b) {
-  return b && b._isBuffer
-}
-
-Buffer.byteLength = function (str, encoding) {
-  switch (encoding || 'utf8') {
-    case 'hex':
-      return str.length / 2
-
-    case 'utf8':
-    case 'utf-8':
-      return utf8ToBytes(str).length
-
-    case 'ascii':
-    case 'binary':
-      return str.length
-
-    case 'base64':
-      return base64ToBytes(str).length
-
-    default:
-      throw new Error('Unknown encoding')
-  }
-}
-
-Buffer.concat = function (list, totalLength) {
-  if (!Array.isArray(list)) {
-    throw new Error('Usage: Buffer.concat(list, [totalLength])\n' +
-        'list should be an Array.')
-  }
-
-  var i
-  var buf
-
-  if (list.length === 0) {
-    return new Buffer(0)
-  } else if (list.length === 1) {
-    return list[0]
-  }
-
-  if (typeof totalLength !== 'number') {
-    totalLength = 0
-    for (i = 0; i < list.length; i++) {
-      buf = list[i]
-      totalLength += buf.length
-    }
-  }
-
-  var buffer = new Buffer(totalLength)
-  var pos = 0
-  for (i = 0; i < list.length; i++) {
-    buf = list[i]
-    buf.copy(buffer, pos)
-    pos += buf.length
-  }
-  return buffer
-}
-
-// INSTANCE METHODS
-// ================
-
-function _hexWrite (buf, string, offset, length) {
-  offset = Number(offset) || 0
-  var remaining = buf.length - offset
-  if (!length) {
-    length = remaining
+assert.AssertionError = function AssertionError(options) {
+  this.name = 'AssertionError';
+  this.actual = options.actual;
+  this.expected = options.expected;
+  this.operator = options.operator;
+  if (options.message) {
+    this.message = options.message;
+    this.generatedMessage = false;
   } else {
-    length = Number(length)
-    if (length > remaining) {
-      length = remaining
+    this.message = getMessage(this);
+    this.generatedMessage = true;
+  }
+  var stackStartFunction = options.stackStartFunction || fail;
+
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, stackStartFunction);
+  }
+  else {
+    // non v8 browsers so we can have a stacktrace
+    var err = new Error();
+    if (err.stack) {
+      var out = err.stack;
+
+      // try to strip useless frames
+      var fn_name = stackStartFunction.name;
+      var idx = out.indexOf('\n' + fn_name);
+      if (idx >= 0) {
+        // once we have located the function frame
+        // we need to strip out everything before it (and its line)
+        var next_line = out.indexOf('\n', idx + 1);
+        out = out.substring(next_line + 1);
+      }
+
+      this.stack = out;
     }
   }
-
-  // must be an even number of digits
-  var strLen = string.length
-  if (strLen % 2 !== 0) {
-    throw new Error('Invalid hex string')
-  }
-  if (length > strLen / 2) {
-    length = strLen / 2
-  }
-  for (var i = 0; i < length; i++) {
-    var byte = parseInt(string.substr(i * 2, 2), 16)
-    if (isNaN(byte)) throw new Error('Invalid hex string')
-    buf[offset + i] = byte
-  }
-  Buffer._charsWritten = i * 2
-  return i
-}
-
-function _utf8Write (buf, string, offset, length) {
-  var bytes, pos
-  return Buffer._charsWritten = blitBuffer(utf8ToBytes(string), buf, offset, length)
-}
-
-function _asciiWrite (buf, string, offset, length) {
-  var bytes, pos
-  return Buffer._charsWritten = blitBuffer(asciiToBytes(string), buf, offset, length)
-}
-
-function _binaryWrite (buf, string, offset, length) {
-  return _asciiWrite(buf, string, offset, length)
-}
-
-function _base64Write (buf, string, offset, length) {
-  var bytes, pos
-  return Buffer._charsWritten = blitBuffer(base64ToBytes(string), buf, offset, length)
-}
-
-function BufferWrite (string, offset, length, encoding) {
-  // Support both (string, offset, length, encoding)
-  // and the legacy (string, encoding, offset, length)
-  if (isFinite(offset)) {
-    if (!isFinite(length)) {
-      encoding = length
-      length = undefined
-    }
-  } else {  // legacy
-    var swap = encoding
-    encoding = offset
-    offset = length
-    length = swap
-  }
-
-  offset = Number(offset) || 0
-  var remaining = this.length - offset
-  if (!length) {
-    length = remaining
-  } else {
-    length = Number(length)
-    if (length > remaining) {
-      length = remaining
-    }
-  }
-  encoding = String(encoding || 'utf8').toLowerCase()
-
-  switch (encoding) {
-    case 'hex':
-      return _hexWrite(this, string, offset, length)
-
-    case 'utf8':
-    case 'utf-8':
-      return _utf8Write(this, string, offset, length)
-
-    case 'ascii':
-      return _asciiWrite(this, string, offset, length)
-
-    case 'binary':
-      return _binaryWrite(this, string, offset, length)
-
-    case 'base64':
-      return _base64Write(this, string, offset, length)
-
-    default:
-      throw new Error('Unknown encoding')
-  }
-}
-
-function BufferToString (encoding, start, end) {
-  var self = (this instanceof ProxyBuffer)
-    ? this._proxy
-    : this
-
-  encoding = String(encoding || 'utf8').toLowerCase()
-  start = Number(start) || 0
-  end = (end !== undefined)
-    ? Number(end)
-    : end = self.length
-
-  // Fastpath empty strings
-  if (end === start)
-    return ''
-
-  switch (encoding) {
-    case 'hex':
-      return _hexSlice(self, start, end)
-
-    case 'utf8':
-    case 'utf-8':
-      return _utf8Slice(self, start, end)
-
-    case 'ascii':
-      return _asciiSlice(self, start, end)
-
-    case 'binary':
-      return _binarySlice(self, start, end)
-
-    case 'base64':
-      return _base64Slice(self, start, end)
-
-    default:
-      throw new Error('Unknown encoding')
-  }
-}
-
-function BufferToJSON () {
-  return {
-    type: 'Buffer',
-    data: Array.prototype.slice.call(this, 0)
-  }
-}
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-function BufferCopy (target, target_start, start, end) {
-  var source = this
-
-  if (!start) start = 0
-  if (!end && end !== 0) end = this.length
-  if (!target_start) target_start = 0
-
-  // Copy 0 bytes; we're done
-  if (end === start) return
-  if (target.length === 0 || source.length === 0) return
-
-  // Fatal error conditions
-  if (end < start)
-    throw new Error('sourceEnd < sourceStart')
-  if (target_start < 0 || target_start >= target.length)
-    throw new Error('targetStart out of bounds')
-  if (start < 0 || start >= source.length)
-    throw new Error('sourceStart out of bounds')
-  if (end < 0 || end > source.length)
-    throw new Error('sourceEnd out of bounds')
-
-  // Are we oob?
-  if (end > this.length)
-    end = this.length
-  if (target.length - target_start < end - start)
-    end = target.length - target_start + start
-
-  // copy!
-  for (var i = 0; i < end - start; i++)
-    target[i + target_start] = this[i + start]
-}
-
-function _base64Slice (buf, start, end) {
-  var bytes = buf.slice(start, end)
-  return require('base64-js').fromByteArray(bytes)
-}
-
-function _utf8Slice (buf, start, end) {
-  var bytes = buf.slice(start, end)
-  var res = ''
-  var tmp = ''
-  var i = 0
-  while (i < bytes.length) {
-    if (bytes[i] <= 0x7F) {
-      res += decodeUtf8Char(tmp) + String.fromCharCode(bytes[i])
-      tmp = ''
-    } else {
-      tmp += '%' + bytes[i].toString(16)
-    }
-
-    i++
-  }
-
-  return res + decodeUtf8Char(tmp)
-}
-
-function _asciiSlice (buf, start, end) {
-  var bytes = buf.slice(start, end)
-  var ret = ''
-  for (var i = 0; i < bytes.length; i++)
-    ret += String.fromCharCode(bytes[i])
-  return ret
-}
-
-function _binarySlice (buf, start, end) {
-  return _asciiSlice(buf, start, end)
-}
-
-function _hexSlice (buf, start, end) {
-  var len = buf.length
-
-  if (!start || start < 0) start = 0
-  if (!end || end < 0 || end > len) end = len
-
-  var out = ''
-  for (var i = start; i < end; i++) {
-    out += toHex(buf[i])
-  }
-  return out
-}
-
-// TODO: add test that modifying the new buffer slice will modify memory in the
-// original buffer! Use code from:
-// http://nodejs.org/api/buffer.html#buffer_buf_slice_start_end
-function BufferSlice (start, end) {
-  var len = this.length
-  start = clamp(start, len, 0)
-  end = clamp(end, len, len)
-  return augment(this.subarray(start, end)) // Uint8Array built-in method
-}
-
-function BufferReadUInt8 (offset, noAssert) {
-  var buf = this
-  if (!noAssert) {
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  if (offset >= buf.length)
-    return
-
-  return buf[offset]
-}
-
-function _readUInt16 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 1 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 1 === len) {
-    var dv = new xDataView(new xArrayBuffer(2))
-    dv.setUint8(0, buf[len - 1])
-    return dv.getUint16(0, littleEndian)
-  } else {
-    return buf._dataview.getUint16(offset, littleEndian)
-  }
-}
-
-function BufferReadUInt16LE (offset, noAssert) {
-  return _readUInt16(this, offset, true, noAssert)
-}
-
-function BufferReadUInt16BE (offset, noAssert) {
-  return _readUInt16(this, offset, false, noAssert)
-}
-
-function _readUInt32 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 3 >= len) {
-    var dv = new xDataView(new xArrayBuffer(4))
-    for (var i = 0; i + offset < len; i++) {
-      dv.setUint8(i, buf[i + offset])
-    }
-    return dv.getUint32(0, littleEndian)
-  } else {
-    return buf._dataview.getUint32(offset, littleEndian)
-  }
-}
-
-function BufferReadUInt32LE (offset, noAssert) {
-  return _readUInt32(this, offset, true, noAssert)
-}
-
-function BufferReadUInt32BE (offset, noAssert) {
-  return _readUInt32(this, offset, false, noAssert)
-}
-
-function BufferReadInt8 (offset, noAssert) {
-  var buf = this
-  if (!noAssert) {
-    assert(offset !== undefined && offset !== null,
-        'missing offset')
-    assert(offset < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  if (offset >= buf.length)
-    return
-
-  return buf._dataview.getInt8(offset)
-}
-
-function _readInt16 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null,
-        'missing offset')
-    assert(offset + 1 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 1 === len) {
-    var dv = new xDataView(new xArrayBuffer(2))
-    dv.setUint8(0, buf[len - 1])
-    return dv.getInt16(0, littleEndian)
-  } else {
-    return buf._dataview.getInt16(offset, littleEndian)
-  }
-}
-
-function BufferReadInt16LE (offset, noAssert) {
-  return _readInt16(this, offset, true, noAssert)
-}
-
-function BufferReadInt16BE (offset, noAssert) {
-  return _readInt16(this, offset, false, noAssert)
-}
-
-function _readInt32 (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 3 >= len) {
-    var dv = new xDataView(new xArrayBuffer(4))
-    for (var i = 0; i + offset < len; i++) {
-      dv.setUint8(i, buf[i + offset])
-    }
-    return dv.getInt32(0, littleEndian)
-  } else {
-    return buf._dataview.getInt32(offset, littleEndian)
-  }
-}
-
-function BufferReadInt32LE (offset, noAssert) {
-  return _readInt32(this, offset, true, noAssert)
-}
-
-function BufferReadInt32BE (offset, noAssert) {
-  return _readInt32(this, offset, false, noAssert)
-}
-
-function _readFloat (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset + 3 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  return buf._dataview.getFloat32(offset, littleEndian)
-}
-
-function BufferReadFloatLE (offset, noAssert) {
-  return _readFloat(this, offset, true, noAssert)
-}
-
-function BufferReadFloatBE (offset, noAssert) {
-  return _readFloat(this, offset, false, noAssert)
-}
-
-function _readDouble (buf, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset + 7 < buf.length, 'Trying to read beyond buffer length')
-  }
-
-  return buf._dataview.getFloat64(offset, littleEndian)
-}
-
-function BufferReadDoubleLE (offset, noAssert) {
-  return _readDouble(this, offset, true, noAssert)
-}
-
-function BufferReadDoubleBE (offset, noAssert) {
-  return _readDouble(this, offset, false, noAssert)
-}
-
-function BufferWriteUInt8 (value, offset, noAssert) {
-  var buf = this
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset < buf.length, 'trying to write beyond buffer length')
-    verifuint(value, 0xff)
-  }
-
-  if (offset >= buf.length) return
-
-  buf[offset] = value
-}
-
-function _writeUInt16 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 1 < buf.length, 'trying to write beyond buffer length')
-    verifuint(value, 0xffff)
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 1 === len) {
-    var dv = new xDataView(new xArrayBuffer(2))
-    dv.setUint16(0, value, littleEndian)
-    buf[offset] = dv.getUint8(0)
-  } else {
-    buf._dataview.setUint16(offset, value, littleEndian)
-  }
-}
-
-function BufferWriteUInt16LE (value, offset, noAssert) {
-  _writeUInt16(this, value, offset, true, noAssert)
-}
-
-function BufferWriteUInt16BE (value, offset, noAssert) {
-  _writeUInt16(this, value, offset, false, noAssert)
-}
-
-function _writeUInt32 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'trying to write beyond buffer length')
-    verifuint(value, 0xffffffff)
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 3 >= len) {
-    var dv = new xDataView(new xArrayBuffer(4))
-    dv.setUint32(0, value, littleEndian)
-    for (var i = 0; i + offset < len; i++) {
-      buf[i + offset] = dv.getUint8(i)
-    }
-  } else {
-    buf._dataview.setUint32(offset, value, littleEndian)
-  }
-}
-
-function BufferWriteUInt32LE (value, offset, noAssert) {
-  _writeUInt32(this, value, offset, true, noAssert)
-}
-
-function BufferWriteUInt32BE (value, offset, noAssert) {
-  _writeUInt32(this, value, offset, false, noAssert)
-}
-
-function BufferWriteInt8 (value, offset, noAssert) {
-  var buf = this
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset < buf.length, 'Trying to write beyond buffer length')
-    verifsint(value, 0x7f, -0x80)
-  }
-
-  if (offset >= buf.length) return
-
-  buf._dataview.setInt8(offset, value)
-}
-
-function _writeInt16 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 1 < buf.length, 'Trying to write beyond buffer length')
-    verifsint(value, 0x7fff, -0x8000)
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 1 === len) {
-    var dv = new xDataView(new xArrayBuffer(2))
-    dv.setInt16(0, value, littleEndian)
-    buf[offset] = dv.getUint8(0)
-  } else {
-    buf._dataview.setInt16(offset, value, littleEndian)
-  }
-}
-
-function BufferWriteInt16LE (value, offset, noAssert) {
-  _writeInt16(this, value, offset, true, noAssert)
-}
-
-function BufferWriteInt16BE (value, offset, noAssert) {
-  _writeInt16(this, value, offset, false, noAssert)
-}
-
-function _writeInt32 (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to write beyond buffer length')
-    verifsint(value, 0x7fffffff, -0x80000000)
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 3 >= len) {
-    var dv = new xDataView(new xArrayBuffer(4))
-    dv.setInt32(0, value, littleEndian)
-    for (var i = 0; i + offset < len; i++) {
-      buf[i + offset] = dv.getUint8(i)
-    }
-  } else {
-    buf._dataview.setInt32(offset, value, littleEndian)
-  }
-}
-
-function BufferWriteInt32LE (value, offset, noAssert) {
-  _writeInt32(this, value, offset, true, noAssert)
-}
-
-function BufferWriteInt32BE (value, offset, noAssert) {
-  _writeInt32(this, value, offset, false, noAssert)
-}
-
-function _writeFloat (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 3 < buf.length, 'Trying to write beyond buffer length')
-    verifIEEE754(value, 3.4028234663852886e+38, -3.4028234663852886e+38)
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 3 >= len) {
-    var dv = new xDataView(new xArrayBuffer(4))
-    dv.setFloat32(0, value, littleEndian)
-    for (var i = 0; i + offset < len; i++) {
-      buf[i + offset] = dv.getUint8(i)
-    }
-  } else {
-    buf._dataview.setFloat32(offset, value, littleEndian)
-  }
-}
-
-function BufferWriteFloatLE (value, offset, noAssert) {
-  _writeFloat(this, value, offset, true, noAssert)
-}
-
-function BufferWriteFloatBE (value, offset, noAssert) {
-  _writeFloat(this, value, offset, false, noAssert)
-}
-
-function _writeDouble (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    assert(value !== undefined && value !== null, 'missing value')
-    assert(typeof (littleEndian) === 'boolean',
-        'missing or invalid endian')
-    assert(offset !== undefined && offset !== null, 'missing offset')
-    assert(offset + 7 < buf.length,
-        'Trying to write beyond buffer length')
-    verifIEEE754(value, 1.7976931348623157E+308, -1.7976931348623157E+308)
-  }
-
-  var len = buf.length
-  if (offset >= len) {
-    return
-  } else if (offset + 7 >= len) {
-    var dv = new xDataView(new xArrayBuffer(8))
-    dv.setFloat64(0, value, littleEndian)
-    for (var i = 0; i + offset < len; i++) {
-      buf[i + offset] = dv.getUint8(i)
-    }
-  } else {
-    buf._dataview.setFloat64(offset, value, littleEndian)
-  }
-}
-
-function BufferWriteDoubleLE (value, offset, noAssert) {
-  _writeDouble(this, value, offset, true, noAssert)
-}
-
-function BufferWriteDoubleBE (value, offset, noAssert) {
-  _writeDouble(this, value, offset, false, noAssert)
-}
-
-// fill(value, start=0, end=buffer.length)
-function BufferFill (value, start, end) {
-  if (!value) value = 0
-  if (!start) start = 0
-  if (!end) end = this.length
-
-  if (typeof value === 'string') {
-    value = value.charCodeAt(0)
-  }
-
-  if (typeof value !== 'number' || isNaN(value)) {
-    throw new Error('value is not a number')
-  }
-
-  if (end < start) throw new Error('end < start')
-
-  // Fill 0 bytes; we're done
-  if (end === start) return
-  if (this.length === 0) return
-
-  if (start < 0 || start >= this.length) {
-    throw new Error('start out of bounds')
-  }
-
-  if (end < 0 || end > this.length) {
-    throw new Error('end out of bounds')
-  }
-
-  for (var i = start; i < end; i++) {
-    this[i] = value
-  }
-}
-
-function BufferInspect () {
-  var out = []
-  var len = this.length
-  for (var i = 0; i < len; i++) {
-    out[i] = toHex(this[i])
-    if (i === exports.INSPECT_MAX_BYTES) {
-      out[i + 1] = '...'
-      break
-    }
-  }
-  return '<Buffer ' + out.join(' ') + '>'
-}
-
-// Creates a new `ArrayBuffer` with the *copied* memory of the buffer instance.
-// Added in Node 0.12.
-function BufferToArrayBuffer () {
-  return (new Buffer(this)).buffer
-}
-
-
-// HELPER FUNCTIONS
-// ================
-
-function stringtrim (str) {
-  if (str.trim) return str.trim()
-  return str.replace(/^\s+|\s+$/g, '')
-}
-
-/**
- * Check to see if the browser supports augmenting a `Uint8Array` instance.
- * @return {boolean}
- */
-function _browserSupport () {
-  var arr = new xUint8Array(0)
-  arr.foo = function () { return 42 }
-
-  try {
-    return (42 === arr.foo())
-  } catch (e) {
-    return false
-  }
-}
-
-/**
- * Class: ProxyBuffer
- * ==================
- *
- * Only used in Firefox, since Firefox does not allow augmenting "native"
- * objects (like Uint8Array instances) with new properties for some unknown
- * (probably silly) reason. So we'll use an ES6 Proxy (supported since
- * Firefox 18) to wrap the Uint8Array instance without actually adding any
- * properties to it.
- *
- * Instances of this "fake" Buffer class are the "target" of the
- * ES6 Proxy (see `augment` function).
- *
- * We couldn't just use the `Uint8Array` as the target of the `Proxy` because
- * Proxies have an important limitation on trapping the `toString` method.
- * `Object.prototype.toString.call(proxy)` gets called whenever something is
- * implicitly cast to a String. Unfortunately, with a `Proxy` this
- * unconditionally returns `Object.prototype.toString.call(target)` which would
- * always return "[object Uint8Array]" if we used the `Uint8Array` instance as
- * the target. And, remember, in Firefox we cannot redefine the `Uint8Array`
- * instance's `toString` method.
- *
- * So, we use this `ProxyBuffer` class as the proxy's "target". Since this class
- * has its own custom `toString` method, it will get called whenever `toString`
- * gets called, implicitly or explicitly, on the `Proxy` instance.
- *
- * We also have to define the Uint8Array methods `subarray` and `set` on
- * `ProxyBuffer` because if we didn't then `proxy.subarray(0)` would have its
- * `this` set to `proxy` (a `Proxy` instance) which throws an exception in
- * Firefox which expects it to be a `TypedArray` instance.
- */
-function ProxyBuffer (arr) {
-  this._arr = arr
-
-  if (arr.byteLength !== 0)
-    this._dataview = new xDataView(arr.buffer, arr.byteOffset, arr.byteLength)
-}
-
-ProxyBuffer.prototype.write = BufferWrite
-ProxyBuffer.prototype.toString = BufferToString
-ProxyBuffer.prototype.toLocaleString = BufferToString
-ProxyBuffer.prototype.toJSON = BufferToJSON
-ProxyBuffer.prototype.copy = BufferCopy
-ProxyBuffer.prototype.slice = BufferSlice
-ProxyBuffer.prototype.readUInt8 = BufferReadUInt8
-ProxyBuffer.prototype.readUInt16LE = BufferReadUInt16LE
-ProxyBuffer.prototype.readUInt16BE = BufferReadUInt16BE
-ProxyBuffer.prototype.readUInt32LE = BufferReadUInt32LE
-ProxyBuffer.prototype.readUInt32BE = BufferReadUInt32BE
-ProxyBuffer.prototype.readInt8 = BufferReadInt8
-ProxyBuffer.prototype.readInt16LE = BufferReadInt16LE
-ProxyBuffer.prototype.readInt16BE = BufferReadInt16BE
-ProxyBuffer.prototype.readInt32LE = BufferReadInt32LE
-ProxyBuffer.prototype.readInt32BE = BufferReadInt32BE
-ProxyBuffer.prototype.readFloatLE = BufferReadFloatLE
-ProxyBuffer.prototype.readFloatBE = BufferReadFloatBE
-ProxyBuffer.prototype.readDoubleLE = BufferReadDoubleLE
-ProxyBuffer.prototype.readDoubleBE = BufferReadDoubleBE
-ProxyBuffer.prototype.writeUInt8 = BufferWriteUInt8
-ProxyBuffer.prototype.writeUInt16LE = BufferWriteUInt16LE
-ProxyBuffer.prototype.writeUInt16BE = BufferWriteUInt16BE
-ProxyBuffer.prototype.writeUInt32LE = BufferWriteUInt32LE
-ProxyBuffer.prototype.writeUInt32BE = BufferWriteUInt32BE
-ProxyBuffer.prototype.writeInt8 = BufferWriteInt8
-ProxyBuffer.prototype.writeInt16LE = BufferWriteInt16LE
-ProxyBuffer.prototype.writeInt16BE = BufferWriteInt16BE
-ProxyBuffer.prototype.writeInt32LE = BufferWriteInt32LE
-ProxyBuffer.prototype.writeInt32BE = BufferWriteInt32BE
-ProxyBuffer.prototype.writeFloatLE = BufferWriteFloatLE
-ProxyBuffer.prototype.writeFloatBE = BufferWriteFloatBE
-ProxyBuffer.prototype.writeDoubleLE = BufferWriteDoubleLE
-ProxyBuffer.prototype.writeDoubleBE = BufferWriteDoubleBE
-ProxyBuffer.prototype.fill = BufferFill
-ProxyBuffer.prototype.inspect = BufferInspect
-ProxyBuffer.prototype.toArrayBuffer = BufferToArrayBuffer
-ProxyBuffer.prototype._isBuffer = true
-ProxyBuffer.prototype.subarray = function () {
-  return this._arr.subarray.apply(this._arr, arguments)
-}
-ProxyBuffer.prototype.set = function () {
-  return this._arr.set.apply(this._arr, arguments)
-}
-
-var ProxyHandler = {
-  get: function (target, name) {
-    if (name in target) return target[name]
-    else return target._arr[name]
-  },
-  set: function (target, name, value) {
-    target._arr[name] = value
-  }
-}
-
-function augment (arr) {
-  if (browserSupport === undefined) {
-    browserSupport = _browserSupport()
-  }
-
-  if (browserSupport) {
-    // Augment the Uint8Array *instance* (not the class!) with Buffer methods
-    arr.write = BufferWrite
-    arr.toString = BufferToString
-    arr.toLocaleString = BufferToString
-    arr.toJSON = BufferToJSON
-    arr.copy = BufferCopy
-    arr.slice = BufferSlice
-    arr.readUInt8 = BufferReadUInt8
-    arr.readUInt16LE = BufferReadUInt16LE
-    arr.readUInt16BE = BufferReadUInt16BE
-    arr.readUInt32LE = BufferReadUInt32LE
-    arr.readUInt32BE = BufferReadUInt32BE
-    arr.readInt8 = BufferReadInt8
-    arr.readInt16LE = BufferReadInt16LE
-    arr.readInt16BE = BufferReadInt16BE
-    arr.readInt32LE = BufferReadInt32LE
-    arr.readInt32BE = BufferReadInt32BE
-    arr.readFloatLE = BufferReadFloatLE
-    arr.readFloatBE = BufferReadFloatBE
-    arr.readDoubleLE = BufferReadDoubleLE
-    arr.readDoubleBE = BufferReadDoubleBE
-    arr.writeUInt8 = BufferWriteUInt8
-    arr.writeUInt16LE = BufferWriteUInt16LE
-    arr.writeUInt16BE = BufferWriteUInt16BE
-    arr.writeUInt32LE = BufferWriteUInt32LE
-    arr.writeUInt32BE = BufferWriteUInt32BE
-    arr.writeInt8 = BufferWriteInt8
-    arr.writeInt16LE = BufferWriteInt16LE
-    arr.writeInt16BE = BufferWriteInt16BE
-    arr.writeInt32LE = BufferWriteInt32LE
-    arr.writeInt32BE = BufferWriteInt32BE
-    arr.writeFloatLE = BufferWriteFloatLE
-    arr.writeFloatBE = BufferWriteFloatBE
-    arr.writeDoubleLE = BufferWriteDoubleLE
-    arr.writeDoubleBE = BufferWriteDoubleBE
-    arr.fill = BufferFill
-    arr.inspect = BufferInspect
-    arr.toArrayBuffer = BufferToArrayBuffer
-    arr._isBuffer = true
-
-    if (arr.byteLength !== 0)
-      arr._dataview = new xDataView(arr.buffer, arr.byteOffset, arr.byteLength)
-
-    return arr
-
-  } else {
-    // This is a browser that doesn't support augmenting the `Uint8Array`
-    // instance (*ahem* Firefox) so use an ES6 `Proxy`.
-    var proxyBuffer = new ProxyBuffer(arr)
-    var proxy = new Proxy(proxyBuffer, ProxyHandler)
-    proxyBuffer._proxy = proxy
-    return proxy
-  }
-}
-
-// slice(start, end)
-function clamp (index, len, defaultValue) {
-  if (typeof index !== 'number') return defaultValue
-  index = ~~index;  // Coerce to integer.
-  if (index >= len) return len
-  if (index >= 0) return index
-  index += len
-  if (index >= 0) return index
-  return 0
-}
-
-function coerce (length) {
-  // Coerce length to a number (possibly NaN), round up
-  // in case it's fractional (e.g. 123.456) then do a
-  // double negate to coerce a NaN to 0. Easy, right?
-  length = ~~Math.ceil(+length)
-  return length < 0 ? 0 : length
-}
-
-function isArrayIsh (subject) {
-  return Array.isArray(subject) || Buffer.isBuffer(subject) ||
-      subject && typeof subject === 'object' &&
-      typeof subject.length === 'number'
-}
-
-function toHex (n) {
-  if (n < 16) return '0' + n.toString(16)
-  return n.toString(16)
-}
-
-function utf8ToBytes (str) {
-  var byteArray = []
-  for (var i = 0; i < str.length; i++)
-    if (str.charCodeAt(i) <= 0x7F)
-      byteArray.push(str.charCodeAt(i))
-    else {
-      var h = encodeURIComponent(str.charAt(i)).substr(1).split('%')
-      for (var j = 0; j < h.length; j++)
-        byteArray.push(parseInt(h[j], 16))
-    }
-
-  return byteArray
-}
-
-function asciiToBytes (str) {
-  var byteArray = []
-  for (var i = 0; i < str.length; i++) {
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF)
-  }
-
-  return byteArray
-}
-
-function base64ToBytes (str) {
-  return require('base64-js').toByteArray(str)
-}
-
-function blitBuffer (src, dst, offset, length) {
-  var pos, i = 0
-  while (i < length) {
-    if ((i + offset >= dst.length) || (i >= src.length))
-      break
-
-    dst[i + offset] = src[i]
-    i++
-  }
-  return i
-}
-
-function decodeUtf8Char (str) {
-  try {
-    return decodeURIComponent(str)
-  } catch (err) {
-    return String.fromCharCode(0xFFFD) // UTF 8 invalid char
-  }
-}
-
-/*
- * We have to make sure that the value is a valid integer. This means that it
- * is non-negative. It has no fractional component and that it does not
- * exceed the maximum allowed value.
- *
- *      value           The number to check for validity
- *
- *      max             The maximum value
- */
-function verifuint (value, max) {
-  assert(typeof (value) == 'number', 'cannot write a non-number as a number')
-  assert(value >= 0,
-      'specified a negative value for writing an unsigned value')
-  assert(value <= max, 'value is larger than maximum value for type')
-  assert(Math.floor(value) === value, 'value has a fractional component')
-}
-
-/*
- * A series of checks to make sure we actually have a signed 32-bit number
- */
-function verifsint(value, max, min) {
-  assert(typeof (value) == 'number', 'cannot write a non-number as a number')
-  assert(value <= max, 'value larger than maximum allowed value')
-  assert(value >= min, 'value smaller than minimum allowed value')
-  assert(Math.floor(value) === value, 'value has a fractional component')
-}
-
-function verifIEEE754(value, max, min) {
-  assert(typeof (value) == 'number', 'cannot write a non-number as a number')
-  assert(value <= max, 'value larger than maximum allowed value')
-  assert(value >= min, 'value smaller than minimum allowed value')
-}
-
-function assert (test, message) {
-  if (!test) throw new Error(message || 'Failed assertion')
-}
-
-},{"base64-js":3,"typedarray":4}],"native-buffer-browserify":[function(require,module,exports){
-module.exports=require('PcZj9L');
-},{}],3:[function(require,module,exports){
-(function (exports) {
-	'use strict';
-
-	var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-	function b64ToByteArray(b64) {
-		var i, j, l, tmp, placeHolders, arr;
-	
-		if (b64.length % 4 > 0) {
-			throw 'Invalid string. Length must be a multiple of 4';
-		}
-
-		// the number of equal signs (place holders)
-		// if there are two placeholders, than the two characters before it
-		// represent one byte
-		// if there is only one, then the three characters before it represent 2 bytes
-		// this is just a cheap hack to not do indexOf twice
-		placeHolders = b64.indexOf('=');
-		placeHolders = placeHolders > 0 ? b64.length - placeHolders : 0;
-
-		// base64 is 4/3 + up to two characters of the original data
-		arr = [];//new Uint8Array(b64.length * 3 / 4 - placeHolders);
-
-		// if there are placeholders, only get up to the last complete 4 chars
-		l = placeHolders > 0 ? b64.length - 4 : b64.length;
-
-		for (i = 0, j = 0; i < l; i += 4, j += 3) {
-			tmp = (lookup.indexOf(b64[i]) << 18) | (lookup.indexOf(b64[i + 1]) << 12) | (lookup.indexOf(b64[i + 2]) << 6) | lookup.indexOf(b64[i + 3]);
-			arr.push((tmp & 0xFF0000) >> 16);
-			arr.push((tmp & 0xFF00) >> 8);
-			arr.push(tmp & 0xFF);
-		}
-
-		if (placeHolders === 2) {
-			tmp = (lookup.indexOf(b64[i]) << 2) | (lookup.indexOf(b64[i + 1]) >> 4);
-			arr.push(tmp & 0xFF);
-		} else if (placeHolders === 1) {
-			tmp = (lookup.indexOf(b64[i]) << 10) | (lookup.indexOf(b64[i + 1]) << 4) | (lookup.indexOf(b64[i + 2]) >> 2);
-			arr.push((tmp >> 8) & 0xFF);
-			arr.push(tmp & 0xFF);
-		}
-
-		return arr;
-	}
-
-	function uint8ToBase64(uint8) {
-		var i,
-			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
-			output = "",
-			temp, length;
-
-		function tripletToBase64 (num) {
-			return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F];
-		};
-
-		// go through the array every three bytes, we'll deal with trailing stuff later
-		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
-			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
-			output += tripletToBase64(temp);
-		}
-
-		// pad the end with zeros, but make sure to not forget the extra bytes
-		switch (extraBytes) {
-			case 1:
-				temp = uint8[uint8.length - 1];
-				output += lookup[temp >> 2];
-				output += lookup[(temp << 4) & 0x3F];
-				output += '==';
-				break;
-			case 2:
-				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1]);
-				output += lookup[temp >> 10];
-				output += lookup[(temp >> 4) & 0x3F];
-				output += lookup[(temp << 2) & 0x3F];
-				output += '=';
-				break;
-		}
-
-		return output;
-	}
-
-	module.exports.toByteArray = b64ToByteArray;
-	module.exports.fromByteArray = uint8ToBase64;
-}());
-
-},{}],4:[function(require,module,exports){
-var undefined = (void 0); // Paranoia
-
-// Beyond this value, index getters/setters (i.e. array[0], array[1]) are so slow to
-// create, and consume so much memory, that the browser appears frozen.
-var MAX_ARRAY_LENGTH = 1e5;
-
-// Approximations of internal ECMAScript conversion functions
-var ECMAScript = (function() {
-  // Stash a copy in case other scripts modify these
-  var opts = Object.prototype.toString,
-      ophop = Object.prototype.hasOwnProperty;
-
-  return {
-    // Class returns internal [[Class]] property, used to avoid cross-frame instanceof issues:
-    Class: function(v) { return opts.call(v).replace(/^\[object *|\]$/g, ''); },
-    HasProperty: function(o, p) { return p in o; },
-    HasOwnProperty: function(o, p) { return ophop.call(o, p); },
-    IsCallable: function(o) { return typeof o === 'function'; },
-    ToInt32: function(v) { return v >> 0; },
-    ToUint32: function(v) { return v >>> 0; }
-  };
-}());
-
-// Snapshot intrinsics
-var LN2 = Math.LN2,
-    abs = Math.abs,
-    floor = Math.floor,
-    log = Math.log,
-    min = Math.min,
-    pow = Math.pow,
-    round = Math.round;
-
-// ES5: lock down object properties
-function configureProperties(obj) {
-  if (getOwnPropertyNames && defineProperty) {
-    var props = getOwnPropertyNames(obj), i;
-    for (i = 0; i < props.length; i += 1) {
-      defineProperty(obj, props[i], {
-        value: obj[props[i]],
-        writable: false,
-        enumerable: false,
-        configurable: false
-      });
-    }
-  }
-}
-
-// emulate ES5 getter/setter API using legacy APIs
-// http://blogs.msdn.com/b/ie/archive/2010/09/07/transitioning-existing-code-to-the-es5-getter-setter-apis.aspx
-// (second clause tests for Object.defineProperty() in IE<9 that only supports extending DOM prototypes, but
-// note that IE<9 does not support __defineGetter__ or __defineSetter__ so it just renders the method harmless)
-var defineProperty = Object.defineProperty || function(o, p, desc) {
-  if (!o === Object(o)) throw new TypeError("Object.defineProperty called on non-object");
-  if (ECMAScript.HasProperty(desc, 'get') && Object.prototype.__defineGetter__) { Object.prototype.__defineGetter__.call(o, p, desc.get); }
-  if (ECMAScript.HasProperty(desc, 'set') && Object.prototype.__defineSetter__) { Object.prototype.__defineSetter__.call(o, p, desc.set); }
-  if (ECMAScript.HasProperty(desc, 'value')) { o[p] = desc.value; }
-  return o;
 };
 
-var getOwnPropertyNames = Object.getOwnPropertyNames || function getOwnPropertyNames(o) {
-  if (o !== Object(o)) throw new TypeError("Object.getOwnPropertyNames called on non-object");
-  var props = [], p;
-  for (p in o) {
-    if (ECMAScript.HasOwnProperty(o, p)) {
-      props.push(p);
-    }
+// assert.AssertionError instanceof Error
+util.inherits(assert.AssertionError, Error);
+
+function replacer(key, value) {
+  if (util.isUndefined(value)) {
+    return '' + value;
   }
-  return props;
+  if (util.isNumber(value) && (isNaN(value) || !isFinite(value))) {
+    return value.toString();
+  }
+  if (util.isFunction(value) || util.isRegExp(value)) {
+    return value.toString();
+  }
+  return value;
+}
+
+function truncate(s, n) {
+  if (util.isString(s)) {
+    return s.length < n ? s : s.slice(0, n);
+  } else {
+    return s;
+  }
+}
+
+function getMessage(self) {
+  return truncate(JSON.stringify(self.actual, replacer), 128) + ' ' +
+         self.operator + ' ' +
+         truncate(JSON.stringify(self.expected, replacer), 128);
+}
+
+// At present only the three keys mentioned above are used and
+// understood by the spec. Implementations or sub modules can pass
+// other keys to the AssertionError's constructor - they will be
+// ignored.
+
+// 3. All of the following functions must throw an AssertionError
+// when a corresponding condition is not met, with a message that
+// may be undefined if not provided.  All assertion methods provide
+// both the actual and expected values to the assertion error for
+// display purposes.
+
+function fail(actual, expected, message, operator, stackStartFunction) {
+  throw new assert.AssertionError({
+    message: message,
+    actual: actual,
+    expected: expected,
+    operator: operator,
+    stackStartFunction: stackStartFunction
+  });
+}
+
+// EXTENSION! allows for well behaved errors defined elsewhere.
+assert.fail = fail;
+
+// 4. Pure assertion tests whether a value is truthy, as determined
+// by !!guard.
+// assert.ok(guard, message_opt);
+// This statement is equivalent to assert.equal(true, !!guard,
+// message_opt);. To test strictly for the value true, use
+// assert.strictEqual(true, guard, message_opt);.
+
+function ok(value, message) {
+  if (!value) fail(value, true, message, '==', assert.ok);
+}
+assert.ok = ok;
+
+// 5. The equality assertion tests shallow, coercive equality with
+// ==.
+// assert.equal(actual, expected, message_opt);
+
+assert.equal = function equal(actual, expected, message) {
+  if (actual != expected) fail(actual, expected, message, '==', assert.equal);
 };
 
-// ES5: Make obj[index] an alias for obj._getter(index)/obj._setter(index, value)
-// for index in 0 ... obj.length
-function makeArrayAccessors(obj) {
-  if (!defineProperty) { return; }
+// 6. The non-equality assertion tests for whether two objects are not equal
+// with != assert.notEqual(actual, expected, message_opt);
 
-  if (obj.length > MAX_ARRAY_LENGTH) throw new RangeError("Array too large for polyfill");
-
-  function makeArrayAccessor(index) {
-    defineProperty(obj, index, {
-      'get': function() { return obj._getter(index); },
-      'set': function(v) { obj._setter(index, v); },
-      enumerable: true,
-      configurable: false
-    });
+assert.notEqual = function notEqual(actual, expected, message) {
+  if (actual == expected) {
+    fail(actual, expected, message, '!=', assert.notEqual);
   }
+};
 
-  var i;
-  for (i = 0; i < obj.length; i += 1) {
-    makeArrayAccessor(i);
+// 7. The equivalence assertion tests a deep equality relation.
+// assert.deepEqual(actual, expected, message_opt);
+
+assert.deepEqual = function deepEqual(actual, expected, message) {
+  if (!_deepEqual(actual, expected)) {
+    fail(actual, expected, message, 'deepEqual', assert.deepEqual);
   }
-}
-
-// Internal conversion functions:
-//    pack<Type>()   - take a number (interpreted as Type), output a byte array
-//    unpack<Type>() - take a byte array, output a Type-like number
-
-function as_signed(value, bits) { var s = 32 - bits; return (value << s) >> s; }
-function as_unsigned(value, bits) { var s = 32 - bits; return (value << s) >>> s; }
-
-function packI8(n) { return [n & 0xff]; }
-function unpackI8(bytes) { return as_signed(bytes[0], 8); }
-
-function packU8(n) { return [n & 0xff]; }
-function unpackU8(bytes) { return as_unsigned(bytes[0], 8); }
-
-function packU8Clamped(n) { n = round(Number(n)); return [n < 0 ? 0 : n > 0xff ? 0xff : n & 0xff]; }
-
-function packI16(n) { return [(n >> 8) & 0xff, n & 0xff]; }
-function unpackI16(bytes) { return as_signed(bytes[0] << 8 | bytes[1], 16); }
-
-function packU16(n) { return [(n >> 8) & 0xff, n & 0xff]; }
-function unpackU16(bytes) { return as_unsigned(bytes[0] << 8 | bytes[1], 16); }
-
-function packI32(n) { return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]; }
-function unpackI32(bytes) { return as_signed(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3], 32); }
-
-function packU32(n) { return [(n >> 24) & 0xff, (n >> 16) & 0xff, (n >> 8) & 0xff, n & 0xff]; }
-function unpackU32(bytes) { return as_unsigned(bytes[0] << 24 | bytes[1] << 16 | bytes[2] << 8 | bytes[3], 32); }
-
-function packIEEE754(v, ebits, fbits) {
-
-  var bias = (1 << (ebits - 1)) - 1,
-      s, e, f, ln,
-      i, bits, str, bytes;
-
-  function roundToEven(n) {
-    var w = floor(n), f = n - w;
-    if (f < 0.5)
-      return w;
-    if (f > 0.5)
-      return w + 1;
-    return w % 2 ? w + 1 : w;
-  }
-
-  // Compute sign, exponent, fraction
-  if (v !== v) {
-    // NaN
-    // http://dev.w3.org/2006/webapi/WebIDL/#es-type-mapping
-    e = (1 << ebits) - 1; f = pow(2, fbits - 1); s = 0;
-  } else if (v === Infinity || v === -Infinity) {
-    e = (1 << ebits) - 1; f = 0; s = (v < 0) ? 1 : 0;
-  } else if (v === 0) {
-    e = 0; f = 0; s = (1 / v === -Infinity) ? 1 : 0;
-  } else {
-    s = v < 0;
-    v = abs(v);
-
-    if (v >= pow(2, 1 - bias)) {
-      e = min(floor(log(v) / LN2), 1023);
-      f = roundToEven(v / pow(2, e) * pow(2, fbits));
-      if (f / pow(2, fbits) >= 2) {
-        e = e + 1;
-        f = 1;
-      }
-      if (e > bias) {
-        // Overflow
-        e = (1 << ebits) - 1;
-        f = 0;
-      } else {
-        // Normalized
-        e = e + bias;
-        f = f - pow(2, fbits);
-      }
-    } else {
-      // Denormalized
-      e = 0;
-      f = roundToEven(v / pow(2, 1 - bias - fbits));
-    }
-  }
-
-  // Pack sign, exponent, fraction
-  bits = [];
-  for (i = fbits; i; i -= 1) { bits.push(f % 2 ? 1 : 0); f = floor(f / 2); }
-  for (i = ebits; i; i -= 1) { bits.push(e % 2 ? 1 : 0); e = floor(e / 2); }
-  bits.push(s ? 1 : 0);
-  bits.reverse();
-  str = bits.join('');
-
-  // Bits to bytes
-  bytes = [];
-  while (str.length) {
-    bytes.push(parseInt(str.substring(0, 8), 2));
-    str = str.substring(8);
-  }
-  return bytes;
-}
-
-function unpackIEEE754(bytes, ebits, fbits) {
-
-  // Bytes to bits
-  var bits = [], i, j, b, str,
-      bias, s, e, f;
-
-  for (i = bytes.length; i; i -= 1) {
-    b = bytes[i - 1];
-    for (j = 8; j; j -= 1) {
-      bits.push(b % 2 ? 1 : 0); b = b >> 1;
-    }
-  }
-  bits.reverse();
-  str = bits.join('');
-
-  // Unpack sign, exponent, fraction
-  bias = (1 << (ebits - 1)) - 1;
-  s = parseInt(str.substring(0, 1), 2) ? -1 : 1;
-  e = parseInt(str.substring(1, 1 + ebits), 2);
-  f = parseInt(str.substring(1 + ebits), 2);
-
-  // Produce number
-  if (e === (1 << ebits) - 1) {
-    return f !== 0 ? NaN : s * Infinity;
-  } else if (e > 0) {
-    // Normalized
-    return s * pow(2, e - bias) * (1 + f / pow(2, fbits));
-  } else if (f !== 0) {
-    // Denormalized
-    return s * pow(2, -(bias - 1)) * (f / pow(2, fbits));
-  } else {
-    return s < 0 ? -0 : 0;
-  }
-}
-
-function unpackF64(b) { return unpackIEEE754(b, 11, 52); }
-function packF64(v) { return packIEEE754(v, 11, 52); }
-function unpackF32(b) { return unpackIEEE754(b, 8, 23); }
-function packF32(v) { return packIEEE754(v, 8, 23); }
-
-
-//
-// 3 The ArrayBuffer Type
-//
-
-(function() {
-
-  /** @constructor */
-  var ArrayBuffer = function ArrayBuffer(length) {
-    length = ECMAScript.ToInt32(length);
-    if (length < 0) throw new RangeError('ArrayBuffer size is not a small enough positive integer');
-
-    this.byteLength = length;
-    this._bytes = [];
-    this._bytes.length = length;
-
-    var i;
-    for (i = 0; i < this.byteLength; i += 1) {
-      this._bytes[i] = 0;
-    }
-
-    configureProperties(this);
-  };
-
-  exports.ArrayBuffer = exports.ArrayBuffer || ArrayBuffer;
-
-  //
-  // 4 The ArrayBufferView Type
-  //
-
-  // NOTE: this constructor is not exported
-  /** @constructor */
-  var ArrayBufferView = function ArrayBufferView() {
-    //this.buffer = null;
-    //this.byteOffset = 0;
-    //this.byteLength = 0;
-  };
-
-  //
-  // 5 The Typed Array View Types
-  //
-
-  function makeConstructor(bytesPerElement, pack, unpack) {
-    // Each TypedArray type requires a distinct constructor instance with
-    // identical logic, which this produces.
-
-    var ctor;
-    ctor = function(buffer, byteOffset, length) {
-      var array, sequence, i, s;
-
-      if (!arguments.length || typeof arguments[0] === 'number') {
-        // Constructor(unsigned long length)
-        this.length = ECMAScript.ToInt32(arguments[0]);
-        if (length < 0) throw new RangeError('ArrayBufferView size is not a small enough positive integer');
-
-        this.byteLength = this.length * this.BYTES_PER_ELEMENT;
-        this.buffer = new ArrayBuffer(this.byteLength);
-        this.byteOffset = 0;
-      } else if (typeof arguments[0] === 'object' && arguments[0].constructor === ctor) {
-        // Constructor(TypedArray array)
-        array = arguments[0];
-
-        this.length = array.length;
-        this.byteLength = this.length * this.BYTES_PER_ELEMENT;
-        this.buffer = new ArrayBuffer(this.byteLength);
-        this.byteOffset = 0;
-
-        for (i = 0; i < this.length; i += 1) {
-          this._setter(i, array._getter(i));
-        }
-      } else if (typeof arguments[0] === 'object' &&
-                 !(arguments[0] instanceof ArrayBuffer || ECMAScript.Class(arguments[0]) === 'ArrayBuffer')) {
-        // Constructor(sequence<type> array)
-        sequence = arguments[0];
-
-        this.length = ECMAScript.ToUint32(sequence.length);
-        this.byteLength = this.length * this.BYTES_PER_ELEMENT;
-        this.buffer = new ArrayBuffer(this.byteLength);
-        this.byteOffset = 0;
-
-        for (i = 0; i < this.length; i += 1) {
-          s = sequence[i];
-          this._setter(i, Number(s));
-        }
-      } else if (typeof arguments[0] === 'object' &&
-                 (arguments[0] instanceof ArrayBuffer || ECMAScript.Class(arguments[0]) === 'ArrayBuffer')) {
-        // Constructor(ArrayBuffer buffer,
-        //             optional unsigned long byteOffset, optional unsigned long length)
-        this.buffer = buffer;
-
-        this.byteOffset = ECMAScript.ToUint32(byteOffset);
-        if (this.byteOffset > this.buffer.byteLength) {
-          throw new RangeError("byteOffset out of range");
-        }
-
-        if (this.byteOffset % this.BYTES_PER_ELEMENT) {
-          // The given byteOffset must be a multiple of the element
-          // size of the specific type, otherwise an exception is raised.
-          throw new RangeError("ArrayBuffer length minus the byteOffset is not a multiple of the element size.");
-        }
-
-        if (arguments.length < 3) {
-          this.byteLength = this.buffer.byteLength - this.byteOffset;
-
-          if (this.byteLength % this.BYTES_PER_ELEMENT) {
-            throw new RangeError("length of buffer minus byteOffset not a multiple of the element size");
-          }
-          this.length = this.byteLength / this.BYTES_PER_ELEMENT;
-        } else {
-          this.length = ECMAScript.ToUint32(length);
-          this.byteLength = this.length * this.BYTES_PER_ELEMENT;
-        }
-
-        if ((this.byteOffset + this.byteLength) > this.buffer.byteLength) {
-          throw new RangeError("byteOffset and length reference an area beyond the end of the buffer");
-        }
-      } else {
-        throw new TypeError("Unexpected argument type(s)");
-      }
-
-      this.constructor = ctor;
-
-      configureProperties(this);
-      makeArrayAccessors(this);
-    };
-
-    ctor.prototype = new ArrayBufferView();
-    ctor.prototype.BYTES_PER_ELEMENT = bytesPerElement;
-    ctor.prototype._pack = pack;
-    ctor.prototype._unpack = unpack;
-    ctor.BYTES_PER_ELEMENT = bytesPerElement;
-
-    // getter type (unsigned long index);
-    ctor.prototype._getter = function(index) {
-      if (arguments.length < 1) throw new SyntaxError("Not enough arguments");
-
-      index = ECMAScript.ToUint32(index);
-      if (index >= this.length) {
-        return undefined;
-      }
-
-      var bytes = [], i, o;
-      for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT;
-           i < this.BYTES_PER_ELEMENT;
-           i += 1, o += 1) {
-        bytes.push(this.buffer._bytes[o]);
-      }
-      return this._unpack(bytes);
-    };
-
-    // NONSTANDARD: convenience alias for getter: type get(unsigned long index);
-    ctor.prototype.get = ctor.prototype._getter;
-
-    // setter void (unsigned long index, type value);
-    ctor.prototype._setter = function(index, value) {
-      if (arguments.length < 2) throw new SyntaxError("Not enough arguments");
-
-      index = ECMAScript.ToUint32(index);
-      if (index >= this.length) {
-        return undefined;
-      }
-
-      var bytes = this._pack(value), i, o;
-      for (i = 0, o = this.byteOffset + index * this.BYTES_PER_ELEMENT;
-           i < this.BYTES_PER_ELEMENT;
-           i += 1, o += 1) {
-        this.buffer._bytes[o] = bytes[i];
-      }
-    };
-
-    // void set(TypedArray array, optional unsigned long offset);
-    // void set(sequence<type> array, optional unsigned long offset);
-    ctor.prototype.set = function(index, value) {
-      if (arguments.length < 1) throw new SyntaxError("Not enough arguments");
-      var array, sequence, offset, len,
-          i, s, d,
-          byteOffset, byteLength, tmp;
-
-      if (typeof arguments[0] === 'object' && arguments[0].constructor === this.constructor) {
-        // void set(TypedArray array, optional unsigned long offset);
-        array = arguments[0];
-        offset = ECMAScript.ToUint32(arguments[1]);
-
-        if (offset + array.length > this.length) {
-          throw new RangeError("Offset plus length of array is out of range");
-        }
-
-        byteOffset = this.byteOffset + offset * this.BYTES_PER_ELEMENT;
-        byteLength = array.length * this.BYTES_PER_ELEMENT;
-
-        if (array.buffer === this.buffer) {
-          tmp = [];
-          for (i = 0, s = array.byteOffset; i < byteLength; i += 1, s += 1) {
-            tmp[i] = array.buffer._bytes[s];
-          }
-          for (i = 0, d = byteOffset; i < byteLength; i += 1, d += 1) {
-            this.buffer._bytes[d] = tmp[i];
-          }
-        } else {
-          for (i = 0, s = array.byteOffset, d = byteOffset;
-               i < byteLength; i += 1, s += 1, d += 1) {
-            this.buffer._bytes[d] = array.buffer._bytes[s];
-          }
-        }
-      } else if (typeof arguments[0] === 'object' && typeof arguments[0].length !== 'undefined') {
-        // void set(sequence<type> array, optional unsigned long offset);
-        sequence = arguments[0];
-        len = ECMAScript.ToUint32(sequence.length);
-        offset = ECMAScript.ToUint32(arguments[1]);
-
-        if (offset + len > this.length) {
-          throw new RangeError("Offset plus length of array is out of range");
-        }
-
-        for (i = 0; i < len; i += 1) {
-          s = sequence[i];
-          this._setter(offset + i, Number(s));
-        }
-      } else {
-        throw new TypeError("Unexpected argument type(s)");
-      }
-    };
-
-    // TypedArray subarray(long begin, optional long end);
-    ctor.prototype.subarray = function(start, end) {
-      function clamp(v, min, max) { return v < min ? min : v > max ? max : v; }
-
-      start = ECMAScript.ToInt32(start);
-      end = ECMAScript.ToInt32(end);
-
-      if (arguments.length < 1) { start = 0; }
-      if (arguments.length < 2) { end = this.length; }
-
-      if (start < 0) { start = this.length + start; }
-      if (end < 0) { end = this.length + end; }
-
-      start = clamp(start, 0, this.length);
-      end = clamp(end, 0, this.length);
-
-      var len = end - start;
-      if (len < 0) {
-        len = 0;
-      }
-
-      return new this.constructor(
-        this.buffer, this.byteOffset + start * this.BYTES_PER_ELEMENT, len);
-    };
-
-    return ctor;
-  }
-
-  var Int8Array = makeConstructor(1, packI8, unpackI8);
-  var Uint8Array = makeConstructor(1, packU8, unpackU8);
-  var Uint8ClampedArray = makeConstructor(1, packU8Clamped, unpackU8);
-  var Int16Array = makeConstructor(2, packI16, unpackI16);
-  var Uint16Array = makeConstructor(2, packU16, unpackU16);
-  var Int32Array = makeConstructor(4, packI32, unpackI32);
-  var Uint32Array = makeConstructor(4, packU32, unpackU32);
-  var Float32Array = makeConstructor(4, packF32, unpackF32);
-  var Float64Array = makeConstructor(8, packF64, unpackF64);
-
-  exports.Int8Array = exports.Int8Array || Int8Array;
-  exports.Uint8Array = exports.Uint8Array || Uint8Array;
-  exports.Uint8ClampedArray = exports.Uint8ClampedArray || Uint8ClampedArray;
-  exports.Int16Array = exports.Int16Array || Int16Array;
-  exports.Uint16Array = exports.Uint16Array || Uint16Array;
-  exports.Int32Array = exports.Int32Array || Int32Array;
-  exports.Uint32Array = exports.Uint32Array || Uint32Array;
-  exports.Float32Array = exports.Float32Array || Float32Array;
-  exports.Float64Array = exports.Float64Array || Float64Array;
-}());
-
-//
-// 6 The DataView View Type
-//
-
-(function() {
-  function r(array, index) {
-    return ECMAScript.IsCallable(array.get) ? array.get(index) : array[index];
-  }
-
-  var IS_BIG_ENDIAN = (function() {
-    var u16array = new(exports.Uint16Array)([0x1234]),
-        u8array = new(exports.Uint8Array)(u16array.buffer);
-    return r(u8array, 0) === 0x12;
-  }());
-
-  // Constructor(ArrayBuffer buffer,
-  //             optional unsigned long byteOffset,
-  //             optional unsigned long byteLength)
-  /** @constructor */
-  var DataView = function DataView(buffer, byteOffset, byteLength) {
-    if (arguments.length === 0) {
-      buffer = new ArrayBuffer(0);
-    } else if (!(buffer instanceof ArrayBuffer || ECMAScript.Class(buffer) === 'ArrayBuffer')) {
-      throw new TypeError("TypeError");
-    }
-
-    this.buffer = buffer || new ArrayBuffer(0);
-
-    this.byteOffset = ECMAScript.ToUint32(byteOffset);
-    if (this.byteOffset > this.buffer.byteLength) {
-      throw new RangeError("byteOffset out of range");
-    }
-
-    if (arguments.length < 3) {
-      this.byteLength = this.buffer.byteLength - this.byteOffset;
-    } else {
-      this.byteLength = ECMAScript.ToUint32(byteLength);
-    }
-
-    if ((this.byteOffset + this.byteLength) > this.buffer.byteLength) {
-      throw new RangeError("byteOffset and length reference an area beyond the end of the buffer");
-    }
-
-    configureProperties(this);
-  };
-
-  function makeGetter(arrayType) {
-    return function(byteOffset, littleEndian) {
-
-      byteOffset = ECMAScript.ToUint32(byteOffset);
-
-      if (byteOffset + arrayType.BYTES_PER_ELEMENT > this.byteLength) {
-        throw new RangeError("Array index out of range");
-      }
-      byteOffset += this.byteOffset;
-
-      var uint8Array = new Uint8Array(this.buffer, byteOffset, arrayType.BYTES_PER_ELEMENT),
-          bytes = [], i;
-      for (i = 0; i < arrayType.BYTES_PER_ELEMENT; i += 1) {
-        bytes.push(r(uint8Array, i));
-      }
-
-      if (Boolean(littleEndian) === Boolean(IS_BIG_ENDIAN)) {
-        bytes.reverse();
-      }
-
-      return r(new arrayType(new Uint8Array(bytes).buffer), 0);
-    };
-  }
-
-  DataView.prototype.getUint8 = makeGetter(exports.Uint8Array);
-  DataView.prototype.getInt8 = makeGetter(exports.Int8Array);
-  DataView.prototype.getUint16 = makeGetter(exports.Uint16Array);
-  DataView.prototype.getInt16 = makeGetter(exports.Int16Array);
-  DataView.prototype.getUint32 = makeGetter(exports.Uint32Array);
-  DataView.prototype.getInt32 = makeGetter(exports.Int32Array);
-  DataView.prototype.getFloat32 = makeGetter(exports.Float32Array);
-  DataView.prototype.getFloat64 = makeGetter(exports.Float64Array);
-
-  function makeSetter(arrayType) {
-    return function(byteOffset, value, littleEndian) {
-
-      byteOffset = ECMAScript.ToUint32(byteOffset);
-      if (byteOffset + arrayType.BYTES_PER_ELEMENT > this.byteLength) {
-        throw new RangeError("Array index out of range");
-      }
-
-      // Get bytes
-      var typeArray = new arrayType([value]),
-          byteArray = new Uint8Array(typeArray.buffer),
-          bytes = [], i, byteView;
-
-      for (i = 0; i < arrayType.BYTES_PER_ELEMENT; i += 1) {
-        bytes.push(r(byteArray, i));
-      }
-
-      // Flip if necessary
-      if (Boolean(littleEndian) === Boolean(IS_BIG_ENDIAN)) {
-        bytes.reverse();
-      }
-
-      // Write them
-      byteView = new Uint8Array(this.buffer, byteOffset, arrayType.BYTES_PER_ELEMENT);
-      byteView.set(bytes);
-    };
-  }
-
-  DataView.prototype.setUint8 = makeSetter(exports.Uint8Array);
-  DataView.prototype.setInt8 = makeSetter(exports.Int8Array);
-  DataView.prototype.setUint16 = makeSetter(exports.Uint16Array);
-  DataView.prototype.setInt16 = makeSetter(exports.Int16Array);
-  DataView.prototype.setUint32 = makeSetter(exports.Uint32Array);
-  DataView.prototype.setInt32 = makeSetter(exports.Int32Array);
-  DataView.prototype.setFloat32 = makeSetter(exports.Float32Array);
-  DataView.prototype.setFloat64 = makeSetter(exports.Float64Array);
-
-  exports.DataView = exports.DataView || DataView;
-
-}());
-
-},{}]},{},[])
-;;module.exports=require("native-buffer-browserify").Buffer
-
-},{}],4:[function(require,module,exports){
-var Buffer=require("__browserify_Buffer");
-(function (global, module) {
-
-  if ('undefined' == typeof module) {
-    var module = { exports: {} }
-      , exports = module.exports
-  }
-
-  /**
-   * Exports.
-   */
-
-  module.exports = expect;
-  expect.Assertion = Assertion;
-
-  /**
-   * Exports version.
-   */
-
-  expect.version = '0.1.2';
-
-  /**
-   * Possible assertion flags.
-   */
-
-  var flags = {
-      not: ['to', 'be', 'have', 'include', 'only']
-    , to: ['be', 'have', 'include', 'only', 'not']
-    , only: ['have']
-    , have: ['own']
-    , be: ['an']
-  };
-
-  function expect (obj) {
-    return new Assertion(obj);
-  }
-
-  /**
-   * Constructor
-   *
-   * @api private
-   */
-
-  function Assertion (obj, flag, parent) {
-    this.obj = obj;
-    this.flags = {};
-
-    if (undefined != parent) {
-      this.flags[flag] = true;
-
-      for (var i in parent.flags) {
-        if (parent.flags.hasOwnProperty(i)) {
-          this.flags[i] = true;
-        }
-      }
-    }
-
-    var $flags = flag ? flags[flag] : keys(flags)
-      , self = this
-
-    if ($flags) {
-      for (var i = 0, l = $flags.length; i < l; i++) {
-        // avoid recursion
-        if (this.flags[$flags[i]]) continue;
-
-        var name = $flags[i]
-          , assertion = new Assertion(this.obj, name, this)
-
-        if ('function' == typeof Assertion.prototype[name]) {
-          // clone the function, make sure we dont touch the prot reference
-          var old = this[name];
-          this[name] = function () {
-            return old.apply(self, arguments);
-          }
-
-          for (var fn in Assertion.prototype) {
-            if (Assertion.prototype.hasOwnProperty(fn) && fn != name) {
-              this[name][fn] = bind(assertion[fn], assertion);
-            }
-          }
-        } else {
-          this[name] = assertion;
-        }
-      }
-    }
-  };
-
-  /**
-   * Performs an assertion
-   *
-   * @api private
-   */
-
-  Assertion.prototype.assert = function (truth, msg, error) {
-    var msg = this.flags.not ? error : msg
-      , ok = this.flags.not ? !truth : truth;
-
-    if (!ok) {
-      throw new Error(msg.call(this));
-    }
-
-    this.and = new Assertion(this.obj);
-  };
-
-  /**
-   * Check if the value is truthy
-   *
-   * @api public
-   */
-
-  Assertion.prototype.ok = function () {
-    this.assert(
-        !!this.obj
-      , function(){ return 'expected ' + i(this.obj) + ' to be truthy' }
-      , function(){ return 'expected ' + i(this.obj) + ' to be falsy' });
-  };
-
-  /**
-   * Assert that the function throws.
-   *
-   * @param {Function|RegExp} callback, or regexp to match error string against
-   * @api public
-   */
-
-  Assertion.prototype.throwError =
-  Assertion.prototype.throwException = function (fn) {
-    expect(this.obj).to.be.a('function');
-
-    var thrown = false
-      , not = this.flags.not
-
-    try {
-      this.obj();
-    } catch (e) {
-      if ('function' == typeof fn) {
-        fn(e);
-      } else if ('object' == typeof fn) {
-        var subject = 'string' == typeof e ? e : e.message;
-        if (not) {
-          expect(subject).to.not.match(fn);
-        } else {
-          expect(subject).to.match(fn);
-        }
-      }
-      thrown = true;
-    }
-
-    if ('object' == typeof fn && not) {
-      // in the presence of a matcher, ensure the `not` only applies to
-      // the matching.
-      this.flags.not = false;
-    }
-
-    var name = this.obj.name || 'fn';
-    this.assert(
-        thrown
-      , function(){ return 'expected ' + name + ' to throw an exception' }
-      , function(){ return 'expected ' + name + ' not to throw an exception' });
-  };
-
-  /**
-   * Checks if the array is empty.
-   *
-   * @api public
-   */
-
-  Assertion.prototype.empty = function () {
-    var expectation;
-
-    if ('object' == typeof this.obj && null !== this.obj && !isArray(this.obj)) {
-      if ('number' == typeof this.obj.length) {
-        expectation = !this.obj.length;
-      } else {
-        expectation = !keys(this.obj).length;
-      }
-    } else {
-      if ('string' != typeof this.obj) {
-        expect(this.obj).to.be.an('object');
-      }
-
-      expect(this.obj).to.have.property('length');
-      expectation = !this.obj.length;
-    }
-
-    this.assert(
-        expectation
-      , function(){ return 'expected ' + i(this.obj) + ' to be empty' }
-      , function(){ return 'expected ' + i(this.obj) + ' to not be empty' });
-    return this;
-  };
-
-  /**
-   * Checks if the obj exactly equals another.
-   *
-   * @api public
-   */
-
-  Assertion.prototype.be =
-  Assertion.prototype.equal = function (obj) {
-    this.assert(
-        obj === this.obj
-      , function(){ return 'expected ' + i(this.obj) + ' to equal ' + i(obj) }
-      , function(){ return 'expected ' + i(this.obj) + ' to not equal ' + i(obj) });
-    return this;
-  };
-
-  /**
-   * Checks if the obj sortof equals another.
-   *
-   * @api public
-   */
-
-  Assertion.prototype.eql = function (obj) {
-    this.assert(
-        expect.eql(obj, this.obj)
-      , function(){ return 'expected ' + i(this.obj) + ' to sort of equal ' + i(obj) }
-      , function(){ return 'expected ' + i(this.obj) + ' to sort of not equal ' + i(obj) });
-    return this;
-  };
-
-  /**
-   * Assert within start to finish (inclusive).
-   *
-   * @param {Number} start
-   * @param {Number} finish
-   * @api public
-   */
-
-  Assertion.prototype.within = function (start, finish) {
-    var range = start + '..' + finish;
-    this.assert(
-        this.obj >= start && this.obj <= finish
-      , function(){ return 'expected ' + i(this.obj) + ' to be within ' + range }
-      , function(){ return 'expected ' + i(this.obj) + ' to not be within ' + range });
-    return this;
-  };
-
-  /**
-   * Assert typeof / instance of
-   *
-   * @api public
-   */
-
-  Assertion.prototype.a =
-  Assertion.prototype.an = function (type) {
-    if ('string' == typeof type) {
-      // proper english in error msg
-      var n = /^[aeiou]/.test(type) ? 'n' : '';
-
-      // typeof with support for 'array'
-      this.assert(
-          'array' == type ? isArray(this.obj) :
-            'object' == type
-              ? 'object' == typeof this.obj && null !== this.obj
-              : type == typeof this.obj
-        , function(){ return 'expected ' + i(this.obj) + ' to be a' + n + ' ' + type }
-        , function(){ return 'expected ' + i(this.obj) + ' not to be a' + n + ' ' + type });
-    } else {
-      // instanceof
-      var name = type.name || 'supplied constructor';
-      this.assert(
-          this.obj instanceof type
-        , function(){ return 'expected ' + i(this.obj) + ' to be an instance of ' + name }
-        , function(){ return 'expected ' + i(this.obj) + ' not to be an instance of ' + name });
-    }
-
-    return this;
-  };
-
-  /**
-   * Assert numeric value above _n_.
-   *
-   * @param {Number} n
-   * @api public
-   */
-
-  Assertion.prototype.greaterThan =
-  Assertion.prototype.above = function (n) {
-    this.assert(
-        this.obj > n
-      , function(){ return 'expected ' + i(this.obj) + ' to be above ' + n }
-      , function(){ return 'expected ' + i(this.obj) + ' to be below ' + n });
-    return this;
-  };
-
-  /**
-   * Assert numeric value below _n_.
-   *
-   * @param {Number} n
-   * @api public
-   */
-
-  Assertion.prototype.lessThan =
-  Assertion.prototype.below = function (n) {
-    this.assert(
-        this.obj < n
-      , function(){ return 'expected ' + i(this.obj) + ' to be below ' + n }
-      , function(){ return 'expected ' + i(this.obj) + ' to be above ' + n });
-    return this;
-  };
-
-  /**
-   * Assert string value matches _regexp_.
-   *
-   * @param {RegExp} regexp
-   * @api public
-   */
-
-  Assertion.prototype.match = function (regexp) {
-    this.assert(
-        regexp.exec(this.obj)
-      , function(){ return 'expected ' + i(this.obj) + ' to match ' + regexp }
-      , function(){ return 'expected ' + i(this.obj) + ' not to match ' + regexp });
-    return this;
-  };
-
-  /**
-   * Assert property "length" exists and has value of _n_.
-   *
-   * @param {Number} n
-   * @api public
-   */
-
-  Assertion.prototype.length = function (n) {
-    expect(this.obj).to.have.property('length');
-    var len = this.obj.length;
-    this.assert(
-        n == len
-      , function(){ return 'expected ' + i(this.obj) + ' to have a length of ' + n + ' but got ' + len }
-      , function(){ return 'expected ' + i(this.obj) + ' to not have a length of ' + len });
-    return this;
-  };
-
-  /**
-   * Assert property _name_ exists, with optional _val_.
-   *
-   * @param {String} name
-   * @param {Mixed} val
-   * @api public
-   */
-
-  Assertion.prototype.property = function (name, val) {
-    if (this.flags.own) {
-      this.assert(
-          Object.prototype.hasOwnProperty.call(this.obj, name)
-        , function(){ return 'expected ' + i(this.obj) + ' to have own property ' + i(name) }
-        , function(){ return 'expected ' + i(this.obj) + ' to not have own property ' + i(name) });
-      return this;
-    }
-
-    if (this.flags.not && undefined !== val) {
-      if (undefined === this.obj[name]) {
-        throw new Error(i(this.obj) + ' has no property ' + i(name));
-      }
-    } else {
-      var hasProp;
-      try {
-        hasProp = name in this.obj
-      } catch (e) {
-        hasProp = undefined !== this.obj[name]
-      }
-
-      this.assert(
-          hasProp
-        , function(){ return 'expected ' + i(this.obj) + ' to have a property ' + i(name) }
-        , function(){ return 'expected ' + i(this.obj) + ' to not have a property ' + i(name) });
-    }
-
-    if (undefined !== val) {
-      this.assert(
-          val === this.obj[name]
-        , function(){ return 'expected ' + i(this.obj) + ' to have a property ' + i(name)
-          + ' of ' + i(val) + ', but got ' + i(this.obj[name]) }
-        , function(){ return 'expected ' + i(this.obj) + ' to not have a property ' + i(name)
-          + ' of ' + i(val) });
-    }
-
-    this.obj = this.obj[name];
-    return this;
-  };
-
-  /**
-   * Assert that the array contains _obj_ or string contains _obj_.
-   *
-   * @param {Mixed} obj|string
-   * @api public
-   */
-
-  Assertion.prototype.string =
-  Assertion.prototype.contain = function (obj) {
-    if ('string' == typeof this.obj) {
-      this.assert(
-          ~this.obj.indexOf(obj)
-        , function(){ return 'expected ' + i(this.obj) + ' to contain ' + i(obj) }
-        , function(){ return 'expected ' + i(this.obj) + ' to not contain ' + i(obj) });
-    } else {
-      this.assert(
-          ~indexOf(this.obj, obj)
-        , function(){ return 'expected ' + i(this.obj) + ' to contain ' + i(obj) }
-        , function(){ return 'expected ' + i(this.obj) + ' to not contain ' + i(obj) });
-    }
-    return this;
-  };
-
-  /**
-   * Assert exact keys or inclusion of keys by using
-   * the `.own` modifier.
-   *
-   * @param {Array|String ...} keys
-   * @api public
-   */
-
-  Assertion.prototype.key =
-  Assertion.prototype.keys = function ($keys) {
-    var str
-      , ok = true;
-
-    $keys = isArray($keys)
-      ? $keys
-      : Array.prototype.slice.call(arguments);
-
-    if (!$keys.length) throw new Error('keys required');
-
-    var actual = keys(this.obj)
-      , len = $keys.length;
-
-    // Inclusion
-    ok = every($keys, function (key) {
-      return ~indexOf(actual, key);
-    });
-
-    // Strict
-    if (!this.flags.not && this.flags.only) {
-      ok = ok && $keys.length == actual.length;
-    }
-
-    // Key string
-    if (len > 1) {
-      $keys = map($keys, function (key) {
-        return i(key);
-      });
-      var last = $keys.pop();
-      str = $keys.join(', ') + ', and ' + last;
-    } else {
-      str = i($keys[0]);
-    }
-
-    // Form
-    str = (len > 1 ? 'keys ' : 'key ') + str;
-
-    // Have / include
-    str = (!this.flags.only ? 'include ' : 'only have ') + str;
-
-    // Assertion
-    this.assert(
-        ok
-      , function(){ return 'expected ' + i(this.obj) + ' to ' + str }
-      , function(){ return 'expected ' + i(this.obj) + ' to not ' + str });
-
-    return this;
-  };
-  /**
-   * Assert a failure.
-   *
-   * @param {String ...} custom message
-   * @api public
-   */
-  Assertion.prototype.fail = function (msg) {
-    msg = msg || "explicit failure";
-    this.assert(false, msg, msg);
-    return this;
-  };
-
-  /**
-   * Function bind implementation.
-   */
-
-  function bind (fn, scope) {
-    return function () {
-      return fn.apply(scope, arguments);
-    }
-  }
-
-  /**
-   * Array every compatibility
-   *
-   * @see bit.ly/5Fq1N2
-   * @api public
-   */
-
-  function every (arr, fn, thisObj) {
-    var scope = thisObj || global;
-    for (var i = 0, j = arr.length; i < j; ++i) {
-      if (!fn.call(scope, arr[i], i, arr)) {
-        return false;
-      }
-    }
+};
+
+function _deepEqual(actual, expected) {
+  // 7.1. All identical values are equivalent, as determined by ===.
+  if (actual === expected) {
     return true;
-  };
 
-  /**
-   * Array indexOf compatibility.
-   *
-   * @see bit.ly/a5Dxa2
-   * @api public
-   */
+  } else if (util.isBuffer(actual) && util.isBuffer(expected)) {
+    if (actual.length != expected.length) return false;
 
-  function indexOf (arr, o, i) {
-    if (Array.prototype.indexOf) {
-      return Array.prototype.indexOf.call(arr, o, i);
+    for (var i = 0; i < actual.length; i++) {
+      if (actual[i] !== expected[i]) return false;
     }
 
-    if (arr.length === undefined) {
-      return -1;
-    }
+    return true;
 
-    for (var j = arr.length, i = i < 0 ? i + j < 0 ? 0 : i + j : i || 0
-        ; i < j && arr[i] !== o; i++);
+  // 7.2. If the expected value is a Date object, the actual value is
+  // equivalent if it is also a Date object that refers to the same time.
+  } else if (util.isDate(actual) && util.isDate(expected)) {
+    return actual.getTime() === expected.getTime();
 
-    return j <= i ? -1 : i;
-  };
+  // 7.3 If the expected value is a RegExp object, the actual value is
+  // equivalent if it is also a RegExp object with the same source and
+  // properties (`global`, `multiline`, `lastIndex`, `ignoreCase`).
+  } else if (util.isRegExp(actual) && util.isRegExp(expected)) {
+    return actual.source === expected.source &&
+           actual.global === expected.global &&
+           actual.multiline === expected.multiline &&
+           actual.lastIndex === expected.lastIndex &&
+           actual.ignoreCase === expected.ignoreCase;
 
-  // https://gist.github.com/1044128/
-  var getOuterHTML = function(element) {
-    if ('outerHTML' in element) return element.outerHTML;
-    var ns = "http://www.w3.org/1999/xhtml";
-    var container = document.createElementNS(ns, '_');
-    var elemProto = (window.HTMLElement || window.Element).prototype;
-    var xmlSerializer = new XMLSerializer();
-    var html;
-    if (document.xmlVersion) {
-      return xmlSerializer.serializeToString(element);
-    } else {
-      container.appendChild(element.cloneNode(false));
-      html = container.innerHTML.replace('><', '>' + element.innerHTML + '<');
-      container.innerHTML = '';
-      return html;
-    }
-  };
+  // 7.4. Other pairs that do not both pass typeof value == 'object',
+  // equivalence is determined by ==.
+  } else if (!util.isObject(actual) && !util.isObject(expected)) {
+    return actual == expected;
 
-  // Returns true if object is a DOM element.
-  var isDOMElement = function (object) {
-    if (typeof HTMLElement === 'object') {
-      return object instanceof HTMLElement;
-    } else {
-      return object &&
-        typeof object === 'object' &&
-        object.nodeType === 1 &&
-        typeof object.nodeName === 'string';
-    }
-  };
+  // 7.5 For all other Object pairs, including Array objects, equivalence is
+  // determined by having the same number of owned properties (as verified
+  // with Object.prototype.hasOwnProperty.call), the same set of keys
+  // (although not necessarily the same order), equivalent values for every
+  // corresponding key, and an identical 'prototype' property. Note: this
+  // accounts for both named and indexed properties on Arrays.
+  } else {
+    return objEquiv(actual, expected);
+  }
+}
 
-  /**
-   * Inspects an object.
-   *
-   * @see taken from node.js `util` module (copyright Joyent, MIT license)
-   * @api private
-   */
+function isArguments(object) {
+  return Object.prototype.toString.call(object) == '[object Arguments]';
+}
 
-  function i (obj, showHidden, depth) {
-    var seen = [];
-
-    function stylize (str) {
-      return str;
-    };
-
-    function format (value, recurseTimes) {
-      // Provide a hook for user-specified inspect functions.
-      // Check that value is an object with an inspect function on it
-      if (value && typeof value.inspect === 'function' &&
-          // Filter out the util module, it's inspect function is special
-          value !== exports &&
-          // Also filter out any prototype objects using the circular check.
-          !(value.constructor && value.constructor.prototype === value)) {
-        return value.inspect(recurseTimes);
-      }
-
-      // Primitive types cannot have properties
-      switch (typeof value) {
-        case 'undefined':
-          return stylize('undefined', 'undefined');
-
-        case 'string':
-          var simple = '\'' + json.stringify(value).replace(/^"|"$/g, '')
-                                                   .replace(/'/g, "\\'")
-                                                   .replace(/\\"/g, '"') + '\'';
-          return stylize(simple, 'string');
-
-        case 'number':
-          return stylize('' + value, 'number');
-
-        case 'boolean':
-          return stylize('' + value, 'boolean');
-      }
-      // For some reason typeof null is "object", so special case here.
-      if (value === null) {
-        return stylize('null', 'null');
-      }
-
-      if (isDOMElement(value)) {
-        return getOuterHTML(value);
-      }
-
-      // Look up the keys of the object.
-      var visible_keys = keys(value);
-      var $keys = showHidden ? Object.getOwnPropertyNames(value) : visible_keys;
-
-      // Functions without properties can be shortcutted.
-      if (typeof value === 'function' && $keys.length === 0) {
-        if (isRegExp(value)) {
-          return stylize('' + value, 'regexp');
-        } else {
-          var name = value.name ? ': ' + value.name : '';
-          return stylize('[Function' + name + ']', 'special');
-        }
-      }
-
-      // Dates without properties can be shortcutted
-      if (isDate(value) && $keys.length === 0) {
-        return stylize(value.toUTCString(), 'date');
-      }
-
-      var base, type, braces;
-      // Determine the object type
-      if (isArray(value)) {
-        type = 'Array';
-        braces = ['[', ']'];
-      } else {
-        type = 'Object';
-        braces = ['{', '}'];
-      }
-
-      // Make functions say that they are functions
-      if (typeof value === 'function') {
-        var n = value.name ? ': ' + value.name : '';
-        base = (isRegExp(value)) ? ' ' + value : ' [Function' + n + ']';
-      } else {
-        base = '';
-      }
-
-      // Make dates with properties first say the date
-      if (isDate(value)) {
-        base = ' ' + value.toUTCString();
-      }
-
-      if ($keys.length === 0) {
-        return braces[0] + base + braces[1];
-      }
-
-      if (recurseTimes < 0) {
-        if (isRegExp(value)) {
-          return stylize('' + value, 'regexp');
-        } else {
-          return stylize('[Object]', 'special');
-        }
-      }
-
-      seen.push(value);
-
-      var output = map($keys, function (key) {
-        var name, str;
-        if (value.__lookupGetter__) {
-          if (value.__lookupGetter__(key)) {
-            if (value.__lookupSetter__(key)) {
-              str = stylize('[Getter/Setter]', 'special');
-            } else {
-              str = stylize('[Getter]', 'special');
-            }
-          } else {
-            if (value.__lookupSetter__(key)) {
-              str = stylize('[Setter]', 'special');
-            }
-          }
-        }
-        if (indexOf(visible_keys, key) < 0) {
-          name = '[' + key + ']';
-        }
-        if (!str) {
-          if (indexOf(seen, value[key]) < 0) {
-            if (recurseTimes === null) {
-              str = format(value[key]);
-            } else {
-              str = format(value[key], recurseTimes - 1);
-            }
-            if (str.indexOf('\n') > -1) {
-              if (isArray(value)) {
-                str = map(str.split('\n'), function (line) {
-                  return '  ' + line;
-                }).join('\n').substr(2);
-              } else {
-                str = '\n' + map(str.split('\n'), function (line) {
-                  return '   ' + line;
-                }).join('\n');
-              }
-            }
-          } else {
-            str = stylize('[Circular]', 'special');
-          }
-        }
-        if (typeof name === 'undefined') {
-          if (type === 'Array' && key.match(/^\d+$/)) {
-            return str;
-          }
-          name = json.stringify('' + key);
-          if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-            name = name.substr(1, name.length - 2);
-            name = stylize(name, 'name');
-          } else {
-            name = name.replace(/'/g, "\\'")
-                       .replace(/\\"/g, '"')
-                       .replace(/(^"|"$)/g, "'");
-            name = stylize(name, 'string');
-          }
-        }
-
-        return name + ': ' + str;
-      });
-
-      seen.pop();
-
-      var numLinesEst = 0;
-      var length = reduce(output, function (prev, cur) {
-        numLinesEst++;
-        if (indexOf(cur, '\n') >= 0) numLinesEst++;
-        return prev + cur.length + 1;
-      }, 0);
-
-      if (length > 50) {
-        output = braces[0] +
-                 (base === '' ? '' : base + '\n ') +
-                 ' ' +
-                 output.join(',\n  ') +
-                 ' ' +
-                 braces[1];
-
-      } else {
-        output = braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-      }
-
-      return output;
-    }
-    return format(obj, (typeof depth === 'undefined' ? 2 : depth));
-  };
-
-  function isArray (ar) {
-    return Object.prototype.toString.call(ar) == '[object Array]';
-  };
-
-  function isRegExp(re) {
-    var s;
-    try {
-      s = '' + re;
-    } catch (e) {
-      return false;
-    }
-
-    return re instanceof RegExp || // easy case
-           // duck-type for context-switching evalcx case
-           typeof(re) === 'function' &&
-           re.constructor.name === 'RegExp' &&
-           re.compile &&
-           re.test &&
-           re.exec &&
-           s.match(/^\/.*\/[gim]{0,3}$/);
-  };
-
-  function isDate(d) {
-    if (d instanceof Date) return true;
+function objEquiv(a, b) {
+  if (util.isNullOrUndefined(a) || util.isNullOrUndefined(b))
     return false;
-  };
-
-  function keys (obj) {
-    if (Object.keys) {
-      return Object.keys(obj);
-    }
-
-    var keys = [];
-
-    for (var i in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, i)) {
-        keys.push(i);
-      }
-    }
-
-    return keys;
-  }
-
-  function map (arr, mapper, that) {
-    if (Array.prototype.map) {
-      return Array.prototype.map.call(arr, mapper, that);
-    }
-
-    var other= new Array(arr.length);
-
-    for (var i= 0, n = arr.length; i<n; i++)
-      if (i in arr)
-        other[i] = mapper.call(that, arr[i], i, arr);
-
-    return other;
-  };
-
-  function reduce (arr, fun) {
-    if (Array.prototype.reduce) {
-      return Array.prototype.reduce.apply(
-          arr
-        , Array.prototype.slice.call(arguments, 1)
-      );
-    }
-
-    var len = +this.length;
-
-    if (typeof fun !== "function")
-      throw new TypeError();
-
-    // no value to return if no initial value and an empty array
-    if (len === 0 && arguments.length === 1)
-      throw new TypeError();
-
-    var i = 0;
-    if (arguments.length >= 2) {
-      var rv = arguments[1];
-    } else {
-      do {
-        if (i in this) {
-          rv = this[i++];
-          break;
-        }
-
-        // if array contains no values, no initial value to return
-        if (++i >= len)
-          throw new TypeError();
-      } while (true);
-    }
-
-    for (; i < len; i++) {
-      if (i in this)
-        rv = fun.call(null, rv, this[i], i, this);
-    }
-
-    return rv;
-  };
-
-  /**
-   * Asserts deep equality
-   *
-   * @see taken from node.js `assert` module (copyright Joyent, MIT license)
-   * @api private
-   */
-
-  expect.eql = function eql (actual, expected) {
-    // 7.1. All identical values are equivalent, as determined by ===.
-    if (actual === expected) {
-      return true;
-    } else if ('undefined' != typeof Buffer
-        && Buffer.isBuffer(actual) && Buffer.isBuffer(expected)) {
-      if (actual.length != expected.length) return false;
-
-      for (var i = 0; i < actual.length; i++) {
-        if (actual[i] !== expected[i]) return false;
-      }
-
-      return true;
-
-    // 7.2. If the expected value is a Date object, the actual value is
-    // equivalent if it is also a Date object that refers to the same time.
-    } else if (actual instanceof Date && expected instanceof Date) {
-      return actual.getTime() === expected.getTime();
-
-    // 7.3. Other pairs that do not both pass typeof value == "object",
-    // equivalence is determined by ==.
-    } else if (typeof actual != 'object' && typeof expected != 'object') {
-      return actual == expected;
-
-    // 7.4. For all other Object pairs, including Array objects, equivalence is
-    // determined by having the same number of owned properties (as verified
-    // with Object.prototype.hasOwnProperty.call), the same set of keys
-    // (although not necessarily the same order), equivalent values for every
-    // corresponding key, and an identical "prototype" property. Note: this
-    // accounts for both named and indexed properties on Arrays.
-    } else {
-      return objEquiv(actual, expected);
-    }
-  }
-
-  function isUndefinedOrNull (value) {
-    return value === null || value === undefined;
-  }
-
-  function isArguments (object) {
-    return Object.prototype.toString.call(object) == '[object Arguments]';
-  }
-
-  function objEquiv (a, b) {
-    if (isUndefinedOrNull(a) || isUndefinedOrNull(b))
+  // an identical 'prototype' property.
+  if (a.prototype !== b.prototype) return false;
+  //~~~I've managed to break Object.keys through screwy arguments passing.
+  //   Converting to array solves the problem.
+  if (isArguments(a)) {
+    if (!isArguments(b)) {
       return false;
-    // an identical "prototype" property.
-    if (a.prototype !== b.prototype) return false;
-    //~~~I've managed to break Object.keys through screwy arguments passing.
-    //   Converting to array solves the problem.
-    if (isArguments(a)) {
-      if (!isArguments(b)) {
-        return false;
-      }
-      a = pSlice.call(a);
-      b = pSlice.call(b);
-      return expect.eql(a, b);
     }
-    try{
-      var ka = keys(a),
-        kb = keys(b),
+    a = pSlice.call(a);
+    b = pSlice.call(b);
+    return _deepEqual(a, b);
+  }
+  try {
+    var ka = objectKeys(a),
+        kb = objectKeys(b),
         key, i;
-    } catch (e) {//happens when one is a string literal and the other isn't
+  } catch (e) {//happens when one is a string literal and the other isn't
+    return false;
+  }
+  // having the same number of owned properties (keys incorporates
+  // hasOwnProperty)
+  if (ka.length != kb.length)
+    return false;
+  //the same set of keys (although not necessarily the same order),
+  ka.sort();
+  kb.sort();
+  //~~~cheap key test
+  for (i = ka.length - 1; i >= 0; i--) {
+    if (ka[i] != kb[i])
       return false;
-    }
-    // having the same number of owned properties (keys incorporates hasOwnProperty)
-    if (ka.length != kb.length)
-      return false;
-    //the same set of keys (although not necessarily the same order),
-    ka.sort();
-    kb.sort();
-    //~~~cheap key test
-    for (i = ka.length - 1; i >= 0; i--) {
-      if (ka[i] != kb[i])
-        return false;
-    }
-    //equivalent values for every corresponding key, and
-    //~~~possibly expensive deep test
-    for (i = ka.length - 1; i >= 0; i--) {
-      key = ka[i];
-      if (!expect.eql(a[key], b[key]))
-         return false;
-    }
+  }
+  //equivalent values for every corresponding key, and
+  //~~~possibly expensive deep test
+  for (i = ka.length - 1; i >= 0; i--) {
+    key = ka[i];
+    if (!_deepEqual(a[key], b[key])) return false;
+  }
+  return true;
+}
+
+// 8. The non-equivalence assertion tests for any deep inequality.
+// assert.notDeepEqual(actual, expected, message_opt);
+
+assert.notDeepEqual = function notDeepEqual(actual, expected, message) {
+  if (_deepEqual(actual, expected)) {
+    fail(actual, expected, message, 'notDeepEqual', assert.notDeepEqual);
+  }
+};
+
+// 9. The strict equality assertion tests strict equality, as determined by ===.
+// assert.strictEqual(actual, expected, message_opt);
+
+assert.strictEqual = function strictEqual(actual, expected, message) {
+  if (actual !== expected) {
+    fail(actual, expected, message, '===', assert.strictEqual);
+  }
+};
+
+// 10. The strict non-equality assertion tests for strict inequality, as
+// determined by !==.  assert.notStrictEqual(actual, expected, message_opt);
+
+assert.notStrictEqual = function notStrictEqual(actual, expected, message) {
+  if (actual === expected) {
+    fail(actual, expected, message, '!==', assert.notStrictEqual);
+  }
+};
+
+function expectedException(actual, expected) {
+  if (!actual || !expected) {
+    return false;
+  }
+
+  if (Object.prototype.toString.call(expected) == '[object RegExp]') {
+    return expected.test(actual);
+  } else if (actual instanceof expected) {
+    return true;
+  } else if (expected.call({}, actual) === true) {
     return true;
   }
 
-  var json = (function () {
-    "use strict";
-
-    if ('object' == typeof JSON && JSON.parse && JSON.stringify) {
-      return {
-          parse: nativeJSON.parse
-        , stringify: nativeJSON.stringify
-      }
-    }
-
-    var JSON = {};
-
-    function f(n) {
-        // Format integers to have at least two digits.
-        return n < 10 ? '0' + n : n;
-    }
-
-    function date(d, key) {
-      return isFinite(d.valueOf()) ?
-          d.getUTCFullYear()     + '-' +
-          f(d.getUTCMonth() + 1) + '-' +
-          f(d.getUTCDate())      + 'T' +
-          f(d.getUTCHours())     + ':' +
-          f(d.getUTCMinutes())   + ':' +
-          f(d.getUTCSeconds())   + 'Z' : null;
-    };
-
-    var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-        escapable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
-        gap,
-        indent,
-        meta = {    // table of character substitutions
-            '\b': '\\b',
-            '\t': '\\t',
-            '\n': '\\n',
-            '\f': '\\f',
-            '\r': '\\r',
-            '"' : '\\"',
-            '\\': '\\\\'
-        },
-        rep;
-
-
-    function quote(string) {
-
-  // If the string contains no control characters, no quote characters, and no
-  // backslash characters, then we can safely slap some quotes around it.
-  // Otherwise we must also replace the offending characters with safe escape
-  // sequences.
-
-        escapable.lastIndex = 0;
-        return escapable.test(string) ? '"' + string.replace(escapable, function (a) {
-            var c = meta[a];
-            return typeof c === 'string' ? c :
-                '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-        }) + '"' : '"' + string + '"';
-    }
-
-
-    function str(key, holder) {
-
-  // Produce a string from holder[key].
-
-        var i,          // The loop counter.
-            k,          // The member key.
-            v,          // The member value.
-            length,
-            mind = gap,
-            partial,
-            value = holder[key];
-
-  // If the value has a toJSON method, call it to obtain a replacement value.
-
-        if (value instanceof Date) {
-            value = date(key);
-        }
-
-  // If we were called with a replacer function, then call the replacer to
-  // obtain a replacement value.
-
-        if (typeof rep === 'function') {
-            value = rep.call(holder, key, value);
-        }
-
-  // What happens next depends on the value's type.
-
-        switch (typeof value) {
-        case 'string':
-            return quote(value);
-
-        case 'number':
-
-  // JSON numbers must be finite. Encode non-finite numbers as null.
-
-            return isFinite(value) ? String(value) : 'null';
-
-        case 'boolean':
-        case 'null':
-
-  // If the value is a boolean or null, convert it to a string. Note:
-  // typeof null does not produce 'null'. The case is included here in
-  // the remote chance that this gets fixed someday.
-
-            return String(value);
-
-  // If the type is 'object', we might be dealing with an object or an array or
-  // null.
-
-        case 'object':
-
-  // Due to a specification blunder in ECMAScript, typeof null is 'object',
-  // so watch out for that case.
-
-            if (!value) {
-                return 'null';
-            }
-
-  // Make an array to hold the partial results of stringifying this object value.
-
-            gap += indent;
-            partial = [];
-
-  // Is the value an array?
-
-            if (Object.prototype.toString.apply(value) === '[object Array]') {
-
-  // The value is an array. Stringify every element. Use null as a placeholder
-  // for non-JSON values.
-
-                length = value.length;
-                for (i = 0; i < length; i += 1) {
-                    partial[i] = str(i, value) || 'null';
-                }
-
-  // Join all of the elements together, separated with commas, and wrap them in
-  // brackets.
-
-                v = partial.length === 0 ? '[]' : gap ?
-                    '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']' :
-                    '[' + partial.join(',') + ']';
-                gap = mind;
-                return v;
-            }
-
-  // If the replacer is an array, use it to select the members to be stringified.
-
-            if (rep && typeof rep === 'object') {
-                length = rep.length;
-                for (i = 0; i < length; i += 1) {
-                    if (typeof rep[i] === 'string') {
-                        k = rep[i];
-                        v = str(k, value);
-                        if (v) {
-                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                        }
-                    }
-                }
-            } else {
-
-  // Otherwise, iterate through all of the keys in the object.
-
-                for (k in value) {
-                    if (Object.prototype.hasOwnProperty.call(value, k)) {
-                        v = str(k, value);
-                        if (v) {
-                            partial.push(quote(k) + (gap ? ': ' : ':') + v);
-                        }
-                    }
-                }
-            }
-
-  // Join all of the member texts together, separated with commas,
-  // and wrap them in braces.
-
-            v = partial.length === 0 ? '{}' : gap ?
-                '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}' :
-                '{' + partial.join(',') + '}';
-            gap = mind;
-            return v;
-        }
-    }
-
-  // If the JSON object does not yet have a stringify method, give it one.
-
-    JSON.stringify = function (value, replacer, space) {
-
-  // The stringify method takes a value and an optional replacer, and an optional
-  // space parameter, and returns a JSON text. The replacer can be a function
-  // that can replace values, or an array of strings that will select the keys.
-  // A default replacer method can be provided. Use of the space parameter can
-  // produce text that is more easily readable.
-
-        var i;
-        gap = '';
-        indent = '';
-
-  // If the space parameter is a number, make an indent string containing that
-  // many spaces.
-
-        if (typeof space === 'number') {
-            for (i = 0; i < space; i += 1) {
-                indent += ' ';
-            }
-
-  // If the space parameter is a string, it will be used as the indent string.
-
-        } else if (typeof space === 'string') {
-            indent = space;
-        }
-
-  // If there is a replacer, it must be a function or an array.
-  // Otherwise, throw an error.
-
-        rep = replacer;
-        if (replacer && typeof replacer !== 'function' &&
-                (typeof replacer !== 'object' ||
-                typeof replacer.length !== 'number')) {
-            throw new Error('JSON.stringify');
-        }
-
-  // Make a fake root object containing our value under the key of ''.
-  // Return the result of stringifying the value.
-
-        return str('', {'': value});
-    };
-
-  // If the JSON object does not yet have a parse method, give it one.
-
-    JSON.parse = function (text, reviver) {
-    // The parse method takes a text and an optional reviver function, and returns
-    // a JavaScript value if the text is a valid JSON text.
-
-        var j;
-
-        function walk(holder, key) {
-
-    // The walk method is used to recursively walk the resulting structure so
-    // that modifications can be made.
-
-            var k, v, value = holder[key];
-            if (value && typeof value === 'object') {
-                for (k in value) {
-                    if (Object.prototype.hasOwnProperty.call(value, k)) {
-                        v = walk(value, k);
-                        if (v !== undefined) {
-                            value[k] = v;
-                        } else {
-                            delete value[k];
-                        }
-                    }
-                }
-            }
-            return reviver.call(holder, key, value);
-        }
-
-
-    // Parsing happens in four stages. In the first stage, we replace certain
-    // Unicode characters with escape sequences. JavaScript handles many characters
-    // incorrectly, either silently deleting them, or treating them as line endings.
-
-        text = String(text);
-        cx.lastIndex = 0;
-        if (cx.test(text)) {
-            text = text.replace(cx, function (a) {
-                return '\\u' +
-                    ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
-            });
-        }
-
-    // In the second stage, we run the text against regular expressions that look
-    // for non-JSON patterns. We are especially concerned with '()' and 'new'
-    // because they can cause invocation, and '=' because it can cause mutation.
-    // But just to be safe, we want to reject all unexpected forms.
-
-    // We split the second stage into 4 regexp operations in order to work around
-    // crippling inefficiencies in IE's and Safari's regexp engines. First we
-    // replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
-    // replace all simple value tokens with ']' characters. Third, we delete all
-    // open brackets that follow a colon or comma or that begin the text. Finally,
-    // we look to see that the remaining characters are only whitespace or ']' or
-    // ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
-
-        if (/^[\],:{}\s]*$/
-                .test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
-                    .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
-                    .replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
-
-    // In the third stage we use the eval function to compile the text into a
-    // JavaScript structure. The '{' operator is subject to a syntactic ambiguity
-    // in JavaScript: it can begin a block or an object literal. We wrap the text
-    // in parens to eliminate the ambiguity.
-
-            j = eval('(' + text + ')');
-
-    // In the optional fourth stage, we recursively walk the new structure, passing
-    // each name/value pair to a reviver function for possible transformation.
-
-            return typeof reviver === 'function' ?
-                walk({'': j}, '') : j;
-        }
-
-    // If the text is not JSON parseable, then a SyntaxError is thrown.
-
-        throw new SyntaxError('JSON.parse');
-    };
-
-    return JSON;
-  })();
-
-  if ('undefined' != typeof window) {
-    window.expect = module.exports;
+  return false;
+}
+
+function _throws(shouldThrow, block, expected, message) {
+  var actual;
+
+  if (util.isString(expected)) {
+    message = expected;
+    expected = null;
   }
 
-})(
-    this
-  , 'undefined' != typeof module ? module : {}
-  , 'undefined' != typeof exports ? exports : {}
-);
+  try {
+    block();
+  } catch (e) {
+    actual = e;
+  }
 
-},{"__browserify_Buffer":3}],5:[function(require,module,exports){
-console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/spec/toga-spec.js\"" + " " + "[[25,38],[49,62],[49,62],[40,63],[77,97],[77,97],[64,98],[110,135],[110,135],[99,136],[148,152],[137,153],[255,487],[242,488],[505,517],[498,518],[498,521],[540,802],[526,812],[498,813],[498,814],[221,820],[190,821],[190,822],[893,941],[881,942],[959,965],[952,966],[952,969],[988,1027],[974,1037],[952,1038],[952,1039],[1056,1066],[1049,1067],[1049,1070],[1089,1123],[1075,1133],[1049,1134],[1049,1135],[1152,1160],[1145,1161],[1145,1164],[1183,1213],[1169,1223],[1145,1224],[1145,1225],[1242,1253],[1235,1254],[1235,1257],[1276,1312],[1375,1377],[1326,1379],[1393,1425],[1488,1490],[1439,1492],[1506,1538],[1601,1603],[1552,1605],[1619,1651],[1714,1716],[1665,1718],[1732,1764],[1262,1774],[1235,1775],[1235,1776],[860,1782],[828,1783],[828,1784],[1854,1924],[1843,1925],[1942,1952],[1935,1953],[1935,1956],[1975,2005],[2079,2081],[2019,2083],[2097,2129],[2203,2205],[2143,2207],[2221,2253],[2327,2329],[2267,2331],[2345,2377],[1961,2387],[1935,2388],[1935,2389],[1822,2395],[1790,2396],[1790,2397],[2458,2605],[2448,2606],[2623,2632],[2616,2633],[2616,2636],[2655,2685],[2749,2819],[2748,2820],[2699,2822],[2836,2868],[2932,3002],[2931,3003],[2882,3005],[3019,3051],[3115,3162],[3114,3163],[3065,3165],[3179,3211],[3275,3322],[3274,3323],[3225,3325],[3339,3371],[3435,3451],[3434,3452],[3385,3454],[3468,3500],[2641,3510],[2616,3511],[2616,3512],[2427,3518],[2403,3519],[2403,3520],[3581,3965],[3571,3966],[3983,3992],[3976,3993],[3976,3996],[4015,4045],[4109,4192],[4108,4193],[4059,4195],[4209,4241],[4305,4388],[4304,4389],[4255,4391],[4405,4437],[4501,4582],[4500,4583],[4451,4585],[4599,4631],[4695,4776],[4694,4777],[4645,4779],[4793,4825],[4889,4941],[4888,4942],[4839,4944],[4958,4990],[5054,5104],[5053,5105],[5004,5107],[5121,5153],[5217,5282],[5216,5283],[5167,5285],[5299,5331],[5395,5460],[5394,5461],[5345,5463],[5477,5509],[5573,5636],[5572,5637],[5523,5639],[5653,5685],[5749,5812],[5748,5813],[5699,5815],[5829,5861],[5925,5959],[5924,5960],[5875,5962],[5976,6008],[6072,6104],[6071,6105],[6022,6107],[6121,6153],[4001,6163],[3976,6164],[3976,6165],[3550,6171],[3526,6172],[3526,6173],[6236,6395],[6225,6396],[6413,6423],[6406,6424],[6406,6427],[6446,6476],[6540,6574],[6539,6575],[6490,6577],[6591,6623],[6687,6730],[6686,6731],[6637,6733],[6747,6779],[6843,6903],[6842,6904],[6793,6906],[6920,6952],[7016,7103],[7015,7104],[6966,7106],[7120,7152],[6432,7162],[6406,7163],[6406,7164],[6204,7170],[6179,7171],[6179,7172],[7235,7334],[7224,7335],[7352,7362],[7345,7363],[7345,7366],[7385,7415],[7479,7511],[7478,7512],[7429,7514],[7528,7560],[7624,7658],[7623,7659],[7574,7661],[7675,7707],[7771,7808],[7770,7809],[7721,7811],[7825,7857],[7921,7969],[7920,7970],[7871,7972],[7986,8018],[7371,8028],[7345,8029],[7345,8030],[7203,8036],[7178,8037],[7178,8038],[8108,11339],[8095,11340],[11370,11380],[11370,11380],[11349,11381],[11432,11465],[11403,11466],[11403,11466],[11390,11467],[11477,11491],[11477,11494],[11513,11543],[11851,11934],[11956,12087],[12109,12273],[12295,12364],[12386,12402],[11829,12420],[11557,12979],[12993,13027],[13335,13418],[13440,13571],[13593,13757],[13779,13848],[13870,13886],[13313,13904],[13041,14394],[14408,14442],[14750,14833],[14855,14986],[15008,15172],[15194,15263],[15285,15301],[14728,15319],[14456,15877],[15891,15925],[16233,16316],[16338,16469],[16491,16655],[16677,16746],[16768,16784],[16211,16802],[15939,17473],[17487,17521],[17829,17912],[17934,18065],[18087,18251],[18273,18342],[18364,18380],[17807,18398],[17535,18964],[18978,19012],[19320,19403],[19425,19556],[19578,19742],[19764,19833],[19855,19871],[19298,19889],[19026,20522],[20536,20568],[11499,20578],[11477,20579],[11477,20580],[8074,20586],[8044,20587],[8044,20588],[20671,24623],[20658,24624],[24665,24900],[24656,24901],[24656,24901],[24634,24902],[24955,24988],[24925,24989],[24925,24989],[24912,24990],[25000,25014],[25000,25017],[25036,25066],[25371,25454],[25476,25607],[25629,25793],[25815,25952],[25974,26011],[25349,26029],[25080,26702],[26716,26750],[27055,27138],[27160,27291],[27313,27477],[27499,27636],[27658,27674],[27033,27692],[26764,28251],[28265,28299],[28608,28691],[28713,28844],[28866,29030],[29052,29189],[29211,29227],[28586,29245],[28313,29892],[29906,29940],[30245,30328],[30350,30481],[30503,30667],[30689,30826],[30848,30885],[30223,30903],[29954,31704],[31718,31752],[32057,32140],[32162,32293],[32315,32479],[32501,32638],[32660,32676],[32035,32694],[31766,33345],[33359,33393],[33702,33785],[33807,33938],[33960,34124],[34146,34283],[34305,34321],[33680,34339],[33407,35078],[35092,35228],[25022,35238],[25000,35239],[25000,35240],[20637,35246],[20594,35247],[20594,35248],[35325,35840],[35312,35841],[35877,36045],[35868,36046],[35868,36046],[35851,36047],[36095,36128],[36070,36129],[36070,36129],[36057,36130],[36140,36154],[36140,36157],[36176,36260],[36568,36651],[36673,36804],[36826,36990],[37012,37079],[37101,37117],[36546,37135],[36274,37627],[37641,37673],[36162,37683],[36140,37684],[36140,37685],[35291,37691],[35254,37692],[35254,37693],[172,37695],[155,37696],[155,37697]]");var __coverage = {"0":[25,38],"1":[49,62],"2":[49,62],"3":[40,63],"4":[77,97],"5":[77,97],"6":[64,98],"7":[110,135],"8":[110,135],"9":[99,136],"10":[148,152],"11":[137,153],"12":[255,487],"13":[242,488],"14":[505,517],"15":[498,518],"16":[498,521],"17":[540,802],"18":[526,812],"19":[498,813],"20":[498,814],"21":[221,820],"22":[190,821],"23":[190,822],"24":[893,941],"25":[881,942],"26":[959,965],"27":[952,966],"28":[952,969],"29":[988,1027],"30":[974,1037],"31":[952,1038],"32":[952,1039],"33":[1056,1066],"34":[1049,1067],"35":[1049,1070],"36":[1089,1123],"37":[1075,1133],"38":[1049,1134],"39":[1049,1135],"40":[1152,1160],"41":[1145,1161],"42":[1145,1164],"43":[1183,1213],"44":[1169,1223],"45":[1145,1224],"46":[1145,1225],"47":[1242,1253],"48":[1235,1254],"49":[1235,1257],"50":[1276,1312],"51":[1375,1377],"52":[1326,1379],"53":[1393,1425],"54":[1488,1490],"55":[1439,1492],"56":[1506,1538],"57":[1601,1603],"58":[1552,1605],"59":[1619,1651],"60":[1714,1716],"61":[1665,1718],"62":[1732,1764],"63":[1262,1774],"64":[1235,1775],"65":[1235,1776],"66":[860,1782],"67":[828,1783],"68":[828,1784],"69":[1854,1924],"70":[1843,1925],"71":[1942,1952],"72":[1935,1953],"73":[1935,1956],"74":[1975,2005],"75":[2079,2081],"76":[2019,2083],"77":[2097,2129],"78":[2203,2205],"79":[2143,2207],"80":[2221,2253],"81":[2327,2329],"82":[2267,2331],"83":[2345,2377],"84":[1961,2387],"85":[1935,2388],"86":[1935,2389],"87":[1822,2395],"88":[1790,2396],"89":[1790,2397],"90":[2458,2605],"91":[2448,2606],"92":[2623,2632],"93":[2616,2633],"94":[2616,2636],"95":[2655,2685],"96":[2749,2819],"97":[2748,2820],"98":[2699,2822],"99":[2836,2868],"100":[2932,3002],"101":[2931,3003],"102":[2882,3005],"103":[3019,3051],"104":[3115,3162],"105":[3114,3163],"106":[3065,3165],"107":[3179,3211],"108":[3275,3322],"109":[3274,3323],"110":[3225,3325],"111":[3339,3371],"112":[3435,3451],"113":[3434,3452],"114":[3385,3454],"115":[3468,3500],"116":[2641,3510],"117":[2616,3511],"118":[2616,3512],"119":[2427,3518],"120":[2403,3519],"121":[2403,3520],"122":[3581,3965],"123":[3571,3966],"124":[3983,3992],"125":[3976,3993],"126":[3976,3996],"127":[4015,4045],"128":[4109,4192],"129":[4108,4193],"130":[4059,4195],"131":[4209,4241],"132":[4305,4388],"133":[4304,4389],"134":[4255,4391],"135":[4405,4437],"136":[4501,4582],"137":[4500,4583],"138":[4451,4585],"139":[4599,4631],"140":[4695,4776],"141":[4694,4777],"142":[4645,4779],"143":[4793,4825],"144":[4889,4941],"145":[4888,4942],"146":[4839,4944],"147":[4958,4990],"148":[5054,5104],"149":[5053,5105],"150":[5004,5107],"151":[5121,5153],"152":[5217,5282],"153":[5216,5283],"154":[5167,5285],"155":[5299,5331],"156":[5395,5460],"157":[5394,5461],"158":[5345,5463],"159":[5477,5509],"160":[5573,5636],"161":[5572,5637],"162":[5523,5639],"163":[5653,5685],"164":[5749,5812],"165":[5748,5813],"166":[5699,5815],"167":[5829,5861],"168":[5925,5959],"169":[5924,5960],"170":[5875,5962],"171":[5976,6008],"172":[6072,6104],"173":[6071,6105],"174":[6022,6107],"175":[6121,6153],"176":[4001,6163],"177":[3976,6164],"178":[3976,6165],"179":[3550,6171],"180":[3526,6172],"181":[3526,6173],"182":[6236,6395],"183":[6225,6396],"184":[6413,6423],"185":[6406,6424],"186":[6406,6427],"187":[6446,6476],"188":[6540,6574],"189":[6539,6575],"190":[6490,6577],"191":[6591,6623],"192":[6687,6730],"193":[6686,6731],"194":[6637,6733],"195":[6747,6779],"196":[6843,6903],"197":[6842,6904],"198":[6793,6906],"199":[6920,6952],"200":[7016,7103],"201":[7015,7104],"202":[6966,7106],"203":[7120,7152],"204":[6432,7162],"205":[6406,7163],"206":[6406,7164],"207":[6204,7170],"208":[6179,7171],"209":[6179,7172],"210":[7235,7334],"211":[7224,7335],"212":[7352,7362],"213":[7345,7363],"214":[7345,7366],"215":[7385,7415],"216":[7479,7511],"217":[7478,7512],"218":[7429,7514],"219":[7528,7560],"220":[7624,7658],"221":[7623,7659],"222":[7574,7661],"223":[7675,7707],"224":[7771,7808],"225":[7770,7809],"226":[7721,7811],"227":[7825,7857],"228":[7921,7969],"229":[7920,7970],"230":[7871,7972],"231":[7986,8018],"232":[7371,8028],"233":[7345,8029],"234":[7345,8030],"235":[7203,8036],"236":[7178,8037],"237":[7178,8038],"238":[8108,11339],"239":[8095,11340],"240":[11370,11380],"241":[11370,11380],"242":[11349,11381],"243":[11432,11465],"244":[11403,11466],"245":[11403,11466],"246":[11390,11467],"247":[11477,11491],"248":[11477,11494],"249":[11513,11543],"250":[11851,11934],"251":[11956,12087],"252":[12109,12273],"253":[12295,12364],"254":[12386,12402],"255":[11829,12420],"256":[11557,12979],"257":[12993,13027],"258":[13335,13418],"259":[13440,13571],"260":[13593,13757],"261":[13779,13848],"262":[13870,13886],"263":[13313,13904],"264":[13041,14394],"265":[14408,14442],"266":[14750,14833],"267":[14855,14986],"268":[15008,15172],"269":[15194,15263],"270":[15285,15301],"271":[14728,15319],"272":[14456,15877],"273":[15891,15925],"274":[16233,16316],"275":[16338,16469],"276":[16491,16655],"277":[16677,16746],"278":[16768,16784],"279":[16211,16802],"280":[15939,17473],"281":[17487,17521],"282":[17829,17912],"283":[17934,18065],"284":[18087,18251],"285":[18273,18342],"286":[18364,18380],"287":[17807,18398],"288":[17535,18964],"289":[18978,19012],"290":[19320,19403],"291":[19425,19556],"292":[19578,19742],"293":[19764,19833],"294":[19855,19871],"295":[19298,19889],"296":[19026,20522],"297":[20536,20568],"298":[11499,20578],"299":[11477,20579],"300":[11477,20580],"301":[8074,20586],"302":[8044,20587],"303":[8044,20588],"304":[20671,24623],"305":[20658,24624],"306":[24665,24900],"307":[24656,24901],"308":[24656,24901],"309":[24634,24902],"310":[24955,24988],"311":[24925,24989],"312":[24925,24989],"313":[24912,24990],"314":[25000,25014],"315":[25000,25017],"316":[25036,25066],"317":[25371,25454],"318":[25476,25607],"319":[25629,25793],"320":[25815,25952],"321":[25974,26011],"322":[25349,26029],"323":[25080,26702],"324":[26716,26750],"325":[27055,27138],"326":[27160,27291],"327":[27313,27477],"328":[27499,27636],"329":[27658,27674],"330":[27033,27692],"331":[26764,28251],"332":[28265,28299],"333":[28608,28691],"334":[28713,28844],"335":[28866,29030],"336":[29052,29189],"337":[29211,29227],"338":[28586,29245],"339":[28313,29892],"340":[29906,29940],"341":[30245,30328],"342":[30350,30481],"343":[30503,30667],"344":[30689,30826],"345":[30848,30885],"346":[30223,30903],"347":[29954,31704],"348":[31718,31752],"349":[32057,32140],"350":[32162,32293],"351":[32315,32479],"352":[32501,32638],"353":[32660,32676],"354":[32035,32694],"355":[31766,33345],"356":[33359,33393],"357":[33702,33785],"358":[33807,33938],"359":[33960,34124],"360":[34146,34283],"361":[34305,34321],"362":[33680,34339],"363":[33407,35078],"364":[35092,35228],"365":[25022,35238],"366":[25000,35239],"367":[25000,35240],"368":[20637,35246],"369":[20594,35247],"370":[20594,35248],"371":[35325,35840],"372":[35312,35841],"373":[35877,36045],"374":[35868,36046],"375":[35868,36046],"376":[35851,36047],"377":[36095,36128],"378":[36070,36129],"379":[36070,36129],"380":[36057,36130],"381":[36140,36154],"382":[36140,36157],"383":[36176,36260],"384":[36568,36651],"385":[36673,36804],"386":[36826,36990],"387":[37012,37079],"388":[37101,37117],"389":[36546,37135],"390":[36274,37627],"391":[37641,37673],"392":[36162,37683],"393":[36140,37684],"394":[36140,37685],"395":[35291,37691],"396":[35254,37692],"397":[35254,37693],"398":[172,37695],"399":[155,37696],"400":[155,37697]};var __coverageWrap = function (index, value) {if (__coverage[index]) console.log("COVERED " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/spec/toga-spec.js\"" + " " + index);delete __coverage[index];return value};
+  message = (expected && expected.name ? ' (' + expected.name + ').' : '.') +
+            (message ? ' ' + message : '.');
+
+  if (shouldThrow && !actual) {
+    fail(actual, expected, 'Missing expected exception' + message);
+  }
+
+  if (!shouldThrow && expectedException(actual, expected)) {
+    fail(actual, expected, 'Got unwanted exception' + message);
+  }
+
+  if ((shouldThrow && actual && expected &&
+      !expectedException(actual, expected)) || (!shouldThrow && actual)) {
+    throw actual;
+  }
+}
+
+// 11. Expected to throw an error:
+// assert.throws(block, Error_opt, message_opt);
+
+assert.throws = function(block, /*optional*/error, /*optional*/message) {
+  _throws.apply(this, [true].concat(pSlice.call(arguments)));
+};
+
+// EXTENSION! This is annoying to write outside this module.
+assert.doesNotThrow = function(block, /*optional*/message) {
+  _throws.apply(this, [false].concat(pSlice.call(arguments)));
+};
+
+assert.ifError = function(err) { if (err) {throw err;}};
+
+var objectKeys = Object.keys || function (obj) {
+  var keys = [];
+  for (var key in obj) {
+    if (hasOwn.call(obj, key)) keys.push(key);
+  }
+  return keys;
+};
+
+},{"util/":7}],4:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],5:[function(require,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            if (ev.source === window && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],6:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],7:[function(require,module,exports){
+var process=require("__browserify_process"),global=typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+},{"./support/isBuffer":6,"__browserify_process":5,"inherits":4}],8:[function(require,module,exports){
+console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/spec/toga-spec.js\"" + " " + "[[25,38],[53,70],[53,70],[40,71],[81,94],[81,94],[72,95],[107,132],[107,132],[96,133],[145,149],[134,150],[252,484],[239,485],[512,524],[540,802],[526,812],[495,813],[495,814],[218,820],[187,821],[187,822],[893,941],[881,942],[969,975],[991,1030],[977,1040],[952,1041],[952,1042],[1069,1079],[1095,1129],[1081,1139],[1052,1140],[1052,1141],[1168,1176],[1192,1222],[1178,1232],[1151,1233],[1151,1234],[1261,1272],[1288,1324],[1387,1389],[1338,1391],[1405,1437],[1500,1502],[1451,1504],[1518,1550],[1613,1615],[1564,1617],[1631,1663],[1726,1728],[1677,1730],[1744,1776],[1274,1786],[1244,1787],[1244,1788],[860,1794],[828,1795],[828,1796],[1866,1936],[1855,1937],[1964,1974],[1990,2020],[2094,2096],[2034,2098],[2112,2144],[2218,2220],[2158,2222],[2236,2268],[2342,2344],[2282,2346],[2360,2392],[1976,2402],[1947,2403],[1947,2404],[1834,2410],[1802,2411],[1802,2412],[2473,2620],[2463,2621],[2648,2657],[2673,2703],[2767,2837],[2766,2838],[2717,2840],[2854,2886],[2950,3020],[2949,3021],[2900,3023],[3037,3069],[3133,3180],[3132,3181],[3083,3183],[3197,3229],[3293,3340],[3292,3341],[3243,3343],[3357,3389],[3453,3469],[3452,3470],[3403,3472],[3486,3518],[2659,3528],[2631,3529],[2631,3530],[2442,3536],[2418,3537],[2418,3538],[3599,3983],[3589,3984],[4011,4020],[4036,4066],[4130,4213],[4129,4214],[4080,4216],[4230,4262],[4326,4409],[4325,4410],[4276,4412],[4426,4458],[4522,4603],[4521,4604],[4472,4606],[4620,4652],[4716,4797],[4715,4798],[4666,4800],[4814,4846],[4910,4962],[4909,4963],[4860,4965],[4979,5011],[5075,5125],[5074,5126],[5025,5128],[5142,5174],[5238,5303],[5237,5304],[5188,5306],[5320,5352],[5416,5481],[5415,5482],[5366,5484],[5498,5530],[5594,5657],[5593,5658],[5544,5660],[5674,5706],[5770,5833],[5769,5834],[5720,5836],[5850,5882],[5946,5980],[5945,5981],[5896,5983],[5997,6029],[6093,6125],[6092,6126],[6043,6128],[6142,6174],[4022,6184],[3994,6185],[3994,6186],[3568,6192],[3544,6193],[3544,6194],[6257,6416],[6246,6417],[6444,6454],[6470,6500],[6564,6598],[6563,6599],[6514,6601],[6615,6647],[6711,6754],[6710,6755],[6661,6757],[6771,6803],[6867,6927],[6866,6928],[6817,6930],[6944,6976],[7040,7127],[7039,7128],[6990,7130],[7144,7176],[6456,7186],[6427,7187],[6427,7188],[6225,7194],[6200,7195],[6200,7196],[7259,7358],[7248,7359],[7386,7396],[7412,7442],[7506,7538],[7505,7539],[7456,7541],[7555,7587],[7651,7685],[7650,7686],[7601,7688],[7702,7734],[7798,7835],[7797,7836],[7748,7838],[7852,7884],[7948,7996],[7947,7997],[7898,7999],[8013,8045],[7398,8055],[7369,8056],[7369,8057],[7227,8063],[7202,8064],[7202,8065],[8135,11366],[8122,11367],[11397,11407],[11397,11407],[11376,11408],[11459,11492],[11430,11493],[11430,11493],[11417,11494],[11543,11573],[11881,11964],[11986,12117],[12139,12303],[12325,12394],[12416,12432],[11859,12450],[11587,13009],[13023,13057],[13365,13448],[13470,13601],[13623,13787],[13809,13878],[13900,13916],[13343,13934],[13071,14424],[14438,14472],[14780,14863],[14885,15016],[15038,15202],[15224,15293],[15315,15331],[14758,15349],[14486,15907],[15921,15955],[16263,16346],[16368,16499],[16521,16685],[16707,16776],[16798,16814],[16241,16832],[15969,17503],[17517,17551],[17859,17942],[17964,18095],[18117,18281],[18303,18372],[18394,18410],[17837,18428],[17565,18994],[19008,19042],[19350,19433],[19455,19586],[19608,19772],[19794,19863],[19885,19901],[19328,19919],[19056,20552],[20566,20598],[11529,20608],[11504,20609],[11504,20610],[8101,20616],[8071,20617],[8071,20618],[20701,24653],[20688,24654],[24695,24930],[24686,24931],[24686,24931],[24664,24932],[24985,25018],[24955,25019],[24955,25019],[24942,25020],[25069,25099],[25404,25487],[25509,25640],[25662,25826],[25848,25985],[26007,26044],[25382,26062],[25113,26735],[26749,26783],[27088,27171],[27193,27324],[27346,27510],[27532,27669],[27691,27707],[27066,27725],[26797,28284],[28298,28332],[28641,28724],[28746,28877],[28899,29063],[29085,29222],[29244,29260],[28619,29278],[28346,29925],[29939,29973],[30278,30361],[30383,30514],[30536,30700],[30722,30859],[30881,30918],[30256,30936],[29987,31737],[31751,31785],[32090,32173],[32195,32326],[32348,32512],[32534,32671],[32693,32709],[32068,32727],[31799,33378],[33392,33426],[33735,33818],[33840,33971],[33993,34157],[34179,34316],[34338,34354],[33713,34372],[33440,35111],[35125,35261],[25055,35271],[25030,35272],[25030,35273],[20667,35279],[20624,35280],[20624,35281],[35358,35873],[35345,35874],[35910,36078],[35901,36079],[35901,36079],[35884,36080],[36128,36161],[36103,36162],[36103,36162],[36090,36163],[36212,36296],[36604,36687],[36709,36840],[36862,37026],[37048,37115],[37137,37153],[36582,37171],[36310,37663],[37677,37709],[36198,37719],[36173,37720],[36173,37721],[35324,37727],[35287,37728],[35287,37729],[169,37731],[152,37732],[152,37733]]");var __coverage = {"0":[25,38],"1":[53,70],"2":[53,70],"3":[40,71],"4":[81,94],"5":[81,94],"6":[72,95],"7":[107,132],"8":[107,132],"9":[96,133],"10":[145,149],"11":[134,150],"12":[252,484],"13":[239,485],"14":[512,524],"15":[540,802],"16":[526,812],"17":[495,813],"18":[495,814],"19":[218,820],"20":[187,821],"21":[187,822],"22":[893,941],"23":[881,942],"24":[969,975],"25":[991,1030],"26":[977,1040],"27":[952,1041],"28":[952,1042],"29":[1069,1079],"30":[1095,1129],"31":[1081,1139],"32":[1052,1140],"33":[1052,1141],"34":[1168,1176],"35":[1192,1222],"36":[1178,1232],"37":[1151,1233],"38":[1151,1234],"39":[1261,1272],"40":[1288,1324],"41":[1387,1389],"42":[1338,1391],"43":[1405,1437],"44":[1500,1502],"45":[1451,1504],"46":[1518,1550],"47":[1613,1615],"48":[1564,1617],"49":[1631,1663],"50":[1726,1728],"51":[1677,1730],"52":[1744,1776],"53":[1274,1786],"54":[1244,1787],"55":[1244,1788],"56":[860,1794],"57":[828,1795],"58":[828,1796],"59":[1866,1936],"60":[1855,1937],"61":[1964,1974],"62":[1990,2020],"63":[2094,2096],"64":[2034,2098],"65":[2112,2144],"66":[2218,2220],"67":[2158,2222],"68":[2236,2268],"69":[2342,2344],"70":[2282,2346],"71":[2360,2392],"72":[1976,2402],"73":[1947,2403],"74":[1947,2404],"75":[1834,2410],"76":[1802,2411],"77":[1802,2412],"78":[2473,2620],"79":[2463,2621],"80":[2648,2657],"81":[2673,2703],"82":[2767,2837],"83":[2766,2838],"84":[2717,2840],"85":[2854,2886],"86":[2950,3020],"87":[2949,3021],"88":[2900,3023],"89":[3037,3069],"90":[3133,3180],"91":[3132,3181],"92":[3083,3183],"93":[3197,3229],"94":[3293,3340],"95":[3292,3341],"96":[3243,3343],"97":[3357,3389],"98":[3453,3469],"99":[3452,3470],"100":[3403,3472],"101":[3486,3518],"102":[2659,3528],"103":[2631,3529],"104":[2631,3530],"105":[2442,3536],"106":[2418,3537],"107":[2418,3538],"108":[3599,3983],"109":[3589,3984],"110":[4011,4020],"111":[4036,4066],"112":[4130,4213],"113":[4129,4214],"114":[4080,4216],"115":[4230,4262],"116":[4326,4409],"117":[4325,4410],"118":[4276,4412],"119":[4426,4458],"120":[4522,4603],"121":[4521,4604],"122":[4472,4606],"123":[4620,4652],"124":[4716,4797],"125":[4715,4798],"126":[4666,4800],"127":[4814,4846],"128":[4910,4962],"129":[4909,4963],"130":[4860,4965],"131":[4979,5011],"132":[5075,5125],"133":[5074,5126],"134":[5025,5128],"135":[5142,5174],"136":[5238,5303],"137":[5237,5304],"138":[5188,5306],"139":[5320,5352],"140":[5416,5481],"141":[5415,5482],"142":[5366,5484],"143":[5498,5530],"144":[5594,5657],"145":[5593,5658],"146":[5544,5660],"147":[5674,5706],"148":[5770,5833],"149":[5769,5834],"150":[5720,5836],"151":[5850,5882],"152":[5946,5980],"153":[5945,5981],"154":[5896,5983],"155":[5997,6029],"156":[6093,6125],"157":[6092,6126],"158":[6043,6128],"159":[6142,6174],"160":[4022,6184],"161":[3994,6185],"162":[3994,6186],"163":[3568,6192],"164":[3544,6193],"165":[3544,6194],"166":[6257,6416],"167":[6246,6417],"168":[6444,6454],"169":[6470,6500],"170":[6564,6598],"171":[6563,6599],"172":[6514,6601],"173":[6615,6647],"174":[6711,6754],"175":[6710,6755],"176":[6661,6757],"177":[6771,6803],"178":[6867,6927],"179":[6866,6928],"180":[6817,6930],"181":[6944,6976],"182":[7040,7127],"183":[7039,7128],"184":[6990,7130],"185":[7144,7176],"186":[6456,7186],"187":[6427,7187],"188":[6427,7188],"189":[6225,7194],"190":[6200,7195],"191":[6200,7196],"192":[7259,7358],"193":[7248,7359],"194":[7386,7396],"195":[7412,7442],"196":[7506,7538],"197":[7505,7539],"198":[7456,7541],"199":[7555,7587],"200":[7651,7685],"201":[7650,7686],"202":[7601,7688],"203":[7702,7734],"204":[7798,7835],"205":[7797,7836],"206":[7748,7838],"207":[7852,7884],"208":[7948,7996],"209":[7947,7997],"210":[7898,7999],"211":[8013,8045],"212":[7398,8055],"213":[7369,8056],"214":[7369,8057],"215":[7227,8063],"216":[7202,8064],"217":[7202,8065],"218":[8135,11366],"219":[8122,11367],"220":[11397,11407],"221":[11397,11407],"222":[11376,11408],"223":[11459,11492],"224":[11430,11493],"225":[11430,11493],"226":[11417,11494],"227":[11543,11573],"228":[11881,11964],"229":[11986,12117],"230":[12139,12303],"231":[12325,12394],"232":[12416,12432],"233":[11859,12450],"234":[11587,13009],"235":[13023,13057],"236":[13365,13448],"237":[13470,13601],"238":[13623,13787],"239":[13809,13878],"240":[13900,13916],"241":[13343,13934],"242":[13071,14424],"243":[14438,14472],"244":[14780,14863],"245":[14885,15016],"246":[15038,15202],"247":[15224,15293],"248":[15315,15331],"249":[14758,15349],"250":[14486,15907],"251":[15921,15955],"252":[16263,16346],"253":[16368,16499],"254":[16521,16685],"255":[16707,16776],"256":[16798,16814],"257":[16241,16832],"258":[15969,17503],"259":[17517,17551],"260":[17859,17942],"261":[17964,18095],"262":[18117,18281],"263":[18303,18372],"264":[18394,18410],"265":[17837,18428],"266":[17565,18994],"267":[19008,19042],"268":[19350,19433],"269":[19455,19586],"270":[19608,19772],"271":[19794,19863],"272":[19885,19901],"273":[19328,19919],"274":[19056,20552],"275":[20566,20598],"276":[11529,20608],"277":[11504,20609],"278":[11504,20610],"279":[8101,20616],"280":[8071,20617],"281":[8071,20618],"282":[20701,24653],"283":[20688,24654],"284":[24695,24930],"285":[24686,24931],"286":[24686,24931],"287":[24664,24932],"288":[24985,25018],"289":[24955,25019],"290":[24955,25019],"291":[24942,25020],"292":[25069,25099],"293":[25404,25487],"294":[25509,25640],"295":[25662,25826],"296":[25848,25985],"297":[26007,26044],"298":[25382,26062],"299":[25113,26735],"300":[26749,26783],"301":[27088,27171],"302":[27193,27324],"303":[27346,27510],"304":[27532,27669],"305":[27691,27707],"306":[27066,27725],"307":[26797,28284],"308":[28298,28332],"309":[28641,28724],"310":[28746,28877],"311":[28899,29063],"312":[29085,29222],"313":[29244,29260],"314":[28619,29278],"315":[28346,29925],"316":[29939,29973],"317":[30278,30361],"318":[30383,30514],"319":[30536,30700],"320":[30722,30859],"321":[30881,30918],"322":[30256,30936],"323":[29987,31737],"324":[31751,31785],"325":[32090,32173],"326":[32195,32326],"327":[32348,32512],"328":[32534,32671],"329":[32693,32709],"330":[32068,32727],"331":[31799,33378],"332":[33392,33426],"333":[33735,33818],"334":[33840,33971],"335":[33993,34157],"336":[34179,34316],"337":[34338,34354],"338":[33713,34372],"339":[33440,35111],"340":[35125,35261],"341":[25055,35271],"342":[25030,35272],"343":[25030,35273],"344":[20667,35279],"345":[20624,35280],"346":[20624,35281],"347":[35358,35873],"348":[35345,35874],"349":[35910,36078],"350":[35901,36079],"351":[35901,36079],"352":[35884,36080],"353":[36128,36161],"354":[36103,36162],"355":[36103,36162],"356":[36090,36163],"357":[36212,36296],"358":[36604,36687],"359":[36709,36840],"360":[36862,37026],"361":[37048,37115],"362":[37137,37153],"363":[36582,37171],"364":[36310,37663],"365":[37677,37709],"366":[36198,37719],"367":[36173,37720],"368":[36173,37721],"369":[35324,37727],"370":[35287,37728],"371":[35287,37729],"372":[169,37731],"373":[152,37732],"374":[152,37733]};var __coverageWrap = function (index, value) {if (__coverage[index]) console.log("COVERED " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/test/spec/toga-spec.js\"" + " " + index);delete __coverage[index];return value};
 /*jshint maxlen:false */
 { __coverageWrap(0);'use strict';};
 
-{ __coverageWrap(3);var fs = __coverageWrap(2,__coverageWrap(1,require('fs')));};
-{ __coverageWrap(6);var expect = __coverageWrap(5,__coverageWrap(4,require('expect.js')));};
+{ __coverageWrap(3);var assert = __coverageWrap(2,__coverageWrap(1,require('assert')));};
+{ __coverageWrap(6);var fs = __coverageWrap(5,__coverageWrap(4,require('fs')));};
 { __coverageWrap(9);var toga = __coverageWrap(8,__coverageWrap(7,require('../../lib/toga')));};
 { __coverageWrap(11);var Toga = __coverageWrap(10,toga);};
 
-{ __coverageWrap(400);__coverageWrap(399,describe('Toga', __coverageWrap(398,function () {
-    { __coverageWrap(23);__coverageWrap(22,it('should ignore non-blocks', __coverageWrap(21,function() {
+{ __coverageWrap(374);__coverageWrap(373,describe('Toga', __coverageWrap(372,function () {
+    { __coverageWrap(21);__coverageWrap(20,it('should ignore non-blocks', __coverageWrap(19,function() {
         { __coverageWrap(13);var ignore = __coverageWrap(12,"// ignore\n/* ignore */\n/*! ignore */\n\n//\n// ignore\n//\n/*\n * ignore\n */\n/*!\n * ignore\n */\n\n// /** ignore\nvar ignore = '/** ignore */';\nvar foo = function(/** ignore */) {};\nconsole.log(foo(ignore));\n// ignore */\n");};
 
-        { __coverageWrap(20);__coverageWrap(19,__coverageWrap(16,__coverageWrap(15,expect(__coverageWrap(14,toga(ignore)))).to).eql(__coverageWrap(18,[
-            __coverageWrap(17,{ 'type': 'Code', 'body': '// ignore\n/* ignore */\n/*! ignore */\n\n//\n// ignore\n//\n/*\n * ignore\n */\n/*!\n * ignore\n */\n\n// /** ignore\nvar ignore = \'/** ignore */\';\nvar foo = function(/** ignore */) {};\nconsole.log(foo(ignore));\n// ignore */\n' })
+        { __coverageWrap(18);__coverageWrap(17,assert.deepEqual(__coverageWrap(14,toga(ignore)), __coverageWrap(16,[
+            __coverageWrap(15,{ 'type': 'Code', 'body': '// ignore\n/* ignore */\n/*! ignore */\n\n//\n// ignore\n//\n/*\n * ignore\n */\n/*!\n * ignore\n */\n\n// /** ignore\nvar ignore = \'/** ignore */\';\nvar foo = function(/** ignore */) {};\nconsole.log(foo(ignore));\n// ignore */\n' })
         ])));};
     })));};
 
-    { __coverageWrap(68);__coverageWrap(67,it('should parse empty blocks', __coverageWrap(66,function() {
-        { __coverageWrap(25);var empty = __coverageWrap(24,"/**/\n/***/\n/** */\n/**\n *\n */\n/**\n\n*/\n");};
+    { __coverageWrap(58);__coverageWrap(57,it('should parse empty blocks', __coverageWrap(56,function() {
+        { __coverageWrap(23);var empty = __coverageWrap(22,"/**/\n/***/\n/** */\n/**\n *\n */\n/**\n\n*/\n");};
 
-        { __coverageWrap(32);__coverageWrap(31,__coverageWrap(28,__coverageWrap(27,expect(__coverageWrap(26,toga()))).to).eql(__coverageWrap(30,[
-            __coverageWrap(29,{ 'type': 'Code', 'body': 'undefined' })
+        { __coverageWrap(28);__coverageWrap(27,assert.deepEqual(__coverageWrap(24,toga()), __coverageWrap(26,[
+            __coverageWrap(25,{ 'type': 'Code', 'body': 'undefined' })
         ])));};
 
-        { __coverageWrap(39);__coverageWrap(38,__coverageWrap(35,__coverageWrap(34,expect(__coverageWrap(33,toga(null)))).to).eql(__coverageWrap(37,[
-            __coverageWrap(36,{ 'type': 'Code', 'body': 'null' })
+        { __coverageWrap(33);__coverageWrap(32,assert.deepEqual(__coverageWrap(29,toga(null)), __coverageWrap(31,[
+            __coverageWrap(30,{ 'type': 'Code', 'body': 'null' })
         ])));};
 
-        { __coverageWrap(46);__coverageWrap(45,__coverageWrap(42,__coverageWrap(41,expect(__coverageWrap(40,toga('')))).to).eql(__coverageWrap(44,[
-            __coverageWrap(43,{ 'type': 'Code', 'body': '' })
+        { __coverageWrap(38);__coverageWrap(37,assert.deepEqual(__coverageWrap(34,toga('')), __coverageWrap(36,[
+            __coverageWrap(35,{ 'type': 'Code', 'body': '' })
         ])));};
 
-        { __coverageWrap(65);__coverageWrap(64,__coverageWrap(49,__coverageWrap(48,expect(__coverageWrap(47,toga(empty)))).to).eql(__coverageWrap(63,[
-            __coverageWrap(50,{ 'type': 'Code', 'body': '/**/\n' }),
-            __coverageWrap(52,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(51,[]) }),
-            __coverageWrap(53,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(55,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(54,[]) }),
-            __coverageWrap(56,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(58,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(57,[]) }),
-            __coverageWrap(59,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(61,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(60,[]) }),
-            __coverageWrap(62,{ 'type': 'Code', 'body': '\n' })
-        ])));};
-    })));};
-
-    { __coverageWrap(89);__coverageWrap(88,it('should parse descriptions', __coverageWrap(87,function() {
-        { __coverageWrap(70);var desc = __coverageWrap(69,"/** description */\n/**\n * description\n */\n/**\ndescription\n*/\n");};
-
-        { __coverageWrap(86);__coverageWrap(85,__coverageWrap(73,__coverageWrap(72,expect(__coverageWrap(71,toga(desc)))).to).eql(__coverageWrap(84,[
-            __coverageWrap(74,{ 'type': 'Code', 'body': '' }),
-            __coverageWrap(76,{ 'type': 'DocBlock', 'description': 'description', 'tags': __coverageWrap(75,[]) }),
-            __coverageWrap(77,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(79,{ 'type': 'DocBlock', 'description': 'description', 'tags': __coverageWrap(78,[]) }),
-            __coverageWrap(80,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(82,{ 'type': 'DocBlock', 'description': 'description', 'tags': __coverageWrap(81,[]) }),
-            __coverageWrap(83,{ 'type': 'Code', 'body': '\n' })
+        { __coverageWrap(55);__coverageWrap(54,assert.deepEqual(__coverageWrap(39,toga(empty)), __coverageWrap(53,[
+            __coverageWrap(40,{ 'type': 'Code', 'body': '/**/\n' }),
+            __coverageWrap(42,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(41,[]) }),
+            __coverageWrap(43,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(45,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(44,[]) }),
+            __coverageWrap(46,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(48,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(47,[]) }),
+            __coverageWrap(49,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(51,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(50,[]) }),
+            __coverageWrap(52,{ 'type': 'Code', 'body': '\n' })
         ])));};
     })));};
 
-    { __coverageWrap(121);__coverageWrap(120,it('should parse tags', __coverageWrap(119,function() {
-        { __coverageWrap(91);var tag = __coverageWrap(90,"/** @tag {Type} - Description here. */\n/** @tag {Type} Description here. */\n/** @tag - Description. */\n/** @tag Description. */\n/** @tag */\n");};
+    { __coverageWrap(77);__coverageWrap(76,it('should parse descriptions', __coverageWrap(75,function() {
+        { __coverageWrap(60);var desc = __coverageWrap(59,"/** description */\n/**\n * description\n */\n/**\ndescription\n*/\n");};
 
-        { __coverageWrap(118);__coverageWrap(117,__coverageWrap(94,__coverageWrap(93,expect(__coverageWrap(92,toga(tag)))).to).eql(__coverageWrap(116,[
-            __coverageWrap(95,{ 'type': 'Code', 'body': '' }),
-            __coverageWrap(98,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(97,[__coverageWrap(96,{ 'tag': 'tag', 'type': '{Type}', 'description': 'Description here.' })]) }),
-            __coverageWrap(99,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(102,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(101,[__coverageWrap(100,{ 'tag': 'tag', 'type': '{Type}', 'description': 'Description here.' })]) }),
-            __coverageWrap(103,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(106,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(105,[__coverageWrap(104,{ 'tag': 'tag', 'description': 'Description.' })]) }),
-            __coverageWrap(107,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(110,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(109,[__coverageWrap(108,{ 'tag': 'tag', 'description': 'Description.' })]) }),
-            __coverageWrap(111,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(114,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(113,[__coverageWrap(112,{ 'tag': 'tag' })]) }),
-            __coverageWrap(115,{ 'type': 'Code', 'body': '\n' })
+        { __coverageWrap(74);__coverageWrap(73,assert.deepEqual(__coverageWrap(61,toga(desc)), __coverageWrap(72,[
+            __coverageWrap(62,{ 'type': 'Code', 'body': '' }),
+            __coverageWrap(64,{ 'type': 'DocBlock', 'description': 'description', 'tags': __coverageWrap(63,[]) }),
+            __coverageWrap(65,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(67,{ 'type': 'DocBlock', 'description': 'description', 'tags': __coverageWrap(66,[]) }),
+            __coverageWrap(68,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(70,{ 'type': 'DocBlock', 'description': 'description', 'tags': __coverageWrap(69,[]) }),
+            __coverageWrap(71,{ 'type': 'Code', 'body': '\n' })
         ])));};
     })));};
 
-    { __coverageWrap(181);__coverageWrap(180,it('should parse args', __coverageWrap(179,function() {
-        { __coverageWrap(123);var arg = __coverageWrap(122,"/** @arg {Type} [name] - Description. */\n/** @arg {Type} [name] Description. */\n/** @arg {Type} name - Description. */\n/** @arg {Type} name Description. */\n/** @arg {Type} [name] */\n/** @arg {Type} name */\n/** @arg [name] - Description. */\n/** @arg [name] Description. */\n/** @arg name - Description. */\n/** @arg name Description. */\n/** @arg [name] */\n/** @arg name */\n");};
+    { __coverageWrap(107);__coverageWrap(106,it('should parse tags', __coverageWrap(105,function() {
+        { __coverageWrap(79);var tag = __coverageWrap(78,"/** @tag {Type} - Description here. */\n/** @tag {Type} Description here. */\n/** @tag - Description. */\n/** @tag Description. */\n/** @tag */\n");};
 
-        { __coverageWrap(178);__coverageWrap(177,__coverageWrap(126,__coverageWrap(125,expect(__coverageWrap(124,toga(arg)))).to).eql(__coverageWrap(176,[
-            __coverageWrap(127,{ 'type': 'Code', 'body': '' }),
-            __coverageWrap(130,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(129,[__coverageWrap(128,{ 'tag': 'arg', 'type': '{Type}', 'name': '[name]', 'description': 'Description.' })]) }),
+        { __coverageWrap(104);__coverageWrap(103,assert.deepEqual(__coverageWrap(80,toga(tag)), __coverageWrap(102,[
+            __coverageWrap(81,{ 'type': 'Code', 'body': '' }),
+            __coverageWrap(84,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(83,[__coverageWrap(82,{ 'tag': 'tag', 'type': '{Type}', 'description': 'Description here.' })]) }),
+            __coverageWrap(85,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(88,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(87,[__coverageWrap(86,{ 'tag': 'tag', 'type': '{Type}', 'description': 'Description here.' })]) }),
+            __coverageWrap(89,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(92,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(91,[__coverageWrap(90,{ 'tag': 'tag', 'description': 'Description.' })]) }),
+            __coverageWrap(93,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(96,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(95,[__coverageWrap(94,{ 'tag': 'tag', 'description': 'Description.' })]) }),
+            __coverageWrap(97,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(100,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(99,[__coverageWrap(98,{ 'tag': 'tag' })]) }),
+            __coverageWrap(101,{ 'type': 'Code', 'body': '\n' })
+        ])));};
+    })));};
+
+    { __coverageWrap(165);__coverageWrap(164,it('should parse args', __coverageWrap(163,function() {
+        { __coverageWrap(109);var arg = __coverageWrap(108,"/** @arg {Type} [name] - Description. */\n/** @arg {Type} [name] Description. */\n/** @arg {Type} name - Description. */\n/** @arg {Type} name Description. */\n/** @arg {Type} [name] */\n/** @arg {Type} name */\n/** @arg [name] - Description. */\n/** @arg [name] Description. */\n/** @arg name - Description. */\n/** @arg name Description. */\n/** @arg [name] */\n/** @arg name */\n");};
+
+        { __coverageWrap(162);__coverageWrap(161,assert.deepEqual(__coverageWrap(110,toga(arg)), __coverageWrap(160,[
+            __coverageWrap(111,{ 'type': 'Code', 'body': '' }),
+            __coverageWrap(114,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(113,[__coverageWrap(112,{ 'tag': 'arg', 'type': '{Type}', 'name': '[name]', 'description': 'Description.' })]) }),
+            __coverageWrap(115,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(118,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(117,[__coverageWrap(116,{ 'tag': 'arg', 'type': '{Type}', 'name': '[name]', 'description': 'Description.' })]) }),
+            __coverageWrap(119,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(122,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(121,[__coverageWrap(120,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.' })]) }),
+            __coverageWrap(123,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(126,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(125,[__coverageWrap(124,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.' })]) }),
+            __coverageWrap(127,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(130,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(129,[__coverageWrap(128,{ 'tag': 'arg', 'type': '{Type}', 'name': '[name]' })]) }),
             __coverageWrap(131,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(134,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(133,[__coverageWrap(132,{ 'tag': 'arg', 'type': '{Type}', 'name': '[name]', 'description': 'Description.' })]) }),
+            __coverageWrap(134,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(133,[__coverageWrap(132,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name' })]) }),
             __coverageWrap(135,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(138,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(137,[__coverageWrap(136,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.' })]) }),
+            __coverageWrap(138,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(137,[__coverageWrap(136,{ 'tag': 'arg', 'name': '[name]', 'description': 'Description.' })]) }),
             __coverageWrap(139,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(142,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(141,[__coverageWrap(140,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.' })]) }),
+            __coverageWrap(142,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(141,[__coverageWrap(140,{ 'tag': 'arg', 'name': '[name]', 'description': 'Description.' })]) }),
             __coverageWrap(143,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(146,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(145,[__coverageWrap(144,{ 'tag': 'arg', 'type': '{Type}', 'name': '[name]' })]) }),
+            __coverageWrap(146,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(145,[__coverageWrap(144,{ 'tag': 'arg', 'name': 'name', 'description': 'Description.' })]) }),
             __coverageWrap(147,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(150,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(149,[__coverageWrap(148,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name' })]) }),
+            __coverageWrap(150,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(149,[__coverageWrap(148,{ 'tag': 'arg', 'name': 'name', 'description': 'Description.' })]) }),
             __coverageWrap(151,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(154,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(153,[__coverageWrap(152,{ 'tag': 'arg', 'name': '[name]', 'description': 'Description.' })]) }),
+            __coverageWrap(154,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(153,[__coverageWrap(152,{ 'tag': 'arg', 'name': '[name]' })]) }),
             __coverageWrap(155,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(158,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(157,[__coverageWrap(156,{ 'tag': 'arg', 'name': '[name]', 'description': 'Description.' })]) }),
-            __coverageWrap(159,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(162,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(161,[__coverageWrap(160,{ 'tag': 'arg', 'name': 'name', 'description': 'Description.' })]) }),
-            __coverageWrap(163,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(166,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(165,[__coverageWrap(164,{ 'tag': 'arg', 'name': 'name', 'description': 'Description.' })]) }),
-            __coverageWrap(167,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(170,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(169,[__coverageWrap(168,{ 'tag': 'arg', 'name': '[name]' })]) }),
-            __coverageWrap(171,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(174,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(173,[__coverageWrap(172,{ 'tag': 'arg', 'name': 'name' })]) }),
-            __coverageWrap(175,{ 'type': 'Code', 'body': '\n' })
+            __coverageWrap(158,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(157,[__coverageWrap(156,{ 'tag': 'arg', 'name': 'name' })]) }),
+            __coverageWrap(159,{ 'type': 'Code', 'body': '\n' })
         ])));};
     })));};
 
-    { __coverageWrap(209);__coverageWrap(208,it('should parse types', __coverageWrap(207,function() {
-        { __coverageWrap(183);var type = __coverageWrap(182,"/** @arg {Type} */\n/** @arg {String|Object} */\n/** @arg {Array.<Object.<String,Number>>} */\n/** @arg {Function(String, ...[Number]): Number} callback */\n");};
+    { __coverageWrap(191);__coverageWrap(190,it('should parse types', __coverageWrap(189,function() {
+        { __coverageWrap(167);var type = __coverageWrap(166,"/** @arg {Type} */\n/** @arg {String|Object} */\n/** @arg {Array.<Object.<String,Number>>} */\n/** @arg {Function(String, ...[Number]): Number} callback */\n");};
 
-        { __coverageWrap(206);__coverageWrap(205,__coverageWrap(186,__coverageWrap(185,expect(__coverageWrap(184,toga(type)))).to).eql(__coverageWrap(204,[
-            __coverageWrap(187,{ 'type': 'Code', 'body': '' }),
-            __coverageWrap(190,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(189,[__coverageWrap(188,{ 'tag': 'arg', 'type': '{Type}' })]) }),
-            __coverageWrap(191,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(194,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(193,[__coverageWrap(192,{ 'tag': 'arg', 'type': '{String|Object}' })]) }),
-            __coverageWrap(195,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(198,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(197,[__coverageWrap(196,{ 'tag': 'arg', 'type': '{Array.<Object.<String,Number>>}' })]) }),
+        { __coverageWrap(188);__coverageWrap(187,assert.deepEqual(__coverageWrap(168,toga(type)), __coverageWrap(186,[
+            __coverageWrap(169,{ 'type': 'Code', 'body': '' }),
+            __coverageWrap(172,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(171,[__coverageWrap(170,{ 'tag': 'arg', 'type': '{Type}' })]) }),
+            __coverageWrap(173,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(176,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(175,[__coverageWrap(174,{ 'tag': 'arg', 'type': '{String|Object}' })]) }),
+            __coverageWrap(177,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(180,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(179,[__coverageWrap(178,{ 'tag': 'arg', 'type': '{Array.<Object.<String,Number>>}' })]) }),
+            __coverageWrap(181,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(184,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(183,[__coverageWrap(182,{ 'tag': 'arg', 'type': '{Function(String, ...[Number]): Number}', 'name': 'callback' })]) }),
+            __coverageWrap(185,{ 'type': 'Code', 'body': '\n' })
+        ])));};
+    })));};
+
+    { __coverageWrap(217);__coverageWrap(216,it('should parse names', __coverageWrap(215,function() {
+        { __coverageWrap(193);var name = __coverageWrap(192,"/** @arg name */\n/** @arg [name] */\n/** @arg [name={}] */\n/** @arg [name=\"hello world\"] */\n");};
+
+        { __coverageWrap(214);__coverageWrap(213,assert.deepEqual(__coverageWrap(194,toga(name)), __coverageWrap(212,[
+            __coverageWrap(195,{ 'type': 'Code', 'body': '' }),
+            __coverageWrap(198,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(197,[__coverageWrap(196,{ 'tag': 'arg', 'name': 'name' })]) }),
             __coverageWrap(199,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(202,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(201,[__coverageWrap(200,{ 'tag': 'arg', 'type': '{Function(String, ...[Number]): Number}', 'name': 'callback' })]) }),
-            __coverageWrap(203,{ 'type': 'Code', 'body': '\n' })
+            __coverageWrap(202,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(201,[__coverageWrap(200,{ 'tag': 'arg', 'name': '[name]' })]) }),
+            __coverageWrap(203,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(206,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(205,[__coverageWrap(204,{ 'tag': 'arg', 'name': '[name={}]' })]) }),
+            __coverageWrap(207,{ 'type': 'Code', 'body': '\n' }),
+            __coverageWrap(210,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(209,[__coverageWrap(208,{ 'tag': 'arg', 'name': '[name="hello world"]' })]) }),
+            __coverageWrap(211,{ 'type': 'Code', 'body': '\n' })
         ])));};
     })));};
 
-    { __coverageWrap(237);__coverageWrap(236,it('should parse names', __coverageWrap(235,function() {
-        { __coverageWrap(211);var name = __coverageWrap(210,"/** @arg name */\n/** @arg [name] */\n/** @arg [name={}] */\n/** @arg [name=\"hello world\"] */\n");};
-
-        { __coverageWrap(234);__coverageWrap(233,__coverageWrap(214,__coverageWrap(213,expect(__coverageWrap(212,toga(name)))).to).eql(__coverageWrap(232,[
-            __coverageWrap(215,{ 'type': 'Code', 'body': '' }),
-            __coverageWrap(218,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(217,[__coverageWrap(216,{ 'tag': 'arg', 'name': 'name' })]) }),
-            __coverageWrap(219,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(222,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(221,[__coverageWrap(220,{ 'tag': 'arg', 'name': '[name]' })]) }),
-            __coverageWrap(223,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(226,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(225,[__coverageWrap(224,{ 'tag': 'arg', 'name': '[name={}]' })]) }),
-            __coverageWrap(227,{ 'type': 'Code', 'body': '\n' }),
-            __coverageWrap(230,{ 'type': 'DocBlock', 'description': '', 'tags': __coverageWrap(229,[__coverageWrap(228,{ 'tag': 'arg', 'name': '[name="hello world"]' })]) }),
-            __coverageWrap(231,{ 'type': 'Code', 'body': '\n' })
-        ])));};
-    })));};
-
-    { __coverageWrap(303);__coverageWrap(302,it('should handle indention', __coverageWrap(301,function() {
-        { __coverageWrap(239);var indent = __coverageWrap(238,"/**\n * # Title\n *\n * Long description that spans multiple\n * lines and even has other markdown\n * type things.\n *\n * Like more paragraphs.\n *\n * * Like\n * * Lists\n *\n *     var code = 'samples';\n *\n * @arg {Type} name Description.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n *\n *   And has line breaks, etc.\n *\n * @example\n *\n *     var foo = 'bar';\n *\n * @tag\n */\n\n/**\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    var foo = 'bar';\n\n@tag\n */\n\n/**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = 'samples';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = 'bar';\n\n    @tag\n */\n\n    /**\n     * # Title\n     *\n     * Long description that spans multiple\n     * lines and even has other markdown\n     * type things.\n     *\n     * Like more paragraphs.\n     *\n     * * Like\n     * * Lists\n     *\n     *     var code = 'samples';\n     *\n     * @arg {Type} name Description.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     *\n     *   And has line breaks, etc.\n     *\n     * @example\n     *\n     *     var foo = 'bar';\n     *\n     * @tag\n     */\n\n    /**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = 'samples';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = 'bar';\n\n    @tag\n     */\n\n    /**\n        # Title\n\n        Long description that spans multiple\n        lines and even has other markdown\n        type things.\n\n        Like more paragraphs.\n\n        * Like\n        * Lists\n\n            var code = 'samples';\n\n        @arg {Type} name Description.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n\n          And has line breaks, etc.\n\n        @example\n\n            var foo = 'bar';\n\n        @tag\n    */\n");};
-        { __coverageWrap(242);var standardParser = __coverageWrap(241,__coverageWrap(240,new Toga()));};
-        { __coverageWrap(246);var tokens = __coverageWrap(245,__coverageWrap(244,standardParser.parse(indent, __coverageWrap(243,{
+    { __coverageWrap(281);__coverageWrap(280,it('should handle indention', __coverageWrap(279,function() {
+        { __coverageWrap(219);var indent = __coverageWrap(218,"/**\n * # Title\n *\n * Long description that spans multiple\n * lines and even has other markdown\n * type things.\n *\n * Like more paragraphs.\n *\n * * Like\n * * Lists\n *\n *     var code = 'samples';\n *\n * @arg {Type} name Description.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n *\n *   And has line breaks, etc.\n *\n * @example\n *\n *     var foo = 'bar';\n *\n * @tag\n */\n\n/**\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    var foo = 'bar';\n\n@tag\n */\n\n/**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = 'samples';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = 'bar';\n\n    @tag\n */\n\n    /**\n     * # Title\n     *\n     * Long description that spans multiple\n     * lines and even has other markdown\n     * type things.\n     *\n     * Like more paragraphs.\n     *\n     * * Like\n     * * Lists\n     *\n     *     var code = 'samples';\n     *\n     * @arg {Type} name Description.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     *\n     *   And has line breaks, etc.\n     *\n     * @example\n     *\n     *     var foo = 'bar';\n     *\n     * @tag\n     */\n\n    /**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = 'samples';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = 'bar';\n\n    @tag\n     */\n\n    /**\n        # Title\n\n        Long description that spans multiple\n        lines and even has other markdown\n        type things.\n\n        Like more paragraphs.\n\n        * Like\n        * Lists\n\n            var code = 'samples';\n\n        @arg {Type} name Description.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n\n          And has line breaks, etc.\n\n        @example\n\n            var foo = 'bar';\n\n        @tag\n    */\n");};
+        { __coverageWrap(222);var standardParser = __coverageWrap(221,__coverageWrap(220,new Toga()));};
+        { __coverageWrap(226);var tokens = __coverageWrap(225,__coverageWrap(224,standardParser.parse(indent, __coverageWrap(223,{
             raw: true
         }))));};
 
-        { __coverageWrap(300);__coverageWrap(299,__coverageWrap(248,__coverageWrap(247,expect(tokens)).to).eql(__coverageWrap(298,[
-            __coverageWrap(249,{ 'type': 'Code', 'body': '' }),
-            __coverageWrap(256,{
+        { __coverageWrap(278);__coverageWrap(277,assert.deepEqual(tokens, __coverageWrap(276,[
+            __coverageWrap(227,{ 'type': 'Code', 'body': '' }),
+            __coverageWrap(234,{
                 'type': 'DocBlock',
                 'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = \'samples\';\n\n',
-                'tags': __coverageWrap(255,[
-                    __coverageWrap(250,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(251,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(252,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(253,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
-                    __coverageWrap(254,{ 'tag': 'tag' })
+                'tags': __coverageWrap(233,[
+                    __coverageWrap(228,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(229,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(230,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(231,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
+                    __coverageWrap(232,{ 'tag': 'tag' })
                 ]),
                 'raw': '/**\n * # Title\n *\n * Long description that spans multiple\n * lines and even has other markdown\n * type things.\n *\n * Like more paragraphs.\n *\n * * Like\n * * Lists\n *\n *     var code = \'samples\';\n *\n * @arg {Type} name Description.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n * @arg {Type} name Description that is really long\n *   and wraps to other lines.\n *\n *   And has line breaks, etc.\n *\n * @example\n *\n *     var foo = \'bar\';\n *\n * @tag\n */'
             }),
-            __coverageWrap(257,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(264,{
+            __coverageWrap(235,{ 'type': 'Code', 'body': '\n\n' }),
+            __coverageWrap(242,{
                 'type': 'DocBlock',
                 'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = \'samples\';\n\n',
-                'tags': __coverageWrap(263,[
-                    __coverageWrap(258,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(259,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(260,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(261,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
-                    __coverageWrap(262,{ 'tag': 'tag' })
+                'tags': __coverageWrap(241,[
+                    __coverageWrap(236,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(237,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(238,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(239,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
+                    __coverageWrap(240,{ 'tag': 'tag' })
                 ]),
                 'raw': '/**\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = \'samples\';\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    var foo = \'bar\';\n\n@tag\n */'
             }),
-            __coverageWrap(265,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(272,{
+            __coverageWrap(243,{ 'type': 'Code', 'body': '\n\n' }),
+            __coverageWrap(250,{
                 'type': 'DocBlock',
                 'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = \'samples\';\n\n',
-                'tags': __coverageWrap(271,[
-                    __coverageWrap(266,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(267,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(268,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(269,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
-                    __coverageWrap(270,{ 'tag': 'tag' })
+                'tags': __coverageWrap(249,[
+                    __coverageWrap(244,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(245,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(246,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(247,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
+                    __coverageWrap(248,{ 'tag': 'tag' })
                 ]),
                 'raw': '/**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = \'samples\';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = \'bar\';\n\n    @tag\n */'
             }),
-            __coverageWrap(273,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(280,{
+            __coverageWrap(251,{ 'type': 'Code', 'body': '\n\n' }),
+            __coverageWrap(258,{
                 'type': 'DocBlock',
                 'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = \'samples\';\n\n',
-                'tags': __coverageWrap(279,[
-                    __coverageWrap(274,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(275,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(276,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(277,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
-                    __coverageWrap(278,{ 'tag': 'tag' })
+                'tags': __coverageWrap(257,[
+                    __coverageWrap(252,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(253,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(254,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(255,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
+                    __coverageWrap(256,{ 'tag': 'tag' })
                 ]),
                 'raw': '    /**\n     * # Title\n     *\n     * Long description that spans multiple\n     * lines and even has other markdown\n     * type things.\n     *\n     * Like more paragraphs.\n     *\n     * * Like\n     * * Lists\n     *\n     *     var code = \'samples\';\n     *\n     * @arg {Type} name Description.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     * @arg {Type} name Description that is really long\n     *   and wraps to other lines.\n     *\n     *   And has line breaks, etc.\n     *\n     * @example\n     *\n     *     var foo = \'bar\';\n     *\n     * @tag\n     */'
             }),
-            __coverageWrap(281,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(288,{
+            __coverageWrap(259,{ 'type': 'Code', 'body': '\n\n' }),
+            __coverageWrap(266,{
                 'type': 'DocBlock',
                 'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = \'samples\';\n\n',
-                'tags': __coverageWrap(287,[
-                    __coverageWrap(282,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(283,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(284,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(285,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
-                    __coverageWrap(286,{ 'tag': 'tag' })
+                'tags': __coverageWrap(265,[
+                    __coverageWrap(260,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(261,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(262,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(263,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
+                    __coverageWrap(264,{ 'tag': 'tag' })
                 ]),
                 'raw': '    /**\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        var code = \'samples\';\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        var foo = \'bar\';\n\n    @tag\n     */'
             }),
-            __coverageWrap(289,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(296,{
+            __coverageWrap(267,{ 'type': 'Code', 'body': '\n\n' }),
+            __coverageWrap(274,{
                 'type': 'DocBlock',
                 'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = \'samples\';\n\n',
-                'tags': __coverageWrap(295,[
-                    __coverageWrap(290,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(291,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(292,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(293,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
-                    __coverageWrap(294,{ 'tag': 'tag' })
+                'tags': __coverageWrap(273,[
+                    __coverageWrap(268,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(269,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(270,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(271,{ 'tag': 'example', 'description': '\n\n    var foo = \'bar\';\n\n' }),
+                    __coverageWrap(272,{ 'tag': 'tag' })
                 ]),
                 'raw': '    /**\n        # Title\n\n        Long description that spans multiple\n        lines and even has other markdown\n        type things.\n\n        Like more paragraphs.\n\n        * Like\n        * Lists\n\n            var code = \'samples\';\n\n        @arg {Type} name Description.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n\n          And has line breaks, etc.\n\n        @example\n\n            var foo = \'bar\';\n\n        @tag\n    */'
             }),
-            __coverageWrap(297,{ 'type': 'Code', 'body': '\n' })
+            __coverageWrap(275,{ 'type': 'Code', 'body': '\n' })
         ])));};
     })));};
 
-    { __coverageWrap(370);__coverageWrap(369,it('should use custom handlebars grammar', __coverageWrap(368,function() {
-        { __coverageWrap(305);var custom = __coverageWrap(304,"{{!---\n  ! # Title\n  !\n  ! Long description that spans multiple\n  ! lines and even has other markdown\n  ! type things.\n  !\n  ! Like more paragraphs.\n  !\n  ! * Like\n  ! * Lists\n  !\n  !     <code>samples</code>\n  !\n  ! @arg {Type} name Description.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  !\n  !   And has line breaks, etc.\n  !\n  ! @example\n  !\n  !     <ul>\n  !         {{#each item}}\n  !             <li>{{.}}</li>\n  !         {{/each}}\n  !     </ul>\n  !\n  ! @tag\n  !--}}\n\n{{!---\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n@tag\n--}}\n\n{{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>{{samples}}</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n--}}\n\n    {{!---\n      ! # Title\n      !\n      ! Long description that spans multiple\n      ! lines and even has other markdown\n      ! type things.\n      !\n      ! Like more paragraphs.\n      !\n      ! * Like\n      ! * Lists\n      !\n      !     <code>samples</code>\n      !\n      ! @arg {Type} name Description.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      !\n      !   And has line breaks, etc.\n      !\n      ! @example\n      !\n      !     <ul>\n      !         {{#each item}}\n      !             <li>{{.}}</li>\n      !         {{/each}}\n      !     </ul>\n      !\n      ! @tag\n      !--}}\n\n    {{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>samples</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n    --}}\n\n    {{!---\n        # Title\n\n        Long description that spans multiple\n        lines and even has other markdown\n        type things.\n\n        Like more paragraphs.\n\n        * Like\n        * Lists\n\n            <code>{{samples}}</code>\n\n        @arg {Type} name Description.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n\n          And has line breaks, etc.\n\n        @example\n\n            <ul>\n                {{#each item}}\n                    <li>{{.}}</li>\n                {{/each}}\n            </ul>\n\n        @tag\n    --}}\n\n{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->\n");};
+    { __coverageWrap(346);__coverageWrap(345,it('should use custom handlebars grammar', __coverageWrap(344,function() {
+        { __coverageWrap(283);var custom = __coverageWrap(282,"{{!---\n  ! # Title\n  !\n  ! Long description that spans multiple\n  ! lines and even has other markdown\n  ! type things.\n  !\n  ! Like more paragraphs.\n  !\n  ! * Like\n  ! * Lists\n  !\n  !     <code>samples</code>\n  !\n  ! @arg {Type} name Description.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  !\n  !   And has line breaks, etc.\n  !\n  ! @example\n  !\n  !     <ul>\n  !         {{#each item}}\n  !             <li>{{.}}</li>\n  !         {{/each}}\n  !     </ul>\n  !\n  ! @tag\n  !--}}\n\n{{!---\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n@tag\n--}}\n\n{{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>{{samples}}</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n--}}\n\n    {{!---\n      ! # Title\n      !\n      ! Long description that spans multiple\n      ! lines and even has other markdown\n      ! type things.\n      !\n      ! Like more paragraphs.\n      !\n      ! * Like\n      ! * Lists\n      !\n      !     <code>samples</code>\n      !\n      ! @arg {Type} name Description.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      !\n      !   And has line breaks, etc.\n      !\n      ! @example\n      !\n      !     <ul>\n      !         {{#each item}}\n      !             <li>{{.}}</li>\n      !         {{/each}}\n      !     </ul>\n      !\n      ! @tag\n      !--}}\n\n    {{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>samples</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n    --}}\n\n    {{!---\n        # Title\n\n        Long description that spans multiple\n        lines and even has other markdown\n        type things.\n\n        Like more paragraphs.\n\n        * Like\n        * Lists\n\n            <code>{{samples}}</code>\n\n        @arg {Type} name Description.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n\n          And has line breaks, etc.\n\n        @example\n\n            <ul>\n                {{#each item}}\n                    <li>{{.}}</li>\n                {{/each}}\n            </ul>\n\n        @tag\n    --}}\n\n{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->\n");};
 
-        { __coverageWrap(309);var handlebarParser = __coverageWrap(308,__coverageWrap(307,new Toga(__coverageWrap(306,{
+        { __coverageWrap(287);var handlebarParser = __coverageWrap(286,__coverageWrap(285,new Toga(__coverageWrap(284,{
             blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
             blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
             indent: /^[\t !]/gm,
             named: /^(arg(gument)?|data|prop(erty)?)$/
         }))));};
 
-        { __coverageWrap(313);var tokens = __coverageWrap(312,__coverageWrap(311,handlebarParser.parse(custom, __coverageWrap(310,{
+        { __coverageWrap(291);var tokens = __coverageWrap(290,__coverageWrap(289,handlebarParser.parse(custom, __coverageWrap(288,{
             raw: true
         }))));};
 
-        { __coverageWrap(367);__coverageWrap(366,__coverageWrap(315,__coverageWrap(314,expect(tokens)).to).eql(__coverageWrap(365,[
-            __coverageWrap(316,{ 'type': 'Code', 'body': '' }),
+        { __coverageWrap(343);__coverageWrap(342,assert.deepEqual(tokens, __coverageWrap(341,[
+            __coverageWrap(292,{ 'type': 'Code', 'body': '' }),
+            __coverageWrap(299,{
+                'type': 'DocBlock',
+                'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n',
+                'tags': __coverageWrap(298,[
+                    __coverageWrap(293,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(294,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(295,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(296,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
+                    __coverageWrap(297,{ 'tag': 'tag', 'description': '\n' })
+                ]),
+                'raw': '{{!---\n  ! # Title\n  !\n  ! Long description that spans multiple\n  ! lines and even has other markdown\n  ! type things.\n  !\n  ! Like more paragraphs.\n  !\n  ! * Like\n  ! * Lists\n  !\n  !     <code>samples</code>\n  !\n  ! @arg {Type} name Description.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  !\n  !   And has line breaks, etc.\n  !\n  ! @example\n  !\n  !     <ul>\n  !         {{#each item}}\n  !             <li>{{.}}</li>\n  !         {{/each}}\n  !     </ul>\n  !\n  ! @tag\n  !--}}'
+            }),
+            __coverageWrap(300,{ 'type': 'Code', 'body': '\n\n' }),
+            __coverageWrap(307,{
+                'type': 'DocBlock',
+                'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n',
+                'tags': __coverageWrap(306,[
+                    __coverageWrap(301,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(302,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(303,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(304,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
+                    __coverageWrap(305,{ 'tag': 'tag' })
+                ]),
+                'raw': '{{!---\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n@tag\n--}}'
+            }),
+            __coverageWrap(308,{ 'type': 'Code', 'body': '\n\n' }),
+            __coverageWrap(315,{
+                'type': 'DocBlock',
+                'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>{{samples}}</code>\n\n',
+                'tags': __coverageWrap(314,[
+                    __coverageWrap(309,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(310,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(311,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(312,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
+                    __coverageWrap(313,{ 'tag': 'tag' })
+                ]),
+                'raw': '{{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>{{samples}}</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n--}}'
+            }),
+            __coverageWrap(316,{ 'type': 'Code', 'body': '\n\n' }),
             __coverageWrap(323,{
                 'type': 'DocBlock',
                 'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n',
@@ -3615,7 +1590,7 @@ console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/te
                     __coverageWrap(320,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
                     __coverageWrap(321,{ 'tag': 'tag', 'description': '\n' })
                 ]),
-                'raw': '{{!---\n  ! # Title\n  !\n  ! Long description that spans multiple\n  ! lines and even has other markdown\n  ! type things.\n  !\n  ! Like more paragraphs.\n  !\n  ! * Like\n  ! * Lists\n  !\n  !     <code>samples</code>\n  !\n  ! @arg {Type} name Description.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  ! @arg {Type} name Description that is really long\n  !   and wraps to other lines.\n  !\n  !   And has line breaks, etc.\n  !\n  ! @example\n  !\n  !     <ul>\n  !         {{#each item}}\n  !             <li>{{.}}</li>\n  !         {{/each}}\n  !     </ul>\n  !\n  ! @tag\n  !--}}'
+                'raw': '    {{!---\n      ! # Title\n      !\n      ! Long description that spans multiple\n      ! lines and even has other markdown\n      ! type things.\n      !\n      ! Like more paragraphs.\n      !\n      ! * Like\n      ! * Lists\n      !\n      !     <code>samples</code>\n      !\n      ! @arg {Type} name Description.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      !\n      !   And has line breaks, etc.\n      !\n      ! @example\n      !\n      !     <ul>\n      !         {{#each item}}\n      !             <li>{{.}}</li>\n      !         {{/each}}\n      !     </ul>\n      !\n      ! @tag\n      !--}}'
             }),
             __coverageWrap(324,{ 'type': 'Code', 'body': '\n\n' }),
             __coverageWrap(331,{
@@ -3628,7 +1603,7 @@ console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/te
                     __coverageWrap(328,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
                     __coverageWrap(329,{ 'tag': 'tag' })
                 ]),
-                'raw': '{{!---\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n@tag\n--}}'
+                'raw': '    {{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>samples</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n    --}}'
             }),
             __coverageWrap(332,{ 'type': 'Code', 'body': '\n\n' }),
             __coverageWrap(339,{
@@ -3641,81 +1616,42 @@ console.log("COVERAGE " + "\"/Users/smoeller/Repos/github/shannonmoeller/toga/te
                     __coverageWrap(336,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
                     __coverageWrap(337,{ 'tag': 'tag' })
                 ]),
-                'raw': '{{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>{{samples}}</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n--}}'
-            }),
-            __coverageWrap(340,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(347,{
-                'type': 'DocBlock',
-                'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n',
-                'tags': __coverageWrap(346,[
-                    __coverageWrap(341,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(342,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(343,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(344,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
-                    __coverageWrap(345,{ 'tag': 'tag', 'description': '\n' })
-                ]),
-                'raw': '    {{!---\n      ! # Title\n      !\n      ! Long description that spans multiple\n      ! lines and even has other markdown\n      ! type things.\n      !\n      ! Like more paragraphs.\n      !\n      ! * Like\n      ! * Lists\n      !\n      !     <code>samples</code>\n      !\n      ! @arg {Type} name Description.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      ! @arg {Type} name Description that is really long\n      !   and wraps to other lines.\n      !\n      !   And has line breaks, etc.\n      !\n      ! @example\n      !\n      !     <ul>\n      !         {{#each item}}\n      !             <li>{{.}}</li>\n      !         {{/each}}\n      !     </ul>\n      !\n      ! @tag\n      !--}}'
-            }),
-            __coverageWrap(348,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(355,{
-                'type': 'DocBlock',
-                'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n',
-                'tags': __coverageWrap(354,[
-                    __coverageWrap(349,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(350,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(351,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(352,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
-                    __coverageWrap(353,{ 'tag': 'tag' })
-                ]),
-                'raw': '    {{!---\n    # Title\n\n    Long description that spans multiple\n    lines and even has other markdown\n    type things.\n\n    Like more paragraphs.\n\n    * Like\n    * Lists\n\n        <code>samples</code>\n\n    @arg {Type} name Description.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n    @arg {Type} name Description that is really long\n      and wraps to other lines.\n\n      And has line breaks, etc.\n\n    @example\n\n        <ul>\n            {{#each item}}\n                <li>{{.}}</li>\n            {{/each}}\n        </ul>\n\n    @tag\n    --}}'
-            }),
-            __coverageWrap(356,{ 'type': 'Code', 'body': '\n\n' }),
-            __coverageWrap(363,{
-                'type': 'DocBlock',
-                'description': '# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>{{samples}}</code>\n\n',
-                'tags': __coverageWrap(362,[
-                    __coverageWrap(357,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(358,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(359,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(360,{ 'tag': 'example', 'description': '\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n' }),
-                    __coverageWrap(361,{ 'tag': 'tag' })
-                ]),
                 'raw': '    {{!---\n        # Title\n\n        Long description that spans multiple\n        lines and even has other markdown\n        type things.\n\n        Like more paragraphs.\n\n        * Like\n        * Lists\n\n            <code>{{samples}}</code>\n\n        @arg {Type} name Description.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n        @arg {Type} name Description that is really long\n          and wraps to other lines.\n\n          And has line breaks, etc.\n\n        @example\n\n            <ul>\n                {{#each item}}\n                    <li>{{.}}</li>\n                {{/each}}\n            </ul>\n\n        @tag\n    --}}'
             }),
-            __coverageWrap(364,{ 'type': 'Code', 'body': '\n\n{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->\n' })
+            __coverageWrap(340,{ 'type': 'Code', 'body': '\n\n{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->\n' })
         ])));};
     })));};
 
-    { __coverageWrap(397);__coverageWrap(396,it('should use custom perl grammar', __coverageWrap(395,function() {
-        { __coverageWrap(372);var custom = __coverageWrap(371,"use strict;\nuse warnings;\n\nprint \"hello world\";\n\n=pod\n\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    my $code = \"samples\";\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    my $foo = \"bar\";\n\n@tag\n\n=cut\n");};
+    { __coverageWrap(371);__coverageWrap(370,it('should use custom perl grammar', __coverageWrap(369,function() {
+        { __coverageWrap(348);var custom = __coverageWrap(347,"use strict;\nuse warnings;\n\nprint \"hello world\";\n\n=pod\n\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    my $code = \"samples\";\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    my $foo = \"bar\";\n\n@tag\n\n=cut\n");};
 
-        { __coverageWrap(376);var perlParser = __coverageWrap(375,__coverageWrap(374,new Toga(__coverageWrap(373,{
+        { __coverageWrap(352);var perlParser = __coverageWrap(351,__coverageWrap(350,new Toga(__coverageWrap(349,{
             blockSplit: /(^=pod[\s\S]*?\n=cut$)/m,
             blockParse: /^=pod([\s\S]*?)\n=cut$/m,
             named: /^(arg(gument)?|data|prop(erty)?)$/
         }))));};
 
-        { __coverageWrap(380);var tokens = __coverageWrap(379,__coverageWrap(378,perlParser.parse(custom, __coverageWrap(377,{
+        { __coverageWrap(356);var tokens = __coverageWrap(355,__coverageWrap(354,perlParser.parse(custom, __coverageWrap(353,{
             raw: true
         }))));};
 
-        { __coverageWrap(394);__coverageWrap(393,__coverageWrap(382,__coverageWrap(381,expect(tokens)).to).eql(__coverageWrap(392,[
-            __coverageWrap(383,{ 'type': 'Code', 'body': 'use strict;\nuse warnings;\n\nprint "hello world";\n\n' }),
-            __coverageWrap(390,{
+        { __coverageWrap(368);__coverageWrap(367,assert.deepEqual(tokens, __coverageWrap(366,[
+            __coverageWrap(357,{ 'type': 'Code', 'body': 'use strict;\nuse warnings;\n\nprint "hello world";\n\n' }),
+            __coverageWrap(364,{
                 'type': 'DocBlock',
                 'description': '\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    my $code = "samples";\n\n',
-                'tags': __coverageWrap(389,[
-                    __coverageWrap(384,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
-                    __coverageWrap(385,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
-                    __coverageWrap(386,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
-                    __coverageWrap(387,{ 'tag': 'example', 'description': '\n\n    my $foo = "bar";\n\n' }),
-                    __coverageWrap(388,{ 'tag': 'tag' })
+                'tags': __coverageWrap(363,[
+                    __coverageWrap(358,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description.\n' }),
+                    __coverageWrap(359,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n' }),
+                    __coverageWrap(360,{ 'tag': 'arg', 'type': '{Type}', 'name': 'name', 'description': 'Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n' }),
+                    __coverageWrap(361,{ 'tag': 'example', 'description': '\n\n    my $foo = "bar";\n\n' }),
+                    __coverageWrap(362,{ 'tag': 'tag' })
                 ]),
                 'raw': '=pod\n\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    my $code = "samples";\n\n@arg {Type} name Description.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n@arg {Type} name Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n@example\n\n    my $foo = "bar";\n\n@tag\n\n=cut'
             }),
-            __coverageWrap(391,{ 'type': 'Code', 'body': '\n' })
+            __coverageWrap(365,{ 'type': 'Code', 'body': '\n' })
         ])));};
     })));};
 })));};
 
-},{"../../lib/toga":1,"expect.js":4,"fs":2}]},{},[5])
+},{"../../lib/toga":1,"assert":3,"fs":2}]},{},[8])

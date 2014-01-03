@@ -86,8 +86,22 @@ Functional shorthand, if that's how you operate.
 
     $ npm test
 
-[![Testling Matrix](http://ci.testling.com/shannonmoeller/toga.png)](http://ci.testling.com/shannonmoeller/toga)
-[![Sauce Labs Matrix](https://saucelabs.com/browser-matrix/smoeller-github-toga.svg)](https://saucelabs.com/u/smoeller-github-toga)
+## Compatibility
+
+Tested to work in the following environments:
+
+- Node (0.8, 0.10, 0.11)
+- Chrome (Latest, Canary)
+- Firefox (Latest, Nightly)
+- IE (9+)
+- Opera (Latest, Next)
+- Safari (Latest)
+
+Using:
+
+- [Travis](https://travis-ci.org/shannonmoeller/toga)
+- [Testling](http://ci.testling.com/shannonmoeller/toga)
+- [Sauce Labs](https://saucelabs.com/u/smoeller-github-toga)
 
 ## License
 

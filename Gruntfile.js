@@ -48,10 +48,15 @@ module.exports = function(grunt) {
             }
         },
 
+        clean: {
+            build: ['<%= browserify.build.dest %>'],
+            cover: ['<%= browserify.cover.dest %>'],
+            unit: ['<%= browserify.unit.dest %>']
+        },
+
         simplemocha: {
             options: {
                 reporter: 'spec',
-                require: ['expect.js'],
                 ui: 'bdd'
             },
             cover: {
@@ -64,60 +69,55 @@ module.exports = function(grunt) {
 
         karma: {
             options: {
-                port: 9999,
-                frameworks: ['mocha', 'expect'],
-                files: ['<%= browserify.unit.dest %>']
-            },
-            dev: {
-                autoWatch: true,
-                singleRun: false,
+                frameworks: ['mocha'],
                 reporters: ['mocha'],
-                browsers: ['Chrome', 'Firefox', 'Safari']
-            },
-            sauce: {
-                autoWatch: false,
-                singleRun: true,
-                reporters: ['mocha', 'saucelabs'],
-                sauseLabs: {
-                    testName: 'unit tests',
-                    tags: ['master']
+                files: ['<%= browserify.unit.dest %>'],
+                sauceLabs: {
+                    concurrent: 3,
+                    startConnect: true,
+                    testName: 'Toga'
                 },
                 customLaunchers: {
-                    sChrome: {
-                        base: 'SauceLabs',
-                        browserName: 'chrome',
-                        platform: 'WIN8'
-                    },
-                    sFirefox: {
-                        base: 'SauceLabs',
-                        browserName: 'firefox',
-                        platform: 'WIN8'
-                    },
-                    sIE10: {
-                        base: 'SauceLabs',
-                        browserName: 'internet explorer',
-                        platform: 'WIN8',
-                        version: '10'
-                    },
-                    sOpera: {
-                        base: 'SauceLabs',
-                        browserName: 'opera',
-                        platform: 'WIN8'
-                    },
-                    sSafari: {
-                        base: 'SauceLabs',
-                        browserName: 'safari',
-                        version: '7'
-                    }
-                },
-                browsers: ['sChrome', 'sFirefox', 'sIE10', 'sOpera', 'sSafari']
+                    slChrome31:  { base: 'SauceLabs', browserName: 'chrome',            version: '31' },
+                    slFirefox25: { base: 'SauceLabs', browserName: 'firefox',           version: '25' },
+                    slSafari6:   { base: 'SauceLabs', browserName: 'safari',            version: '6' },
+                    slIE8:       { base: 'SauceLabs', browserName: 'internet explorer', version: '8' },
+                    slIE9:       { base: 'SauceLabs', browserName: 'internet explorer', version: '9' },
+                    slIE10:      { base: 'SauceLabs', browserName: 'internet explorer', version: '10' },
+                    slIE11:      { base: 'SauceLabs', browserName: 'internet explorer', version: '11' },
+                    slAndroid4:  { base: 'SauceLabs', browserName: 'android',           version: '4' },
+                    slIPhone7:   { base: 'SauceLabs', browserName: 'iphone',            version: '7' }
+                }
+            },
+            dev: {
+                options: {
+                    autoWatch: true,
+                    browsers: ['Chrome', 'Firefox']
+                }
+            },
+            local: {
+                options: {
+                    singleRun: true,
+                    browsers: ['Chrome', 'Firefox']
+                }
+            },
+            sauce: {
+                options: {
+                    singleRun: true,
+                    reporters: ['mocha', 'saucelabs'],
+                    browsers: [/*
+                        'slChrome31',
+                        'slFirefox25',
+                        'slSafari6',
+                        'slIE8',*/
+                        'slIE9',
+                        'slIE10',
+                        'slIE11'/*,
+                        'slAndroid4',
+                        'slIPhone7'*/
+                    ]
+                }
             }
-        },
-
-        clean: {
-            build: ['<%= browserify.build.dest %>'],
-            cover: ['<%= browserify.cover.dest %>'],
-            unit: ['<%= browserify.unit.dest %>']
         },
 
         watch: {
@@ -125,11 +125,8 @@ module.exports = function(grunt) {
                 livereload: true
             },
             dev: {
-                files: [
-                    '<%= jshint.build.src %>',
-                    '<%= jshint.unit.src %>'
-                ],
-                tasks: ['lint', 'test', 'build']
+                files: ['<%= jshint.build.src %>', '<%= jshint.unit.src %>'],
+                tasks: ['default']
             }
         },
 
@@ -143,13 +140,18 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('default', ['lint', 'test', 'build']);
+    // Common tasks
+    grunt.registerTask('default',      ['jshint', 'test', 'build']);
+    grunt.registerTask('dev',          ['concurrent:dev']);
 
-    grunt.registerTask('lint', ['jshint']);
-    grunt.registerTask('test', ['clean:unit', 'browserify:unit', 'simplemocha:unit']);
-    grunt.registerTask('build', ['clean:build', 'browserify:build']);
+    // Build tasks
+    grunt.registerTask('build',        ['clean:build', 'browserify:build']);
+    grunt.registerTask('build:cover',  ['clean:cover', 'browserify:cover']);
+    grunt.registerTask('build:unit',   ['clean:unit', 'browserify:unit']);
 
-    grunt.registerTask('dev', ['concurrent:dev']);
-    grunt.registerTask('travis', ['simplemocha:unit', 'karma:sauce']);
-    grunt.registerTask('cover', ['clean:cover', 'browserify:cover', 'simplemocha:cover']);
+    // Test tasks
+    grunt.registerTask('test',         ['build:unit', 'simplemocha:unit']);
+    grunt.registerTask('test:browser', ['build:unit', 'karma:local']);
+    grunt.registerTask('test:cover',   ['build:cover', 'simplemocha:cover']);
+    grunt.registerTask('test:sauce',   ['build:unit', 'karma:sauce']);
 };
