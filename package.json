@@ -1,29 +1,29 @@
 {
-  "name": "toga",
-  "version": "0.1.1",
+  "name": "tunic",
+  "version": "0.1.2",
   "description": "The stupid doc-block parser.",
-  "main": "lib/toga.js",
+  "main": "lib/tunic.js",
   "scripts": {
     "test": "grunt test"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/shannonmoeller/toga.git"
+    "url": "https://github.com/togajs/tunic.git"
   },
   "keywords": [
     "docblock",
     "documentation",
     "dox",
     "jsdoc",
-    "toga",
+    "tunic",
     "yuidoc"
   ],
   "author": "Shannon Moeller <me@shannonmoeller.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/shannonmoeller/toga/issues"
+    "url": "https://github.com/togajs/tunic/issues"
   },
-  "homepage": "https://github.com/shannonmoeller/toga",
+  "homepage": "https://github.com/togajs/tunic",
   "dependencies": {},
   "devDependencies": {
     "brfs": "0.0.8",
