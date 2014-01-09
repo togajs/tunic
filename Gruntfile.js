@@ -75,7 +75,7 @@ module.exports = function(grunt) {
                 sauceLabs: {
                     concurrent: 3,
                     startConnect: true,
-                    testName: 'Toga'
+                    testName: 'Tunic unit tests'
                 },
                 customLaunchers: {
                     slChrome31:  { base: 'SauceLabs', browserName: 'chrome',            version: '31' },

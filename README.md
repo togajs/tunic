@@ -1,35 +1,35 @@
-# Toga
+# Tunic
 
 The stupid doc-block parser. Generates an abstract syntax tree based on a customizable regular-expression grammar. Defaults to C-style comment blocks, so it supports JavaScript, PHP, C++, and even CSS right out of the box.
 
 Tags are parsed greedily. If it looks like a tag, it's a tag. What you do with them is completely up to you. Render something human-readable, perhaps?
 
-[![Build Status](https://travis-ci.org/shannonmoeller/toga.png?branch=master)](https://travis-ci.org/shannonmoeller/toga)
-[![NPM version](https://badge.fury.io/js/toga.png)](http://badge.fury.io/js/toga)
-[![Dependency Status](https://gemnasium.com/shannonmoeller/toga.png)](https://gemnasium.com/shannonmoeller/toga)
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/shannonmoeller/toga/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+[![Build Status](https://travis-ci.org/togajs/tunic.png?branch=master)](https://travis-ci.org/togajs/tunic)
+[![NPM version](https://badge.fury.io/js/tunic.png)](http://badge.fury.io/js/tunic)
+[![Dependency Status](https://gemnasium.com/togajs/tunic.png)](https://gemnasium.com/togajs/tunic)
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/togajs/tunic/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 ## Install
 
 With [Node.js](http://nodejs.org):
 
-    $ npm install toga
+    $ npm install tunic
 
 With [Bower](http://bower.io):
 
-    $ bower install shannonmoeller/toga
+    $ bower install togajs/tunic
 
 With [Component](http://component.io):
 
-    $ component install shannonmoeller/toga
+    $ component install togajs/tunic
 
 ## Documentation Blocks
 
-Documentation blocks follow the conventions of other standard tools such as JSDoc, Google Closure, YUIDoc, PHPDoc, JavaDoc, etc. The primary difference is that nothing is inferred from the code. If you want it documented, you must document it. This is why you can use Toga to parse inline documentation out of almost any language that supports multi-line comments.
+Documentation blocks follow the conventions of other standard tools such as JSDoc, Google Closure, YUIDoc, PHPDoc, JavaDoc, etc. The primary difference is that nothing is inferred from the code. If you want it documented, you must document it. This is why you can use tunic to parse inline documentation out of almost any language that supports multi-line comments.
 
 ## API
 
-### `new Toga([grammar])`
+### `new Tunic([grammar])`
 
 - `grammar` `{Object}` Optional grammar overrides.
   - `grammar.blockSplit` `{RegExp}`
@@ -49,7 +49,7 @@ Creates a reusable parser based on the given grammar. Defaults to parsing C-styl
 
 Generates a sensible syntax tree format of doc-blocks and surrounding code.
 
-### `toga(block, [grammar]) : Array.<Object>`
+### `tunic(block, [grammar]) : Array.<Object>`
 
 Functional shorthand, if that's how you operate.
 
@@ -57,13 +57,13 @@ Functional shorthand, if that's how you operate.
 
 ### Shorthand
 
-    var toga = require('toga');
-    var tokens = toga('/** ... */');
+    var tunic = require('tunic');
+    var tokens = tunic('/** ... */');
 
 ### Shorthand with Custom Grammar
 
-    var toga = require('toga');
-    var tokens = toga('{{!--- ... --}}\n<div> ...', {
+    var tunic = require('tunic');
+    var tokens = tunic('{{!--- ... --}}\n<div> ...', {
         blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
         blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
         indent: /^[\t !]/gm,
@@ -72,9 +72,9 @@ Functional shorthand, if that's how you operate.
 
 ### Full Example with Reusable Parser
 
-    var Toga = require('toga');
+    var Tunic = require('tunic');
 
-    var parser = new Toga({
+    var parser = new Tunic({
         blockSplit: /(^=doc\n[\s\S]*?\n=cut$)/m,
         blockParse: /^=doc\n([\s\S]*?)\n=cut$/m,
         named: /^(arg(gument)?|data|prop(erty)?)$/
@@ -99,9 +99,9 @@ Tested to work in the following environments:
 
 Using:
 
-- [Travis](https://travis-ci.org/shannonmoeller/toga)
-- [Testling](http://ci.testling.com/shannonmoeller/toga)
-- [Sauce Labs](https://saucelabs.com/u/smoeller-github-toga)
+- [Travis](https://travis-ci.org/togajs/tunic)
+- [Testling](http://ci.testling.com/togajs/tunic)
+- [Sauce Labs](https://saucelabs.com/u/togajs-tunic)
 
 ## License
 
