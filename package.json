@@ -11,11 +11,15 @@
     "url": "https://github.com/togajs/tunic.git"
   },
   "keywords": [
-    "docblock",
-    "documentation",
-    "dox",
-    "jsdoc",
+    "toga",
     "tunic",
+    "documentation",
+    "docblock",
+    "docs",
+    "info",
+    "jsdoc",
+    "man",
+    "pod",
     "yuidoc"
   ],
   "author": "Shannon Moeller <me@shannonmoeller.com>",
