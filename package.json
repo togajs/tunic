@@ -4,7 +4,7 @@
   "description": "The stupid doc-block parser.",
   "main": "lib/tunic.js",
   "scripts": {
-    "test": "grunt test"
+    "test": "mocha --reporter spec test/**/*-spec.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,9 @@
     "url": "https://github.com/togajs/tunic/issues"
   },
   "homepage": "https://github.com/togajs/tunic",
-  "dependencies": {},
+  "dependencies": {
+    "mout": "~0.8.0"
+  },
   "devDependencies": {
     "brfs": "0.0.8",
     "browserify": "~3.18.0",

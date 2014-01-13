@@ -1,0 +1,13 @@
+[
+    { "type": "Code", "body": "" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "tag", "type": "{Type}", "description": "Description here." }] },
+    { "type": "Code", "body": "\n" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "tag", "type": "{Type}", "description": "Description here." }] },
+    { "type": "Code", "body": "\n" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "tag", "description": "Description." }] },
+    { "type": "Code", "body": "\n" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "tag", "description": "Description." }] },
+    { "type": "Code", "body": "\n" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "tag" }] },
+    { "type": "Code", "body": "\n" }
+]

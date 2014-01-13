@@ -66,5 +66,14 @@
     "nomen": false,
     "onevar": false,
     "passfail": false,
-    "white": false
+    "white": false,
+
+    "globals": {
+        "after": true,
+        "afterEach": true,
+        "before": true,
+        "beforeEach": true,
+        "describe": true,
+        "it": true
+    }
 }

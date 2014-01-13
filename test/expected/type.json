@@ -1,0 +1,11 @@
+[
+    { "type": "Code", "body": "" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "arg", "type": "{Type}" }] },
+    { "type": "Code", "body": "\n" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "arg", "type": "{String|Object}" }] },
+    { "type": "Code", "body": "\n" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "arg", "type": "{Array.<Object.<String,Number>>}" }] },
+    { "type": "Code", "body": "\n" },
+    { "type": "DocBlock", "description": "", "tags": [{ "tag": "arg", "type": "{Function(String, ...[Number]): Number}", "name": "callback" }] },
+    { "type": "Code", "body": "\n" }
+]

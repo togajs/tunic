@@ -1,5 +1,7 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.toga=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.tunic=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
+
+var mixIn = require('mout/object/mixIn');
 
 /**
  * Line matching patterns.
@@ -36,34 +38,7 @@ var defaultOptions = {
 };
 
 /**
- * Copies the enumerable properties of one or more objects to a target object.
- *
- * @type {Function}
- * @param {Object} target Target object.
- * @param {Object} [objs...] Objects with properties to copy.
- * @return {Object} Target object, augmented.
- */
-var copier = function(target) {
-    var arg;
-    var key;
-    var len = arguments.length;
-    var i = 1;
-
-    for (; i < len; i++) {
-        arg = arguments[i];
-
-        for (key in arg) {
-            if (arg.hasOwnProperty(key)) {
-                target[key] = arg[key];
-            }
-        }
-    }
-
-    return target;
-};
-
-/**
- * # Toga
+ * # Tunic
  *
  * The stupid doc-block parser. Generates an abstract syntax tree based on a
  * customizable regular-expression grammar. Defaults to C-style comment blocks,
@@ -72,26 +47,26 @@ var copier = function(target) {
  * Tags are parsed greedily. If it looks like a tag, it's a tag. What you do
  * with them is completely up to you. Render something human-readable, perhaps?
  *
- * @class Toga
+ * @class Tunic
  * @param {String} [block]
  * @param {Object} [grammar]
  * @constructor
  */
-function Toga(block, grammar) {
+function Tunic(block, grammar) {
     // Make `block` optional
     if (arguments.length === 1 && typeof block === 'object' && block) {
         grammar = block;
         block = undefined;
     }
 
-    // Support functional execution: `toga(block, grammar)`
-    if (!(this instanceof Toga)) {
-        return new Toga(grammar).parse(block);
+    /** Support functional execution: `tunic(block, grammar)` */
+    if (!(this instanceof Tunic)) {
+        return new Tunic(grammar).parse(block);
     }
 
     // Set defaults
-    this.grammar = copier({}, defaultGrammar, grammar);
-    this.options = copier({}, defaultOptions);
+    this.grammar = mixIn({}, defaultGrammar, grammar);
+    this.options = mixIn({}, defaultOptions);
 
     // Enforce context
     this.parse = this.parse.bind(this);
@@ -101,15 +76,17 @@ function Toga(block, grammar) {
     this.parseTag = this.parseTag.bind(this);
 }
 
+var proto = Tunic.prototype;
+
 /**
  * @method parse
  * @param {String} block
  * @param {String} [options]
  * @return {String}
  */
-Toga.prototype.parse = function(block, options) {
+proto.parse = function(block, options) {
     if (arguments.length === 2) {
-        this.options = copier({}, defaultOptions, options);
+        this.options = mixIn({}, defaultOptions, options);
     }
 
     return String(block)
@@ -122,7 +99,7 @@ Toga.prototype.parse = function(block, options) {
  * @param {String} [block]
  * @return {Object}
  */
-Toga.prototype.parseBlock = function(block) {
+proto.parseBlock = function(block) {
     if (this.grammar.blockParse.test(block)) {
         return this.parseDocBlock(block);
     }
@@ -135,7 +112,7 @@ Toga.prototype.parseBlock = function(block) {
  * @param {String} [block]
  * @return {Object}
  */
-Toga.prototype.parseCode = function(block) {
+proto.parseCode = function(block) {
     return {
         type: 'Code',
         body: String(block)
@@ -147,7 +124,7 @@ Toga.prototype.parseCode = function(block) {
  * @param {String} [block]
  * @return {Object}
  */
-Toga.prototype.parseDocBlock = function(block) {
+proto.parseDocBlock = function(block) {
     block = String(block);
 
     var tags = this
@@ -172,7 +149,7 @@ Toga.prototype.parseDocBlock = function(block) {
  * @param {String} block
  * @return {String}
  */
-Toga.prototype.normalizeDocBlock = function(block) {
+proto.normalizeDocBlock = function(block) {
     var grammar = this.grammar;
 
     // Trim comment wrappers
@@ -209,7 +186,7 @@ Toga.prototype.normalizeDocBlock = function(block) {
  * @param {String} [block]
  * @return {Object}
  */
-Toga.prototype.parseTag = function(block) {
+proto.parseTag = function(block) {
     var grammar = this.grammar;
     var parts = String(block).match(grammar.tagParse);
     var tag = parts[1];
@@ -251,8 +228,137 @@ Toga.prototype.parseTag = function(block) {
     return token;
 };
 
-module.exports = Toga;
+module.exports = Tunic;
 
-},{}]},{},[1])
+},{"mout/object/mixIn":5}],2:[function(require,module,exports){
+
+
+    var _hasDontEnumBug,
+        _dontEnums;
+
+    function checkDontEnum(){
+        _dontEnums = [
+                'toString',
+                'toLocaleString',
+                'valueOf',
+                'hasOwnProperty',
+                'isPrototypeOf',
+                'propertyIsEnumerable',
+                'constructor'
+            ];
+
+        _hasDontEnumBug = true;
+
+        for (var key in {'toString': null}) {
+            _hasDontEnumBug = false;
+        }
+    }
+
+    /**
+     * Similar to Array/forEach but works over object properties and fixes Don't
+     * Enum bug on IE.
+     * based on: http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+     */
+    function forIn(obj, fn, thisObj){
+        var key, i = 0;
+        // no need to check if argument is a real object that way we can use
+        // it for arrays, functions, date, etc.
+
+        //post-pone check till needed
+        if (_hasDontEnumBug == null) checkDontEnum();
+
+        for (key in obj) {
+            if (exec(fn, obj, key, thisObj) === false) {
+                break;
+            }
+        }
+
+        if (_hasDontEnumBug) {
+            while (key = _dontEnums[i++]) {
+                // since we aren't using hasOwn check we need to make sure the
+                // property was overwritten
+                if (obj[key] !== Object.prototype[key]) {
+                    if (exec(fn, obj, key, thisObj) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    function exec(fn, obj, key, thisObj){
+        return fn.call(thisObj, obj[key], key, obj);
+    }
+
+    module.exports = forIn;
+
+
+
+},{}],3:[function(require,module,exports){
+var hasOwn = require('./hasOwn');
+var forIn = require('./forIn');
+
+    /**
+     * Similar to Array/forEach but works over object properties and fixes Don't
+     * Enum bug on IE.
+     * based on: http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation
+     */
+    function forOwn(obj, fn, thisObj){
+        forIn(obj, function(val, key){
+            if (hasOwn(obj, key)) {
+                return fn.call(thisObj, obj[key], key, obj);
+            }
+        });
+    }
+
+    module.exports = forOwn;
+
+
+
+},{"./forIn":2,"./hasOwn":4}],4:[function(require,module,exports){
+
+
+    /**
+     * Safer Object.hasOwnProperty
+     */
+     function hasOwn(obj, prop){
+         return Object.prototype.hasOwnProperty.call(obj, prop);
+     }
+
+     module.exports = hasOwn;
+
+
+
+},{}],5:[function(require,module,exports){
+var forOwn = require('./forOwn');
+
+    /**
+    * Combine properties from all the objects into first one.
+    * - This method affects target object in place, if you want to create a new Object pass an empty object as first param.
+    * @param {object} target    Target Object
+    * @param {...object} objects    Objects to be combined (0...n objects).
+    * @return {object} Target Object.
+    */
+    function mixIn(target, objects){
+        var i = 0,
+            n = arguments.length,
+            obj;
+        while(++i < n){
+            obj = arguments[i];
+            if (obj != null) {
+                forOwn(obj, copyProp, target);
+            }
+        }
+        return target;
+    }
+
+    function copyProp(val, key){
+        this[key] = val;
+    }
+
+    module.exports = mixIn;
+
+
+},{"./forOwn":3}]},{},[1])
 (1)
 });

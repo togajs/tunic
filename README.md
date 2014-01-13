@@ -7,7 +7,6 @@ Tags are parsed greedily. If it looks like a tag, it's a tag. What you do with t
 [![Build Status](https://travis-ci.org/togajs/tunic.png?branch=master)](https://travis-ci.org/togajs/tunic)
 [![NPM version](https://badge.fury.io/js/tunic.png)](http://badge.fury.io/js/tunic)
 [![Dependency Status](https://gemnasium.com/togajs/tunic.png)](https://gemnasium.com/togajs/tunic)
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/togajs/tunic/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 ## Install
 
