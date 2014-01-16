@@ -1,6 +1,6 @@
 {
   "name": "tunic",
-  "version": "0.1.2",
+  "version": "0.2.0-alpha.1",
   "description": "The stupid doc-block parser.",
   "main": "lib/tunic.js",
   "scripts": {
