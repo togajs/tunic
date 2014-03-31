@@ -4,7 +4,8 @@
   "description": "The stupid doc-block parser.",
   "main": "index.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "coveralls": "gulp test && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "mout": "^0.9.0"
   },
   "devDependencies": {
+    "coveralls": "^2.6.1",
     "gulp": "^3.6.0",
     "gulp-istanbul": "^0.1.1",
     "gulp-jasmine": "^0.2.0",
