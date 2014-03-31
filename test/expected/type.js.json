@@ -1,0 +1,66 @@
+{
+    "type": "Tunic",
+    "blocks": [
+        {
+            "type": "Code",
+            "contents": ""
+        },
+        {
+            "type": "Comment",
+            "description": "",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Type}"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n"
+        },
+        {
+            "type": "Comment",
+            "description": "",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{String|Object}"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n"
+        },
+        {
+            "type": "Comment",
+            "description": "",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Array.<Object.<String,Number>>}"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n"
+        },
+        {
+            "type": "Comment",
+            "description": "",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Function(String, ...[Number]): Number}",
+                    "name": "callback"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n"
+        }
+    ]
+}

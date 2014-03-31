@@ -1,0 +1,221 @@
+{
+    "type": "Tunic",
+    "blocks": [
+        {
+            "type": "Code",
+            "contents": ""
+        },
+        {
+            "type": "Comment",
+            "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
+                },
+                {
+                    "tag": "example",
+                    "description": "\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n"
+                },
+                {
+                    "tag": "tag",
+                    "description": "\n"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n\n"
+        },
+        {
+            "type": "Comment",
+            "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
+                },
+                {
+                    "tag": "example",
+                    "description": "\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n"
+                },
+                {
+                    "tag": "tag"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n\n"
+        },
+        {
+            "type": "Comment",
+            "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>{{samples}}</code>\n\n",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
+                },
+                {
+                    "tag": "example",
+                    "description": "\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n"
+                },
+                {
+                    "tag": "tag"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n\n"
+        },
+        {
+            "type": "Comment",
+            "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
+                },
+                {
+                    "tag": "example",
+                    "description": "\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n"
+                },
+                {
+                    "tag": "tag",
+                    "description": "\n"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n\n"
+        },
+        {
+            "type": "Comment",
+            "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>samples</code>\n\n",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
+                },
+                {
+                    "tag": "example",
+                    "description": "\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n"
+                },
+                {
+                    "tag": "tag"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n\n"
+        },
+        {
+            "type": "Comment",
+            "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    <code>{{samples}}</code>\n\n",
+            "tags": [
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n"
+                },
+                {
+                    "tag": "arg",
+                    "type": "{Type}",
+                    "name": "name",
+                    "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
+                },
+                {
+                    "tag": "example",
+                    "description": "\n\n    <ul>\n        {{#each item}}\n            <li>{{.}}</li>\n        {{/each}}\n    </ul>\n\n"
+                },
+                {
+                    "tag": "tag"
+                }
+            ]
+        },
+        {
+            "type": "Code",
+            "contents": "\n\n{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->\n"
+        }
+    ]
+}
