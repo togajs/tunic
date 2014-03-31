@@ -6,7 +6,7 @@ Tags are parsed greedily. If it looks like a tag, it's a tag. What you do with t
 
 [![NPM version](https://badge.fury.io/js/tunic.png)](http://badge.fury.io/js/tunic)
 [![Build Status](https://travis-ci.org/togajs/tunic.png?branch=master)](https://travis-ci.org/togajs/tunic)
-[![Coverage Status](https://coveralls.io/repos/togajs/tunic/badge.png)](https://coveralls.io/r/togajs/tunic)
+[![Coverage Status](https://coveralls.io/repos/togajs/tunic/badge.png?branch=master)](https://coveralls.io/r/togajs/tunic?branch=master)
 [![Dependency Status](https://david-dm.org/togajs/tunic.png?theme=shields.io)](https://david-dm.org/togajs/tunic)
 
 ## Install
