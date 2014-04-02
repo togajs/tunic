@@ -1,6 +1,6 @@
 'use strict';
 
-var Tunic = require('../../index');
+var Tunic = require('../index');
 var es = require('event-stream');
 var vs = require('vinyl-fs');
 
@@ -48,22 +48,15 @@ describe('Tunic', function () {
                 .on('end', done);
         });
 
-        it('should not parse unknown file types', function (done) {
-            vs.src(__dirname + '/../fixtures/**/*.js')
-                .pipe(tunic({ extension: /\.coffee$/ }))
-                .pipe(es.map(toBeUndefined))
-                .on('end', done);
-        });
-
         it('should parse javascript files', function (done) {
-            vs.src(__dirname + '/../fixtures/**/*.js')
+            vs.src(__dirname + '/fixtures/**/*.js')
                 .pipe(tunic())
                 .pipe(es.map(toEqualExpected))
                 .on('end', done);
         });
 
         it('should parse handlebar files', function (done) {
-            vs.src(__dirname + '/../fixtures/**/*.hbs')
+            vs.src(__dirname + '/fixtures/**/*.hbs')
                 .pipe(tunic({
                     blockIndents: /^[\t !]/gm,
                     blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
@@ -75,13 +68,22 @@ describe('Tunic', function () {
         });
 
         it('should parse perl files', function (done) {
-            vs.src(__dirname + '/../fixtures/**/*.pl')
+            vs.src(__dirname + '/fixtures/**/*.pl')
                 .pipe(tunic({
                     blockParse: /^=pod([\s\S]*?)\n=cut$/m,
                     blockSplit: /(^=pod[\s\S]*?\n=cut$)/m,
                     namedTags: ['arg', 'argument', 'data', 'prop', 'property']
                 }))
                 .pipe(es.map(toEqualExpected))
+                .on('end', done);
+        });
+
+        it('should not parse unknown file types', function (done) {
+            vs.src(__dirname + '/fixtures/**/*.js')
+                .pipe(tunic({
+                    extension: /\.coffee$/
+                }))
+                .pipe(es.map(toBeUndefined))
                 .on('end', done);
         });
     });

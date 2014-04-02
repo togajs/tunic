@@ -66,12 +66,6 @@ Generates a sensible syntax tree format of doc-blocks and surrounding code.
 
 Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_stream_transform), working in object mode, compatible with `String`, `Buffer`, and [Vinyl](https://github.com/wearefractal/vinyl). Strings and buffers are parsed and the resulting AST is emitted as data. Vinyl objects are augmented with the AST stored as the `.tunic` property.
 
-    var gulp = require('gulp');
-    var tunic = require('tunic');
-
-    gulp.src('./lib/**/*.js')
-        .pipe(tunic());
-
 ## Example
 
 ### Default Options
@@ -84,10 +78,10 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
     var tunic = require('tunic');
 
     var handlebars = tunic({
-        blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
+        blockIndents: /^[\t !]/gm,
         blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
-        indent: /^[\t !]/gm,
-        named: /^(arg(gument)?|data|prop(erty)?)$/
+        blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
+        namedTags: ['arg', 'argument', 'data', 'prop', 'property']
     });
 
     var ast = handlebars.parse('{{!--- ... --}}\n<div> ...');
@@ -97,12 +91,20 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
     var Tunic = require('tunic');
 
     var pod = new Tunic({
-        blockSplit: /(^=doc\n[\s\S]*?\n=cut$)/m,
         blockParse: /^=doc\n([\s\S]*?)\n=cut$/m,
-        named: /^(arg(gument)?|data|prop(erty)?)$/
+        blockSplit: /(^=doc\n[\s\S]*?\n=cut$)/m,
+        namedTags: ['arg', 'argument', 'data', 'prop', 'property']
     });
 
     var ast = pod.parse('=doc\n ... \n=cut');
+
+### Streams
+
+    var gulp = require('gulp');
+    var tunic = require('tunic');
+
+    gulp.src('./lib/**/*.js')
+        .pipe(tunic());
 
 ## Test
 
