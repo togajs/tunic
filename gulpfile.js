@@ -3,19 +3,22 @@
 var gulp = require('gulp');
 var istanbul = require('gulp-istanbul');
 var jasmine = require('gulp-jasmine');
+var jscs = require('gulp-jscs');
 var jshint = require('gulp-jshint');
 
 var paths = {
+    gulp: './gulpfile.js',
     src: './index.js',
     test: './test/**/*Spec.js'
 };
 
-gulp.task('default', ['test']);
+gulp.task('default', ['lint', 'test']);
 
 gulp.task('lint', function () {
     return gulp
-        .src([paths.src, paths.test])
-        .pipe(jshint('.jshintrc'))
+        .src([paths.gulp, paths.src, paths.test])
+        .pipe(jscs())
+        .pipe(jshint())
         .pipe(jshint.reporter('jshint-stylish'));
 });
 

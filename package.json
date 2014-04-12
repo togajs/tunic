@@ -12,14 +12,16 @@
     "url": "https://github.com/togajs/tunic.git"
   },
   "keywords": [
-    "toga",
     "tunic",
-    "documentation",
     "docblock",
     "docs",
     "doctrine",
+    "documentation",
     "dox",
+    "javadoc",
     "jsdoc",
+    "phpdoc",
+    "pod",
     "yuidoc"
   ],
   "author": "Shannon Moeller <me@shannonmoeller.com>",
@@ -33,15 +35,16 @@
   },
   "devDependencies": {
     "coveralls": "^2.6.1",
+    "event-stream": "^3.1.1",
     "gulp": "^3.6.0",
     "gulp-istanbul": "^0.1.1",
     "gulp-jasmine": "^0.2.0",
+    "gulp-jscs": "^0.4.1",
     "gulp-jshint": "^1.5.1",
     "gulp-plumber": "^0.5.6",
     "gulp-watch": "^0.5.3",
     "jshint-stylish": "^0.1.5",
-    "vinyl-fs": "^0.1.2",
-    "event-stream": "^3.1.1"
+    "vinyl-fs": "^0.1.2"
   },
   "engines": {
     "node": ">= 0.10"

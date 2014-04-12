@@ -42,12 +42,15 @@ var defaults = {
     tagSplit: /^[\t ]*@/m,
 
     namedTags: [
+        'imports',
+        'exports',
         'class',
         'extends',
         'method',
         'arg',
         'argument',
         'param',
+        'parameter',
         'prop',
         'property'
     ]
@@ -117,7 +120,7 @@ proto.parseBlock = function (block) {
  * @return {Object}
  */
 proto.parseCode = function (code) {
-    return {
+    return{
         type: 'Code',
         contents: code
     };
@@ -186,6 +189,7 @@ proto.unwrap = function (block) {
     // Total line count
     lines = block.match(matchLines.any).length;
 
+    // Attempt to unindent
     while (lines > 0) {
         // Empty line count
         emptyLines = (block.match(matchLines.empty) || []).length;
@@ -207,26 +211,26 @@ proto.unwrap = function (block) {
 
 /**
  * @method _transform
- * @param {String} chunk
- * @param {String} encoding
- * @param {Function} callback
+ * @param {String} file
+ * @param {String} enc
+ * @param {Function} cb
  */
-proto._transform = function (chunk, encoding, callback) {
+proto._transform = function (file, enc, cb) {
+    var extension = this.options.extension;
+
+    // String or Buffer
+    if (typeof file === 'string' || file instanceof Buffer) {
+        this.push(this.parse(file.toString()));
+        return cb();
+    }
+
     // Vinyl
-    if (chunk.contents) {
-        // Only run on specific file types
-        if (this.options.extension.test(chunk.path)) {
-            chunk.tunic = this.parse(chunk.contents.toString());
-        }
-
-        this.push(chunk);
-    }
-    // String or buffer
-    else {
-        this.push(this.parse(chunk.toString(encoding)));
+    if (file.contents != null && extension.test(file.path)) {
+        file.tunic = this.parse(file.contents.toString());
     }
 
-    callback();
+    this.push(file);
+    return cb();
 };
 
 module.exports = Tunic;

@@ -7,29 +7,6 @@ var vs = require('vinyl-fs');
 describe('Tunic', function () {
     var tunic = Tunic;
 
-    var fooFixture = 'alert("foo");';
-
-    var fooExpected = {
-        type: 'Tunic',
-        blocks: [{ type: 'Code', contents: fooFixture }]
-    };
-
-    var toBeUndefined = function (file, cb) {
-        expect(file.tunic).toBeUndefined();
-        cb(null, file);
-    };
-
-    var toEqualFoo = function (data, cb) {
-        expect(data).toEqual(fooExpected);
-        cb(null, data);
-    };
-
-    var toEqualExpected = function (file, cb) {
-        var expected = file.path.replace('fixtures', 'expected');
-        expect(file.tunic).toEqual(require(expected + '.json'));
-        cb(null, file);
-    };
-
     it('should create an instance when invoked directly', function () {
         var t = tunic();
         expect(t instanceof Tunic).toBe(true);
@@ -41,8 +18,31 @@ describe('Tunic', function () {
     });
 
     describe('#_transform', function () {
+        var fooFixture = 'alert("foo");';
+
+        var fooExpected = {
+            type: 'Tunic',
+            blocks: [{ type: 'Code', contents: fooFixture }]
+        };
+
+        var toEqualFoo = function (data, cb) {
+            expect(data).toEqual(fooExpected);
+            cb(null, data);
+        };
+
+        var toEqualExpected = function (file, cb) {
+            var expected = file.path.replace('fixtures', 'expected');
+            expect(file.tunic).toEqual(require(expected + '.json'));
+            cb(null, file);
+        };
+
+        var toEqualUndefined = function (file, cb) {
+            expect(file.tunic).toBeUndefined();
+            cb(null, file);
+        };
+
         it('should parse streamed chunks', function (done) {
-            es.readArray([fooFixture, fooFixture])
+            es.readArray([fooFixture, new Buffer(fooFixture)])
                 .pipe(tunic())
                 .pipe(es.map(toEqualFoo))
                 .on('end', done);
@@ -55,7 +55,7 @@ describe('Tunic', function () {
                 .on('end', done);
         });
 
-        it('should parse handlebar files', function (done) {
+        it('should parse handlebars files', function (done) {
             vs.src(__dirname + '/fixtures/**/*.hbs')
                 .pipe(tunic({
                     blockIndents: /^[\t !]/gm,
@@ -67,7 +67,7 @@ describe('Tunic', function () {
                 .on('end', done);
         });
 
-        it('should parse perl files', function (done) {
+        it('should parse perlish files', function (done) {
             vs.src(__dirname + '/fixtures/**/*.pl')
                 .pipe(tunic({
                     blockParse: /^=pod([\s\S]*?)\n=cut$/m,
@@ -78,12 +78,19 @@ describe('Tunic', function () {
                 .on('end', done);
         });
 
+        it('should not parse empty files', function (done) {
+            es.readArray([{ path: 'foo.js' }, { path: 'foo.js', content: null }])
+                .pipe(tunic())
+                .pipe(es.map(toEqualUndefined))
+                .on('end', done);
+        });
+
         it('should not parse unknown file types', function (done) {
             vs.src(__dirname + '/fixtures/**/*.js')
                 .pipe(tunic({
                     extension: /\.coffee$/
                 }))
-                .pipe(es.map(toBeUndefined))
+                .pipe(es.map(toEqualUndefined))
                 .on('end', done);
         });
     });
