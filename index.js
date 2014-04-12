@@ -22,7 +22,7 @@ var mixIn = require('mout/object/mixIn');
  */
 var matchLines = {
     any: /^/gm,
-    edge: /^[\t ]*\n|\n[\t ]*$/g,
+    edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g,
     empty: /^$/gm
 };
 
