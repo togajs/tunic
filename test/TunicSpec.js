@@ -86,9 +86,9 @@ describe('Tunic', function () {
         });
 
         it('should not parse unknown file types', function (done) {
-            vs.src(__dirname + '/fixtures/**/*.js')
+            vs.src(__dirname + '/fixtures/**/*.coffee')
                 .pipe(tunic({
-                    extension: /\.coffee$/
+                    extension: /\.js$/
                 }))
                 .pipe(es.map(toEqualUndefined))
                 .on('end', done);

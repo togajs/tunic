@@ -1,35 +1,29 @@
 {
   "name": "tunic",
-  "version": "0.2.0-alpha.3",
+  "version": "0.2.0-alpha.4",
   "description": "The stupid doc-block parser.",
+  "keywords": [
+    "tunic",
+    "parser",
+    "documentation",
+    "docblock",
+    "doctrine",
+    "docs",
+    "doc"
+  ],
+  "homepage": "https://github.com/togajs/tunic",
+  "bugs": "https://github.com/togajs/tunic/issues",
+  "license": "MIT",
+  "author": "Shannon Moeller <me@shannonmoeller.com> (http://shannonmoeller.com)",
   "main": "index.js",
-  "scripts": {
-    "test": "gulp test",
-    "coveralls": "cat ./coverage/lcov.info | coveralls"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/togajs/tunic.git"
   },
-  "keywords": [
-    "tunic",
-    "docblock",
-    "docs",
-    "doctrine",
-    "documentation",
-    "dox",
-    "javadoc",
-    "jsdoc",
-    "phpdoc",
-    "pod",
-    "yuidoc"
-  ],
-  "author": "Shannon Moeller <me@shannonmoeller.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/togajs/tunic/issues"
+  "scripts": {
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "test": "gulp test"
   },
-  "homepage": "https://github.com/togajs/tunic",
   "dependencies": {
     "mout": "^0.9.0"
   },
@@ -41,7 +35,6 @@
     "gulp-jasmine": "^0.2.0",
     "gulp-jscs": "^0.4.1",
     "gulp-jshint": "^1.5.1",
-    "gulp-plumber": "^0.5.6",
     "gulp-watch": "^0.5.3",
     "jshint-stylish": "^0.1.5",
     "vinyl-fs": "^0.1.2"

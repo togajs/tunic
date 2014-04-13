@@ -1,4 +1,4 @@
-# tunic
+# Tunic
 
 The stupid doc-block parser. Generates an abstract syntax tree based on a customizable regular-expression grammar. Defaults to C-style comment blocks, so it supports JavaScript, PHP, C++, and even CSS right out of the box.
 

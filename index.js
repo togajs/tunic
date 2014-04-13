@@ -27,11 +27,40 @@ var matchLines = {
 };
 
 /**
- * Default C-style grammar options.
+ * @class Tunic
+ * @extends Transform
  *
+ * @constructor
+ * @param {Object} options
+ * @param {RegExp} options.blockIndents
+ * @param {RegExp} options.blockParse
+ * @param {RegExp} options.blockSplit
+ * @param {RegExp} options.tagParse
+ * @param {RegExp} options.tagSplit
+ * @param {Array.<String>} options.namedTags
+ * @param {Array.<String>} options.namespaceTags
+ */
+function Tunic(options) {
+    if (!(this instanceof Tunic)) {
+        return new Tunic(options);
+    }
+
+    /**
+     * @property options
+     * @type {Object}
+     */
+    this.options = mixIn({}, this.defaults, options);
+
+    Transform.call(this, { objectMode: true });
+}
+
+var proto = inherits(Tunic, Transform);
+
+/**
+ * @property defaults
  * @type {Object}
  */
-var defaults = {
+proto.defaults = {
     extension: /.\w+$/,
 
     blockIndents: /^[\t \*]/gm,
@@ -55,37 +84,6 @@ var defaults = {
         'property'
     ]
 };
-
-/**
- * @class Tunic
- * @extends Transform
- *
- * @constructor
- * @param {Tunic.Grammar} options
- * @param {RegExp} options.blockIndents
- * @param {RegExp} options.blockParse
- * @param {RegExp} options.blockSplit
- * @param {RegExp} options.tagParse
- * @param {RegExp} options.tagSplit
- * @param {Array.<String>} options.namedTags
- * @param {Array.<String>} options.namespaceTags
- */
-function Tunic(options) {
-    // Support functional execution: `tunic(options)`
-    if (!(this instanceof Tunic)) {
-        return new Tunic(options);
-    }
-
-    /**
-     * @property options
-     * @type {Object}
-     */
-    this.options = mixIn({}, defaults, this.defaults, options);
-
-    Transform.call(this, { objectMode: true });
-}
-
-var proto = inherits(Tunic, Transform);
 
 /**
  * @method parse
