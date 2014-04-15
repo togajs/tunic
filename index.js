@@ -32,13 +32,13 @@ var matchLines = {
  *
  * @constructor
  * @param {Object} options
- * @param {RegExp} options.blockIndents
+ * @param {RegExp} options.extension
+ * @param {RegExp} options.blockIndent
  * @param {RegExp} options.blockParse
  * @param {RegExp} options.blockSplit
  * @param {RegExp} options.tagParse
  * @param {RegExp} options.tagSplit
  * @param {Array.<String>} options.namedTags
- * @param {Array.<String>} options.namespaceTags
  */
 function Tunic(options) {
     if (!(this instanceof Tunic)) {
@@ -63,7 +63,7 @@ var proto = inherits(Tunic, Transform);
 proto.defaults = {
     extension: /.\w+$/,
 
-    blockIndents: /^[\t \*]/gm,
+    blockIndent: /^[\t \*]/gm,
     blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
     blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
 
@@ -177,7 +177,7 @@ proto.unwrap = function (block) {
     var emptyLines;
     var indentedLines;
     var options = this.options;
-    var indent = options.blockIndents;
+    var indent = options.blockIndent;
 
     // Trim comment wrappers
     block = String(block)
