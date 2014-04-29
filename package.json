@@ -21,7 +21,7 @@
     "url": "https://github.com/togajs/tunic.git"
   },
   "scripts": {
-    "coveralls": "cat ./coverage/lcov.info | coveralls",
+    "coveralls": "gulp cover && cat ./coverage/lcov.info | coveralls",
     "test": "gulp test"
   },
   "dependencies": {

@@ -58,7 +58,7 @@ describe('Tunic', function () {
         it('should parse handlebars files', function (done) {
             vs.src(__dirname + '/fixtures/**/*.hbs')
                 .pipe(tunic({
-                    blockIndents: /^[\t !]/gm,
+                    blockIndent: /^[\t \!]/gm,
                     blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
                     blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
                     namedTags: ['arg', 'argument', 'data', 'prop', 'property']

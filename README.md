@@ -43,7 +43,7 @@ Documentation blocks follow the conventions of other standard tools such as JSDo
 
 - `options` `{Object}` Optional grammar overrides.
   - `options.extension` _`RegExp`_ - Matches the file extension or extensions which are handled by this parser.
-  - `options.blockIndents` _`RegExp`_ - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
+  - `options.blockIndent` _`RegExp`_ - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
   - `options.blockParse` _`RegExp`_ - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
   - `options.blockSplit` _`RegExp`_ - Splits code and docblocks into alternating chunks.
   - `options.tagParse` _`RegExp`_ - Matches the various parts of a tag where parts are captured in the following order:
@@ -84,7 +84,7 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
     var tunic = require('tunic');
 
     var handlebars = tunic({
-        blockIndents: /^[\t !]/gm,
+        blockIndent: /^[\t !]/gm,
         blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
         blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
         namedTags: ['arg', 'argument', 'data', 'prop', 'property']

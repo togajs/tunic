@@ -39,7 +39,7 @@
         },
         {
             "type": "Code",
-            "contents": "\n\n"
+            "contents": ""
         },
         {
             "type": "Comment",
@@ -74,7 +74,7 @@
         },
         {
             "type": "Code",
-            "contents": "\n\n"
+            "contents": ""
         },
         {
             "type": "Comment",
@@ -109,7 +109,7 @@
         },
         {
             "type": "Code",
-            "contents": "\n\n"
+            "contents": ""
         },
         {
             "type": "Comment",
@@ -145,7 +145,7 @@
         },
         {
             "type": "Code",
-            "contents": "\n\n"
+            "contents": ""
         },
         {
             "type": "Comment",
@@ -180,7 +180,7 @@
         },
         {
             "type": "Code",
-            "contents": "\n\n"
+            "contents": ""
         },
         {
             "type": "Comment",
@@ -215,7 +215,7 @@
         },
         {
             "type": "Code",
-            "contents": "\n\n{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->\n"
+            "contents": "{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->"
         }
     ]
 }

@@ -3,7 +3,7 @@
     "blocks": [
         {
             "type": "Code",
-            "contents": "use strict;\nuse warnings;\n\nprint \"hello world\";\n\n"
+            "contents": "use strict;\nuse warnings;\n\nprint \"hello world\";"
         },
         {
             "type": "Comment",
@@ -38,7 +38,7 @@
         },
         {
             "type": "Code",
-            "contents": "\n"
+            "contents": ""
         }
     ]
 }

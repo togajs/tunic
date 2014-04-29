@@ -23,7 +23,8 @@ var mixIn = require('mout/object/mixIn');
 var matchLines = {
     any: /^/gm,
     edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g,
-    empty: /^$/gm
+    empty: /^$/gm,
+    trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g
 };
 
 /**
@@ -120,7 +121,7 @@ proto.parseBlock = function (block) {
 proto.parseCode = function (code) {
     return{
         type: 'Code',
-        contents: code
+        contents: code.replace(matchLines.trailing, '')
     };
 };
 
