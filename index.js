@@ -11,21 +11,22 @@
  * with them is completely up to you. Render something human-readable, perhaps?
  */
 
-var Transform = require('stream').Transform;
-var inherits = require('mout/lang/inheritPrototype');
-var mixIn = require('mout/object/mixIn');
+var proto,
+	Transform = require('stream').Transform,
+	inherits = require('mout/lang/inheritPrototype'),
+	mixIn = require('mout/object/mixIn'),
 
-/**
- * Line matching patterns.
- *
- * @type {Object.<String,RegExp>}
- */
-var matchLines = {
-    any: /^/gm,
-    edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g,
-    empty: /^$/gm,
-    trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g
-};
+	/**
+	 * Line matching patterns.
+	 *
+	 * @type {Object.<String,RegExp>}
+	 */
+	matchLines = {
+		any: /^/gm,
+		edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g,
+		empty: /^$/gm,
+		trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g
+	};
 
 /**
  * @class Tunic
@@ -42,48 +43,48 @@ var matchLines = {
  * @param {Array.<String>} options.namedTags
  */
 function Tunic(options) {
-    if (!(this instanceof Tunic)) {
-        return new Tunic(options);
-    }
+	if (!(this instanceof Tunic)) {
+		return new Tunic(options);
+	}
 
-    /**
-     * @property options
-     * @type {Object}
-     */
-    this.options = mixIn({}, this.defaults, options);
+	/**
+	 * @property options
+	 * @type {Object}
+	 */
+	this.options = mixIn({}, this.defaults, options);
 
-    Transform.call(this, { objectMode: true });
+	Transform.call(this, { objectMode: true });
 }
 
-var proto = inherits(Tunic, Transform);
+proto = inherits(Tunic, Transform);
 
 /**
  * @property defaults
  * @type {Object}
  */
 proto.defaults = {
-    extension: /.\w+$/,
+	extension: /.\w+$/,
 
-    blockIndent: /^[\t \*]/gm,
-    blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
-    blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
+	blockIndent: /^[\t \*]/gm,
+	blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
+	blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
 
-    tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
-    tagSplit: /^[\t ]*@/m,
+	tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
+	tagSplit: /^[\t ]*@/m,
 
-    namedTags: [
-        'imports',
-        'exports',
-        'class',
-        'extends',
-        'method',
-        'arg',
-        'argument',
-        'param',
-        'parameter',
-        'prop',
-        'property'
-    ]
+	namedTags: [
+		'imports',
+		'exports',
+		'class',
+		'extends',
+		'method',
+		'arg',
+		'argument',
+		'param',
+		'parameter',
+		'prop',
+		'property'
+	]
 };
 
 /**
@@ -92,12 +93,12 @@ proto.defaults = {
  * @return {Object}
  */
 proto.parse = function (chunk) {
-    return {
-        type: 'Tunic',
-        blocks: String(chunk)
-            .split(this.options.blockSplit)
-            .map(this.parseBlock.bind(this))
-    };
+	return {
+		type: 'Document',
+		blocks: String(chunk)
+			.split(this.options.blockSplit)
+			.map(this.parseBlock.bind(this))
+	};
 };
 
 /**
@@ -106,11 +107,11 @@ proto.parse = function (chunk) {
  * @return {Object}
  */
 proto.parseBlock = function (block) {
-    if (this.options.blockParse.test(block)) {
-        return this.parseComment(block);
-    }
+	if (this.options.blockParse.test(block)) {
+		return this.parseComment(block);
+	}
 
-    return this.parseCode(block);
+	return this.parseCode(block);
 };
 
 /**
@@ -119,10 +120,10 @@ proto.parseBlock = function (block) {
  * @return {Object}
  */
 proto.parseCode = function (code) {
-    return{
-        type: 'Code',
-        contents: code.replace(matchLines.trailing, '')
-    };
+	return {
+		type: 'Code',
+		contents: code.replace(matchLines.trailing, '')
+	};
 };
 
 /**
@@ -131,15 +132,15 @@ proto.parseCode = function (code) {
  * @return {Object}
  */
 proto.parseComment = function (comment) {
-    var tags = this
-        .unwrap(comment)
-        .split(this.options.tagSplit);
+	var tags = this
+		.unwrap(comment)
+		.split(this.options.tagSplit);
 
-    return {
-        type: 'Comment',
-        description: tags.shift(),
-        tags: tags.map(this.parseTag.bind(this))
-    };
+	return {
+		type: 'Comment',
+		description: tags.shift(),
+		tags: tags.map(this.parseTag.bind(this))
+	};
 };
 
 /**
@@ -148,24 +149,24 @@ proto.parseComment = function (comment) {
  * @return {Object}
  */
 proto.parseTag = function (tag) {
-    var options = this.options;
-    var parts = String(tag).match(options.tagParse);
-    var label = parts[1];
-    var type = parts[2];
-    var name = parts[3];
-    var description = parts[4];
+	var options = this.options,
+		parts = String(tag).match(options.tagParse),
+		label = parts[1],
+		type = parts[2],
+		name = parts[3],
+		description = parts[4];
 
-    if (name && options.namedTags.indexOf(label) === -1) {
-        description = name + ' ' + description;
-        name = undefined;
-    }
+	if (name && options.namedTags.indexOf(label) === -1) {
+		description = name + ' ' + description;
+		name = undefined;
+	}
 
-    return {
-        tag: label,
-        type: type,
-        name: name,
-        description: description
-    };
+	return {
+		tag: label,
+		type: type,
+		name: name,
+		description: description
+	};
 };
 
 /**
@@ -174,38 +175,38 @@ proto.parseTag = function (tag) {
  * @return {Object}
  */
 proto.unwrap = function (block) {
-    var lines;
-    var emptyLines;
-    var indentedLines;
-    var options = this.options;
-    var indent = options.blockIndent;
+	var lines,
+		emptyLines,
+		indentedLines,
+		options = this.options,
+		indent = options.blockIndent;
 
-    // Trim comment wrappers
-    block = String(block)
-        .replace(options.blockParse, '$1')
-        .replace(matchLines.edge, '');
+	// Trim comment wrappers
+	block = String(block)
+		.replace(options.blockParse, '$1')
+		.replace(matchLines.edge, '');
 
-    // Total line count
-    lines = block.match(matchLines.any).length;
+	// Total line count
+	lines = block.match(matchLines.any).length;
 
-    // Attempt to unindent
-    while (lines > 0) {
-        // Empty line count
-        emptyLines = (block.match(matchLines.empty) || []).length;
+	// Attempt to unindent
+	while (lines > 0) {
+		// Empty line count
+		emptyLines = (block.match(matchLines.empty) || []).length;
 
-        // Indented line count
-        indentedLines = (block.match(indent) || []).length;
+		// Indented line count
+		indentedLines = (block.match(indent) || []).length;
 
-        // Check for remaining indention
-        if (!indentedLines || (emptyLines + indentedLines !== lines)) {
-            break;
-        }
+		// Check for remaining indention
+		if (!indentedLines || (emptyLines + indentedLines !== lines)) {
+			break;
+		}
 
-        // Strip leading indent characters
-        block = block.replace(indent, '');
-    }
+		// Strip leading indent characters
+		block = block.replace(indent, '');
+	}
 
-    return block;
+	return block;
 };
 
 /**
@@ -215,21 +216,21 @@ proto.unwrap = function (block) {
  * @param {Function} cb
  */
 proto._transform = function (file, enc, cb) {
-    var extension = this.options.extension;
+	var extension = this.options.extension;
 
-    // String or Buffer
-    if (typeof file === 'string' || file instanceof Buffer) {
-        this.push(this.parse(file.toString()));
-        return cb();
-    }
+	// String or Buffer
+	if (typeof file === 'string' || file instanceof Buffer) {
+		this.push(this.parse(file.toString()));
+		return cb();
+	}
 
-    // Vinyl
-    if (file.contents != null && extension.test(file.path)) {
-        file.tunic = this.parse(file.contents.toString());
-    }
+	// Vinyl
+	if (file.contents != null && extension.test(file.path)) {
+		file.tunic = this.parse(file.contents.toString());
+	}
 
-    this.push(file);
-    return cb();
+	this.push(file);
+	return cb();
 };
 
 module.exports = Tunic;

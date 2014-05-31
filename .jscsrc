@@ -7,7 +7,6 @@
     "disallowMixedSpacesAndTabs": "smart",
     "disallowMultipleLineBreaks": true,
     "disallowMultipleLineStrings": true,
-    "disallowMultipleVarDecl": true,
     "disallowQuotedKeysInObjects": "allButReserved",
     "disallowSpaceAfterObjectKeys": true,
     "disallowSpacesInsideArrayBrackets": true,
@@ -19,19 +18,20 @@
     "requireCapitalizedConstructors": true,
     "requireCommaBeforeLineBreak": true,
     "requireDotNotation": true,
+    "requireMultipleVarDecl": true,
     "requireParenthesesAroundIIFE": true,
     "requireSpacesInsideObjectBrackets": "all",
     "safeContextKeyword": "that",
-    "validateIndentation": 4,
+    "validateIndentation": "\t",
 
     "disallowImplicitTypeConversion": [
-        "numeric", "boolean", "binary", "string"
+        "numeric", "binary", "string"
     ],
     "disallowKeywords": [
         "with"
     ],
     "disallowLeftStickedOperators": [
-        "?", "+", "-", "/", "*", "=", "==", "===",
+        "?", "+", "/", "*", "=", "==", "===",
         "!=", "!==", ">", ">=", "<", "<="
     ],
     "disallowRightStickedOperators": [
@@ -85,7 +85,6 @@
     },
     "validateJSDoc": {
         "checkParamNames": true,
-        "checkRedundantParams": true,
         "requireParamTypes": true
     },
     "validateQuoteMarks": {

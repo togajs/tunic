@@ -22,7 +22,7 @@ Documentation blocks follow the conventions of other standard tools such as JSDo
 ## AST
 
 - Root
-  - `type` _`String`_ - Always "Tunic".
+  - `type` _`String`_ - Always "Document".
   - `blocks` _`Array.<Code|Comment>`_
 - Code
   - `type` _`String`_ - Always "Code".
