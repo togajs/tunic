@@ -1,6 +1,6 @@
 {
   "name": "tunic",
-  "version": "0.2.0-alpha4",
+  "version": "0.2.1",
   "description": "The stupid doc-block parser.",
   "keywords": [
     "tunic",
@@ -25,7 +25,7 @@
     "test": "gulp test"
   },
   "dependencies": {
-    "mout": "^0.10.0"
+    "mtil": "^0.1.3"
   },
   "devDependencies": {
     "coveralls": "^2.11.1",

@@ -13,8 +13,8 @@
 
 var proto,
 	Transform = require('stream').Transform,
-	inherits = require('mout/lang/inheritPrototype'),
-	mixIn = require('mout/object/mixIn'),
+	inherits = require('mtil/function/inherits'),
+	mixin = require('mtil/object/mixin'),
 
 	/**
 	 * Line matching patterns.
@@ -34,13 +34,13 @@ var proto,
  *
  * @constructor
  * @param {Object} options
- * @param {RegExp} options.extension
  * @param {RegExp} options.blockIndent
  * @param {RegExp} options.blockParse
  * @param {RegExp} options.blockSplit
+ * @param {RegExp} options.extension
+ * @param {Array.<String>} options.namedTags
  * @param {RegExp} options.tagParse
  * @param {RegExp} options.tagSplit
- * @param {Array.<String>} options.namedTags
  */
 function Tunic(options) {
 	if (!(this instanceof Tunic)) {
@@ -51,7 +51,7 @@ function Tunic(options) {
 	 * @property options
 	 * @type {Object}
 	 */
-	this.options = mixIn({}, this.defaults, options);
+	this.options = mixin({}, this.defaults, options);
 
 	Transform.call(this, { objectMode: true });
 }
