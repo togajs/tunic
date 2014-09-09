@@ -1,13 +1,8 @@
-# Tunic
+# tunic [![NPM version][npm-img]][npm-url] [![Downloads][downloads-img]][npm-url] [![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url]
 
-The stupid doc-block parser. Generates a [Toga](http://togajs.github.io) abstract syntax tree based on a customizable regular-expression grammar. Defaults to C-style comment blocks, so it supports JavaScript, PHP, C++, and even CSS right out of the box.
+The stupid doc-block parser. Generates a [Toga](http://togajs.github.io)-compatible abstract syntax tree based on a customizable regular-expression grammar. Defaults to C-style comment blocks, so it supports JavaScript, PHP, C++, and even CSS right out of the box.
 
 Tags are parsed greedily. If it looks like a tag, it's a tag. What you do with them is completely up to you. Render something human-readable, perhaps?
-
-[![NPM version](https://badge.fury.io/js/tunic.png)](http://badge.fury.io/js/tunic)
-[![Build Status](https://travis-ci.org/togajs/tunic.png?branch=master)](https://travis-ci.org/togajs/tunic)
-[![Coverage Status](https://coveralls.io/repos/togajs/tunic/badge.png?branch=master)](https://coveralls.io/r/togajs/tunic?branch=master)
-[![Dependency Status](https://david-dm.org/togajs/tunic.png?theme=shields.io)](https://david-dm.org/togajs/tunic)
 
 ## Install
 
@@ -76,45 +71,45 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
 
 ### Default Options
 
-    var tunic = require('tunic');
-    var ast = tunic().parse('/** ... */');
+    var tunic = require('tunic'),
+        ast = tunic().parse('/** ... */');
 
 ### Custom Options
 
-    var tunic = require('tunic');
-
-    var handlebars = tunic({
-        blockIndent: /^[\t !]/gm,
-        blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
-        blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
-        namedTags: ['arg', 'argument', 'data', 'prop', 'property']
-    });
-
-    var ast = handlebars.parse('{{!--- ... --}}\n<div> ...');
+    var tunic = require('tunic'),
+        handlebars = tunic({
+            blockIndent: /^[\t !]/gm,
+            blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
+            blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
+            namedTags: ['arg', 'argument', 'data', 'prop', 'property']
+        }),
+        ast = handlebars.parse('{{!--- ... --}}\n<div> ...');
 
 ### Using `new` Operator
 
-    var Tunic = require('tunic');
-
-    var pod = new Tunic({
-        blockParse: /^=doc\n([\s\S]*?)\n=cut$/m,
-        blockSplit: /(^=doc\n[\s\S]*?\n=cut$)/m,
-        namedTags: ['arg', 'argument', 'data', 'prop', 'property']
-    });
-
-    var ast = pod.parse('=doc\n ... \n=cut');
+    var Tunic = require('tunic'),
+        pod = new Tunic({
+            blockParse: /^=doc\n([\s\S]*?)\n=cut$/m,
+            blockSplit: /(^=doc\n[\s\S]*?\n=cut$)/m,
+            namedTags: ['arg', 'argument', 'data', 'prop', 'property']
+        }),
+        ast = pod.parse('=doc\n ... \n=cut');
 
 ### Streams
 
-    var gulp = require('gulp');
-    var tunic = require('tunic');
+    var gulp = require('gulp'),
+        tunic = require('tunic');
 
     gulp.src('./lib/**/*.js')
-        .pipe(tunic()); <- adds `.tunic` property to `file`
+        .pipe(tunic()); // adds `.tunic` property to `file` object
 
 ## Test
 
     $ npm test
+
+## Contribute [![Tasks][waffle-img]][waffle-url] [![Chat][gitter-img]][gitter-url] [![Tip][gittip-img]][gittip-url]
+
+Standards for this project, including tests, code coverage, and semantics are enforced with a build tool. Pull requests must include passing tests with 100% code coverage and no linting errors.
 
 ## Compatibility
 
@@ -129,3 +124,17 @@ Using:
 ## License
 
 MIT
+
+[coveralls-img]: http://img.shields.io/coveralls/togajs/tunic/master.svg?style=flat-square
+[coveralls-url]: https://coveralls.io/r/togajs/tunic
+[downloads-img]: http://img.shields.io/npm/dm/tunic.svg?style=flat-square
+[gitter-img]:    http://img.shields.io/badge/chat-togajs/tunic-blue.svg?style=flat-square
+[gitter-url]:    https://gitter.im/togajs/tunic
+[gittip-img]:    http://img.shields.io/gittip/shannonmoeller.svg?style=flat-square
+[gittip-url]:    https://www.gittip.com/shannonmoeller
+[npm-img]:       http://img.shields.io/npm/v/tunic.svg?style=flat-square
+[npm-url]:       https://npmjs.org/package/tunic
+[travis-img]:    http://img.shields.io/travis/togajs/tunic.svg?style=flat-square
+[travis-url]:    https://travis-ci.org/togajs/tunic
+[waffle-img]:    http://img.shields.io/github/issues/togajs/tunic.svg?style=flat-square
+[waffle-url]:    http://waffle.io/togajs/tunic
