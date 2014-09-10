@@ -37,10 +37,3 @@ gulp.task('test', ['cover'], function () {
 		.pipe(mocha({ reporter: 'spec' }))
 		.pipe(istanbul.writeReports());
 });
-
-gulp.task('watch', function () {
-	var lr = require('gulp-livereload'),
-		watch = require('gulp-watch');
-
-	watch({ glob: [paths.src, paths.test] }).pipe(lr());
-});
