@@ -10,8 +10,6 @@ Tags are parsed greedily. If it looks like a tag, it's a tag. What you do with t
 
 ## Install
 
-With [Node.js](http://nodejs.org):
-
     $ npm install tunic
 
 ## Documentation Blocks
