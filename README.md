@@ -122,8 +122,8 @@ MIT
 [coveralls-img]: http://img.shields.io/coveralls/togajs/tunic/master.svg?style=flat-square
 [coveralls-url]: https://coveralls.io/r/togajs/tunic
 [downloads-img]: http://img.shields.io/npm/dm/tunic.svg?style=flat-square
-[gitter-img]:    http://img.shields.io/badge/chat-togajs/tunic-blue.svg?style=flat-square
-[gitter-url]:    https://gitter.im/togajs/tunic
+[gitter-img]:    http://img.shields.io/badge/chat-togajs/toga-blue.svg?style=flat-square
+[gitter-url]:    https://gitter.im/togajs/toga
 [gittip-img]:    http://img.shields.io/gittip/shannonmoeller.svg?style=flat-square
 [gittip-url]:    https://www.gittip.com/shannonmoeller
 [npm-img]:       http://img.shields.io/npm/v/tunic.svg?style=flat-square
