@@ -39,19 +39,19 @@ Documentation blocks follow the conventions of other standard tools such as JSDo
 ### `new Tunic([options])`
 
 - `options` `{Object}` Optional grammar overrides.
-  - `options.extension` _`RegExp`_ - Matches the file extension or extensions which are handled by this parser.
-  - `options.blockIndent` _`RegExp`_ - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
-  - `options.blockParse` _`RegExp`_ - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
-  - `options.blockSplit` _`RegExp`_ - Splits code and docblocks into alternating chunks.
-  - `options.tagParse` _`RegExp`_ - Matches the various parts of a tag where parts are captured in the following order:
+  - `extension` _`RegExp`_ - Matches the file extension or extensions which are handled by this parser.
+  - `blockIndent` _`RegExp`_ - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
+  - `blockParse` _`RegExp`_ - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
+  - `blockSplit` _`RegExp`_ - Splits code and docblocks into alternating chunks.
+  - `tagParse` _`RegExp`_ - Matches the various parts of a tag where parts are captured in the following order:
     - 1: `tag`
     - 2: `type`
     - 3: `name`
     - 4: `description`
-  - `options.tagSplit` _`RegExp`_ - Matches characters used to split description and tags from each other.
-  - `options.namedTags` _`Array.<String>`_ - Which tags should be considered "named" tags. Non-named tags will have their name prepended to the description and set to `undefined`.
-  - `options.namespaceSplit` _`RexExp`_ - Splits namespaces.
-  - `options.namespaceTags` _`Object.<String,RegExp>`_ - Which tags should be used to generate navigation trees, and how to split them (eg. `/\b\.\b/` for `.`, or `/\b::\b/` for `::`). The word boundaries (`\b`) are important as it allows splitters to be escaped.
+  - `tagSplit` _`RegExp`_ - Matches characters used to split description and tags from each other.
+  - `namedTags` _`Array.<String>`_ - Which tags should be considered "named" tags. Non-named tags will have their name prepended to the description and set to `undefined`.
+  - `namespaceSplit` _`RexExp`_ - Splits namespaces.
+  - `namespaceTags` _`Object.<String,RegExp>`_ - Which tags should be used to generate navigation trees, and how to split them (eg. `/\b\.\b/` for `.`, or `/\b::\b/` for `::`). The word boundaries (`\b`) are important as it allows splitters to be escaped.
 
 Creates a reusable parser based on the given options. Defaults to parsing C-style comment blocks.
 
