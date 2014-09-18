@@ -38,7 +38,7 @@ Documentation blocks follow the conventions of other standard tools such as JSDo
 
 ### `new Tunic([options])`
 
-- `options` `{Object}` Optional grammar overrides.
+- `options` `Object` Optional grammar overrides.
   - `extension` _`RegExp`_ - Matches the file extension or extensions which are handled by this parser.
   - `blockIndent` _`RegExp`_ - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
   - `blockParse` _`RegExp`_ - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
@@ -61,7 +61,7 @@ Functional shorthand, if that's how you operate.
 
 ### `.parse(block) : AST`
 
-- `block` `{String}` Block of code containing comments to parse.
+- `block` `String` Block of code containing comments to parse.
 
 Generates a sensible syntax tree format of doc-blocks and surrounding code.
 
