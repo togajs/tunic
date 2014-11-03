@@ -18,14 +18,39 @@ var proto,
 
 	/**
 	 * Line matching patterns.
-	 *
-	 * @type {Object.<String,RegExp>}
 	 */
 	matchLines = {
 		any: /^/gm,
 		edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g,
 		empty: /^$/gm,
 		trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g
+	},
+
+	/**
+	 * Default options.
+	 */
+	defaults = {
+		property: 'ast',
+		extension: /.\w+$/,
+		blockIndent: /^[\t \*]/gm,
+		blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
+		blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
+		tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
+		tagSplit: /^[\t ]*@/m,
+		namedTags: [
+			'module',
+			'imports',
+			'exports',
+			'class',
+			'extends',
+			'method',
+			'arg',
+			'argument',
+			'param',
+			'parameter',
+			'prop',
+			'property'
+		]
 	};
 
 /**
@@ -39,6 +64,7 @@ var proto,
  * @param {RegExp} options.blockSplit
  * @param {RegExp} options.extension
  * @param {Array.<String>} options.namedTags
+ * @param {String} options.property
  * @param {RegExp} options.tagParse
  * @param {RegExp} options.tagSplit
  */
@@ -51,41 +77,13 @@ function Tunic(options) {
 	 * @property options
 	 * @type {Object}
 	 */
-	this.options = mixin({}, this.defaults, options);
+	this.options = mixin({}, defaults, options);
 
 	Transform.call(this, { objectMode: true });
 }
 
 proto = inherits(Tunic, Transform);
 
-/**
- * @property defaults
- * @type {Object}
- */
-proto.defaults = {
-	extension: /.\w+$/,
-
-	blockIndent: /^[\t \*]/gm,
-	blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
-	blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
-
-	tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
-	tagSplit: /^[\t ]*@/m,
-
-	namedTags: [
-		'imports',
-		'exports',
-		'class',
-		'extends',
-		'method',
-		'arg',
-		'argument',
-		'param',
-		'parameter',
-		'prop',
-		'property'
-	]
-};
 
 /**
  * @method parse
@@ -216,21 +214,23 @@ proto.unwrap = function (block) {
  * @param {Function} cb
  */
 proto._transform = function (file, enc, cb) {
-	var extension = this.options.extension;
+	var options = this.options,
+		extension = options.extension;
 
-	// String or Buffer
-	if (typeof file === 'string' || file instanceof Buffer) {
-		this.push(this.parse(file.toString()));
-		return cb();
-	}
-
-	// Vinyl
-	if (file.contents != null && extension.test(file.path)) {
-		file.tunic = this.parse(file.contents.toString());
+	if (file != null) {
+		if (typeof file === 'string' || file instanceof Buffer) {
+			// String or Buffer
+			file = this.parse(file);
+		}
+		else if (file.contents != null && extension.test(file.path)) {
+			// Vinyl
+			file[options.property] = this.parse(file.contents);
+		}
 	}
 
 	this.push(file);
-	return cb();
+
+	cb();
 };
 
 module.exports = Tunic;

@@ -14,6 +14,7 @@ describe('Tunic', function () {
 
 		expect(a).to.be.a(Tunic);
 		expect(b).to.be.a(Tunic);
+
 		expect(a).not.to.be(b);
 	});
 
