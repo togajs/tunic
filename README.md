@@ -19,55 +19,56 @@ Documentation blocks follow the conventions of other standard tools such as JSDo
 ## AST
 
 - Root
-  - `type` _`String`_ - Always "Document".
-  - `blocks` _`Array.<Code|Comment>`_
+  - `type` `{String}` - Always `"Document"`.
+  - `blocks` `{Array.<Code|Comment>}`
 - Code
-  - `type` _`String`_ - Always "Code".
-  - `body` _`String`_
+  - `type` `{String}` - Always `"Code"`.
+  - `body` `{String}`
 - Comment
-  - `type` _`String`_ - Always "Comment".
-  - `description` _`String`_
-  - `tags` _`Array.<Tag>`_
+  - `type` `{String}` - Always `"Comment"`.
+  - `description` `{String}`
+  - `tags` `{Array.<Tag>}`
 - Tag
-  - `tag` _`String`_
-  - `type` _`String`_
-  - `name` _`String`_
-  - `description` _`String`_
+  - `tag` `{String}`
+  - `type` `{String}`
+  - `name` `{String}`
+  - `description` `{String}`
 
 ## API
 
 ### `new Tunic([options])`
 
-- `options` `{Object}` Optional grammar overrides.
-  - `options.extension` _`RegExp`_ - Matches the file extension or extensions which are handled by this parser.
-  - `options.blockIndent` _`RegExp`_ - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
-  - `options.blockParse` _`RegExp`_ - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
-  - `options.blockSplit` _`RegExp`_ - Splits code and docblocks into alternating chunks.
-  - `options.tagParse` _`RegExp`_ - Matches the various parts of a tag where parts are captured in the following order:
+- `options` `{Object}` - Optional grammar overrides.
+  - `options.property` `{RegExp}` - Name of property that the AST should be assigned to on Vinyl files. _Default: `"ast"`._
+  - `options.extension` `{RegExp}` - Matches the file extension or extensions which are handled by this parser.
+  - `options.blockIndent` `{RegExp}` - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
+  - `options.blockParse` `{RegExp}` - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
+  - `options.blockSplit` `{RegExp}` - Splits code and docblocks into alternating chunks.
+  - `options.tagParse` `{RegExp}` - Matches the various parts of a tag where parts are captured in the following order:
     - 1: `tag`
     - 2: `type`
     - 3: `name`
     - 4: `description`
-  - `options.tagSplit` _`RegExp`_ - Matches characters used to split description and tags from each other.
-  - `options.namedTags` _`Array.<String>`_ - Which tags should be considered "named" tags. Non-named tags will have their name prepended to the description and set to `undefined`.
-  - `options.namespaceSplit` _`RexExp`_ - Splits namespaces.
-  - `options.namespaceTags` _`Object.<String,RegExp>`_ - Which tags should be used to generate navigation trees, and how to split them (eg. `/\b\.\b/` for `.`, or `/\b::\b/` for `::`). The word boundaries (`\b`) are important as it allows splitters to be escaped.
+  - `options.tagSplit` `{RegExp}` - Matches characters used to split description and tags from each other.
+  - `options.namedTags` `{Array.<String>}` - Which tags should be considered "named" tags. Non-named tags will have their name prepended to the description and set to `undefined`.
 
 Creates a reusable parser based on the given options. Defaults to parsing C-style comment blocks.
 
-#### `tunic([options]) : Tunic`
+### `tunic([options]) : Tunic`
 
-Functional shorthand, if that's how you operate.
+Functional shorthand of the constructor, if that's how you operate.
 
-### `.parse(block) : AST`
+### `#parse(block) : AST`
 
-- `block` `{String}` Block of code containing comments to parse.
+- `block` `{String}` - Block of code containing comments to parse.
 
 Generates a sensible syntax tree format of doc-blocks and surrounding code.
 
-### Stream
+### `#pipe(stream) : Stream`
 
-Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_stream_transform), working in object mode, compatible with `String`, `Buffer`, and [Vinyl](https://github.com/wearefractal/vinyl). Strings and buffers are parsed and the resulting AST is emitted as data. Vinyl objects are augmented with the AST stored as the `.tunic` property.
+- `stream` `{Readable}` - Readable stream.
+
+Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_stream_transform), working in object mode, compatible with `String`, `Buffer`, and [Vinyl](https://github.com/wearefractal/vinyl). Strings and buffers are parsed and the resulting AST is emitted as data. Vinyl objects are augmented with the AST stored as the `.ast` property.
 
 ## Example
 
@@ -99,11 +100,12 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
 
 ### Streams
 
-    var gulp = require('gulp'),
+    var toga = require('toga'),
         tunic = require('tunic');
 
-    gulp.src('./lib/**/*.js')
-        .pipe(tunic()); // adds `.tunic` property to `file` object
+    toga.src('./lib/**/*.js')
+        .pipe(tunic()) // generates and adds `.ast` property to `file` object
+        .pipe(toga.dest('./docs'));
 
 ## Test
 
@@ -115,9 +117,11 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
 
 Standards for this project, including tests, code coverage, and semantics are enforced with a build tool. Pull requests must include passing tests with 100% code coverage and no linting errors.
 
-## License
+----
 
-MIT
+© 2014 Shannon Moeller <me@shannonmoeller.com>
+
+Licensed under [MIT](http://shannonmoeller.com/mit.txt)
 
 [coveralls-img]: http://img.shields.io/coveralls/togajs/tunic/master.svg?style=flat-square
 [coveralls-url]: https://coveralls.io/r/togajs/tunic

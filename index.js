@@ -3,9 +3,9 @@
 /**
  * # Tunic
  *
- * The stupid doc-block parser. Generates an abstract syntax tree based on a
- * customizable regular-expression grammar. Defaults to C-style comment blocks,
- * so it supports JavaScript, PHP, C++, and even CSS right out of the box.
+ * Generates an abstract syntax tree based on a customizable regular-expression
+ * grammar. Defaults to C-style comment blocks, so it supports JavaScript, PHP,
+ * C++, and even CSS right out of the box.
  *
  * Tags are parsed greedily. If it looks like a tag, it's a tag. What you do
  * with them is completely up to you. Render something human-readable, perhaps?
@@ -30,11 +30,11 @@ var proto,
 	 * Default options.
 	 */
 	defaults = {
-		property: 'ast',
 		extension: /.\w+$/,
 		blockIndent: /^[\t \*]/gm,
 		blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
 		blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
+		property: 'ast',
 		tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
 		tagSplit: /^[\t ]*@/m,
 		namedTags: [
@@ -59,10 +59,10 @@ var proto,
  *
  * @constructor
  * @param {Object} options
+ * @param {RegExp} options.extension
  * @param {RegExp} options.blockIndent
  * @param {RegExp} options.blockParse
  * @param {RegExp} options.blockSplit
- * @param {RegExp} options.extension
  * @param {Array.<String>} options.namedTags
  * @param {String} options.property
  * @param {RegExp} options.tagParse
@@ -83,7 +83,6 @@ function Tunic(options) {
 }
 
 proto = inherits(Tunic, Transform);
-
 
 /**
  * @method parse
