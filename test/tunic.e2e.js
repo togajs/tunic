@@ -43,9 +43,11 @@ describe('tunic e2e', function () {
 		cb(null, file);
 	}
 
-	it('should parse streamed chunks', function (done) {
+	beforeEach(function () {
 		count = 0;
+	});
 
+	it('should parse streamed chunks', function (done) {
 		var files = [
 			fooFixture,
 			new Buffer(fooFixture)
@@ -63,8 +65,6 @@ describe('tunic e2e', function () {
 	});
 
 	it('should parse javascript files', function (done) {
-		count = 0;
-
 		toga
 			.src(config.js)
 			.pipe(tunic())
@@ -72,14 +72,12 @@ describe('tunic e2e', function () {
 			.pipe(toga.dest(config.dest))
 			.on('error', done)
 			.on('end', function () {
-				expect(count).to.be(8);
+				expect(count).to.be(9);
 				done();
 			});
 	});
 
 	it('should parse handlebars files', function (done) {
-		count = 0;
-
 		toga
 			.src(config.hbs)
 			.pipe(tunic({
@@ -98,8 +96,6 @@ describe('tunic e2e', function () {
 	});
 
 	it('should parse perlish files', function (done) {
-		count = 0;
-
 		toga
 			.src(config.perl)
 			.pipe(tunic({
@@ -117,8 +113,6 @@ describe('tunic e2e', function () {
 	});
 
 	it('should not parse empty files', function (done) {
-		count = 0;
-
 		var files = [
 			{ path: 'foo.js' },
 			{ path: 'foo.js', content: null },
@@ -137,8 +131,6 @@ describe('tunic e2e', function () {
 	});
 
 	it('should not parse unknown file types', function (done) {
-		count = 0;
-
 		toga
 			.src(config.coffee)
 			.pipe(tunic({

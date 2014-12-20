@@ -1,0 +1,23 @@
+{
+  "type": "Document",
+  "blocks": [
+    {
+      "type": "Code",
+      "contents": ""
+    },
+    {
+      "type": "Comment",
+      "description": "",
+      "tags": []
+    },
+    {
+      "type": "Code",
+      "contents": ""
+    }
+  ],
+  "nav": {
+    "parent": "bar",
+    "name": "foo",
+    "title": "Navigation Class"
+  }
+}

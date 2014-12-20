@@ -1,44 +1,45 @@
 {
-    "type": "Document",
-    "blocks": [
+  "type": "Document",
+  "blocks": [
+    {
+      "type": "Code",
+      "contents": "use strict;\nuse warnings;\n\nprint \"hello world\";"
+    },
+    {
+      "type": "Comment",
+      "description": "\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    my $code = \"samples\";\n\n",
+      "tags": [
         {
-            "type": "Code",
-            "contents": "use strict;\nuse warnings;\n\nprint \"hello world\";"
+          "tag": "arg",
+          "type": "{Type}",
+          "name": "name",
+          "description": "Description.\n"
         },
         {
-            "type": "Comment",
-            "description": "\n# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    my $code = \"samples\";\n\n",
-            "tags": [
-                {
-                    "tag": "arg",
-                    "type": "{Type}",
-                    "name": "name",
-                    "description": "Description.\n"
-                },
-                {
-                    "tag": "arg",
-                    "type": "{Type}",
-                    "name": "name",
-                    "description": "Description that is really long\n  and wraps to other lines.\n"
-                },
-                {
-                    "tag": "arg",
-                    "type": "{Type}",
-                    "name": "name",
-                    "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
-                },
-                {
-                    "tag": "example",
-                    "description": "\n\n    my $foo = \"bar\";\n\n"
-                },
-                {
-                    "tag": "tag"
-                }
-            ]
+          "tag": "arg",
+          "type": "{Type}",
+          "name": "name",
+          "description": "Description that is really long\n  and wraps to other lines.\n"
         },
         {
-            "type": "Code",
-            "contents": ""
+          "tag": "arg",
+          "type": "{Type}",
+          "name": "name",
+          "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
+        },
+        {
+          "tag": "example",
+          "description": "\n\n    my $foo = \"bar\";\n\n"
+        },
+        {
+          "tag": "tag"
         }
-    ]
+      ]
+    },
+    {
+      "type": "Code",
+      "contents": ""
+    }
+  ],
+  "nav": {}
 }

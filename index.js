@@ -16,9 +16,7 @@ var proto,
 	inherits = require('mtil/function/inherits'),
 	mixin = require('mtil/object/mixin'),
 
-	/**
-	 * Line matching patterns.
-	 */
+	/** Line matching patterns. */
 	matchLines = {
 		any: /^/gm,
 		edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g,
@@ -26,9 +24,7 @@ var proto,
 		trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g
 	},
 
-	/**
-	 * Default options.
-	 */
+	/** Default options. */
 	defaults = {
 		extension: /.\w+$/,
 		blockIndent: /^[\t \*]/gm,
@@ -37,6 +33,8 @@ var proto,
 		property: 'ast',
 		tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
 		tagSplit: /^[\t ]*@/m,
+
+		/** Which tags have a `name` in addition to a `description`. */
 		namedTags: [
 			'module',
 			'imports',
@@ -50,7 +48,42 @@ var proto,
 			'parameter',
 			'prop',
 			'property'
-		]
+		],
+
+		/**
+		 * Generates navigation object. Looks for `title`, `name`, and `parent`
+		 * tags in the first comment of a file.
+		 *
+		 * @type {Function}
+		 * @param {Vinyl} file
+		 * @param {Object} ast
+		 * @return {Object} Contains `title`, `name`, and `parent` values.
+		 */
+		makeNav: function (file, ast) {
+			var tag,
+				firstComment = ast.blocks[1],
+				tags = firstComment && firstComment.tags,
+				i = tags && tags.length,
+				retval = {};
+
+			while (i--) {
+				tag = tags[i];
+
+				switch (tag.tag) {
+					case 'title':
+					case 'name':
+					case 'parent': {
+						// Copy value
+						retval[tag.tag] = tag.description.trim();
+
+						// Remove tags
+						tags.splice(i, 1);
+					}
+				}
+			}
+
+			return retval;
+		}
 	};
 
 /**
@@ -85,20 +118,26 @@ function Tunic(options) {
 proto = inherits(Tunic, Transform);
 
 /**
+ * Splits a chunk into blocks and generates root ast object.
+ *
  * @method parse
  * @param {String} chunk
  * @return {Object}
  */
 proto.parse = function (chunk) {
+	var blocks = String(chunk)
+		.split(this.options.blockSplit)
+		.map(this.parseBlock.bind(this));
+
 	return {
 		type: 'Document',
-		blocks: String(chunk)
-			.split(this.options.blockSplit)
-			.map(this.parseBlock.bind(this))
+		blocks: blocks
 	};
 };
 
 /**
+ * Determines whether to parse a block as a comment or as code.
+ *
  * @method parseBlock
  * @param {String} block
  * @return {Object}
@@ -112,6 +151,8 @@ proto.parseBlock = function (block) {
 };
 
 /**
+ * Cleans up a code block and generates a Code ast node.
+ *
  * @method parseCode
  * @param {String} code
  * @return {Object}
@@ -124,6 +165,8 @@ proto.parseCode = function (code) {
 };
 
 /**
+ * Splits a comment block by tag and generates a Comment ast node.
+ *
  * @method parseComment
  * @param {String} comment
  * @return {Object}
@@ -141,20 +184,30 @@ proto.parseComment = function (comment) {
 };
 
 /**
+ * Splits a tag into its various bits and generates a Tag ast node.
+ *
  * @method parseTag
  * @param {String} tag
  * @return {Object}
  */
 proto.parseTag = function (tag) {
 	var options = this.options,
+		// Splits `@label {type} name - description`
 		parts = String(tag).match(options.tagParse),
-		label = parts[1],
-		type = parts[2],
-		name = parts[3],
-		description = parts[4];
+		label = parts[1],       // `@label` as `label`
+		type = parts[2],        // `{type}` as `type`
+		name = parts[3],        // name
+		description = parts[4]; // description
 
+	// Join `name` and `description` if this isn't a named tag
 	if (name && options.namedTags.indexOf(label) === -1) {
-		description = name + ' ' + description;
+		if (description) {
+			description = name + ' ' + description;
+		}
+		else {
+			description = name;
+		}
+
 		name = undefined;
 	}
 
@@ -167,6 +220,8 @@ proto.parseTag = function (tag) {
 };
 
 /**
+ * Strips open- and close-comment markers, then unindents a comment's content.
+ *
  * @method unwrap
  * @param {String} block
  * @return {Object}
@@ -194,7 +249,7 @@ proto.unwrap = function (block) {
 		// Indented line count
 		indentedLines = (block.match(indent) || []).length;
 
-		// Check for remaining indention
+		// Only continue if every line still starts with an indent character
 		if (!indentedLines || (emptyLines + indentedLines !== lines)) {
 			break;
 		}
@@ -213,22 +268,32 @@ proto.unwrap = function (block) {
  * @param {Function} cb
  */
 proto._transform = function (file, enc, cb) {
-	var options = this.options,
+	var ast,
+		options = this.options,
 		extension = options.extension;
 
+	// Anything to do?
 	if (file != null) {
 		if (typeof file === 'string' || file instanceof Buffer) {
-			// String or Buffer
+			// Parse string or buffer
 			file = this.parse(file);
 		}
 		else if (file.contents != null && extension.test(file.path)) {
-			// Vinyl
-			file[options.property] = this.parse(file.contents);
+			// Parse Vinyl file
+			ast = this.parse(file.contents);
+
+			// Generate nav data
+			ast.nav = options.makeNav(file, ast);
+
+			// Store ast on file
+			file[options.property] = ast;
 		}
 	}
 
+	// Pass along
 	this.push(file);
 
+	// Done
 	cb();
 };
 
