@@ -60,29 +60,30 @@ var proto,
 		 * @return {Object} Contains `title`, `name`, and `parent` values.
 		 */
 		makeNav: function (file, ast) {
-			var tag,
+			var tagNode,
 				firstComment = ast.blocks[1],
 				tags = firstComment && firstComment.tags,
 				i = tags && tags.length,
-				retval = {};
+				nav = {};
 
+			// Visit each tag of the first comment block
 			while (i--) {
-				tag = tags[i];
+				tagNode = tags[i];
 
-				switch (tag.tag) {
+				switch (tagNode.tag) {
 					case 'title':
 					case 'name':
 					case 'parent': {
-						// Copy value
-						retval[tag.tag] = tag.description.trim();
+						// Copy value to nav object
+						nav[tagNode.tag] = tagNode.description.trim();
 
-						// Remove tags
+						// Remove tag
 						tags.splice(i, 1);
 					}
 				}
 			}
 
-			return retval;
+			return nav;
 		}
 	};
 

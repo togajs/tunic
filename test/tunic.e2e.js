@@ -7,32 +7,31 @@ var tunic = require('../index'),
 
 	config = {
 		coffee: __dirname + '/fixtures/**/*.coffee',
-		js: __dirname + '/fixtures/**/*.js',
-		hbs: __dirname + '/fixtures/**/*.hbs',
-		perl: __dirname + '/fixtures/**/*.{pl,pm}',
-		dest: __dirname + '/actual',
+		js:     __dirname + '/fixtures/**/*.js',
+		hbs:    __dirname + '/fixtures/**/*.hbs',
+		perl:   __dirname + '/fixtures/**/*.{pl,pm}',
+		dest:   __dirname + '/actual',
 	};
 
 describe('tunic e2e', function () {
-	var count,
-		fooFixture = 'alert("foo");',
-		fooExpected = {
-			type: 'Document',
-			blocks: [{ type: 'Code', contents: fooFixture }]
-		};
+	var count;
 
 	function toEqualFoo(data, cb) {
 		count++;
 
-		expect(data).to.eql(fooExpected);
+		expect(data).to.eql({
+			type: 'Document',
+			blocks: [{ type: 'Code', contents: 'alert("foo");' }]
+		});
+
 		cb(null, data);
 	}
 
 	function toEqualExpected(file, cb) {
 		count++;
 
-		var expected = file.path.replace('fixtures', 'expected');
-		expect(JSON.stringify(file.ast)).to.be(JSON.stringify(require(expected + '.json')));
+		var expected = file.path.replace('fixtures', 'expected') + '.json';
+		expect(JSON.stringify(file.ast)).to.be(JSON.stringify(require(expected)));
 		cb(null, file);
 	}
 
@@ -49,8 +48,8 @@ describe('tunic e2e', function () {
 
 	it('should parse streamed chunks', function (done) {
 		var files = [
-			fooFixture,
-			new Buffer(fooFixture)
+			'alert("foo");',
+			new Buffer('alert("foo");')
 		];
 
 		es
