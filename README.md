@@ -1,3 +1,5 @@
+**NOTE: This project is under active development. APIs subject to change.**
+
 # `tunic`
 
 [![NPM version][npm-img]][npm-url] [![Downloads][downloads-img]][npm-url] [![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url] [![Chat][gitter-img]][gitter-url]
@@ -119,7 +121,7 @@ Standards for this project, including tests, code coverage, and semantics are en
 
 ----
 
-© 2014 Shannon Moeller <me@shannonmoeller.com>
+© 2015 Shannon Moeller <me@shannonmoeller.com>
 
 Licensed under [MIT](http://shannonmoeller.com/mit.txt)
 

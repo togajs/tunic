@@ -1,17 +1,19 @@
+/*eslint-env mocha */
 'use strict';
 
-var tunic = require('../index'),
-	expect = require('expect.js');
+import tunic from '../index';
+import { Tunic } from '../index';
+
+import expect from 'expect';
 
 describe('tunic spec', function () {
 	it('should create an instance', function () {
-		var Tunic = tunic,
-			a = new Tunic(),
+		var a = new Tunic(),
 			b = tunic();
 
-		expect(a).to.be.a(Tunic);
-		expect(b).to.be.a(Tunic);
+		expect(a).toBeA(Tunic);
+		expect(b).toBeA(Tunic);
 
-		expect(a).not.to.be(b);
+		expect(a).toNotBe(b);
 	});
 });

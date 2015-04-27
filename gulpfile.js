@@ -1,30 +1,40 @@
 'use strict';
 
 var gulp = require('gulp'),
+	path = require('path'),
+
 	paths = {
 		gulp: 'gulpfile.js',
-		src: 'index.js',
-		test: 'test/**/*.{e2e,spec}.js'
+		src:  'index.js',
+		test: 'test/**/*.{e2e,spec}.js',
+		dist: 'dist',
 	};
 
 gulp.task('default', ['test']);
 
 gulp.task('lint', function () {
-	var jscs = require('gulp-jscs'),
-		jshint = require('gulp-jshint');
+	var eslint = require('gulp-eslint');
 
 	return gulp
 		.src([paths.gulp, paths.src, paths.test])
-		.pipe(jscs())
-		.pipe(jshint())
-		.pipe(jshint.reporter('jshint-stylish'));
+		.pipe(eslint())
+		.pipe(eslint.format());
 });
 
-gulp.task('cover', function () {
-	var istanbul = require('gulp-istanbul');
+gulp.task('build', function () {
+	var babel = require('gulp-babel');
 
 	return gulp
 		.src(paths.src)
+		.pipe(babel())
+		.pipe(gulp.dest(paths.dist));
+});
+
+gulp.task('cover', ['build'], function () {
+	var istanbul = require('gulp-istanbul');
+
+	return gulp
+		.src(path.join(paths.dist, paths.src))
 		.pipe(istanbul())
 		.pipe(istanbul.hookRequire());
 });
