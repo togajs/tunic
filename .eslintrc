@@ -126,7 +126,7 @@
     "no-warning-comments": 1,                 // disallow usage of configurable warning terms in comments": 0, // e.g. TODO or FIXME (off by default)
     "no-with": 2,                             // disallow use of the with statement
     "radix": 0,                               // require use of the second argument for parseInt() (off by default)
-    "vars-on-top": 2,                         // requires to declare all vars on top of their containing scope (off by default)
+    "vars-on-top": 0,                         // requires to declare all vars on top of their containing scope (off by default)
     "wrap-iife": [2, "inside"],               // require immediate function invocation to be wrapped in parentheses (off by default)
     "yoda": 0,                                // require or disallow Yoda conditions
 

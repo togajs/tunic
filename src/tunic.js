@@ -19,7 +19,7 @@ import { Transform } from 'stream';
  * @class Tunic
  * @extends Stream.Transform
  */
-export class Tunic extends Transform {
+export default class Tunic extends Transform {
 	/**
 	 * @constructor
 	 * @param {Object} options
@@ -27,7 +27,7 @@ export class Tunic extends Transform {
 	 * @param {RegExp} options.blockParse
 	 * @param {RegExp} options.blockSplit
 	 * @param {RegExp} options.extension
-	 * @param {Function(Vinyl,Object)} options.navMaker
+	 * @param {Function(Vinyl,Object)} options.parseNav
 	 * @param {Array.<String>} options.namedTags
 	 * @param {String} options.property
 	 * @param {RegExp} options.tagParse
@@ -203,7 +203,7 @@ export class Tunic extends Transform {
 			ast = this.parse(file.contents);
 
 			// Generate nav data
-			ast.nav = options.navMaker(file, ast);
+			ast.nav = options.parseNav(file, ast);
 
 			// Store ast on file
 			file[options.property] = ast;
@@ -218,13 +218,13 @@ export class Tunic extends Transform {
 	 * Generates navigation object. Looks for `title`, `name`, and `parent` tags
 	 * in the first comment of a file.
 	 *
-	 * @method navMaker
+	 * @method parseNav
 	 * @param {Vinyl} file Vinyl file being parsed.
 	 * @param {Object} ast Toga AST.
 	 * @return {Object} Contains `title`, `name`, and `parent` values.
 	 * @static
 	 */
-	static navMaker(file, ast) {
+	static parseNav(file, ast) {
 		var tagNode,
 			blocks = ast && ast.blocks,
 			firstComment = blocks && blocks[1],
@@ -256,15 +256,6 @@ export class Tunic extends Transform {
 		}
 
 		return nav;
-	}
-
-	/**
-	 * @method factory
-	 * @param {Object} options
-	 * @return {Tunic}
-	 */
-	static factory(options) {
-		return new Tunic(options);
 	}
 }
 
@@ -316,7 +307,8 @@ Tunic.defaults = {
 		'property'
 	],
 
-	navMaker: Tunic.navMaker
+	/** Navigation parser. */
+	parseNav: Tunic.parseNav
 };
 
 /**
@@ -339,5 +331,3 @@ Tunic.matchLines = {
 	/** Matches outermost whitespace including first and last newlines. */
 	edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g
 };
-
-export default Tunic.factory;

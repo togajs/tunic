@@ -1,8 +1,6 @@
 /*eslint-env mocha */
-'use strict';
 
-import { Tunic } from '../index';
-
+import Tunic from '../src/tunic';
 import expect from 'expect';
 import streamArray from 'stream-array';
 import supply from 'mtil/function/supply';
@@ -69,15 +67,14 @@ describe('tunic e2e', function () {
 				var actual = JSON.stringify(file.ast, null, 2) + '\n';
 
 				expect(actual).toEqual(String(readFileSync(expected)));
-
-				done();
 			}
 
 			vinylFs
 				.src(fixture)
 				.pipe(stream)
 				.on('data', expectFile)
-				.on('error', done);
+				.on('error', done)
+				.on('end', done);
 		}
 
 		it('should parse arguments', function (done) {
@@ -144,15 +141,14 @@ describe('tunic e2e', function () {
 
 			function expectFile(file) {
 				expect(file.ast).toBe(undefined);
-
-				done();
 			}
 
 			vinylFs
 				.src(join(config.fixtures, 'unused.coffee'))
 				.pipe(stream)
 				.on('data', expectFile)
-				.on('error', done);
+				.on('error', done)
+				.on('end', done);
 		});
 	});
 });

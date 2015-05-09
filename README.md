@@ -41,24 +41,20 @@ Documentation blocks follow the conventions of other standard tools such as JSDo
 ### `new Tunic([options])`
 
 - `options` `{Object}` - Optional grammar overrides.
-  - `options.property` `{RegExp}` - Name of property that the AST should be assigned to on Vinyl files. _Default: `"ast"`._
-  - `options.extension` `{RegExp}` - Matches the file extension or extensions which are handled by this parser.
-  - `options.blockIndent` `{RegExp}` - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
-  - `options.blockParse` `{RegExp}` - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
-  - `options.blockSplit` `{RegExp}` - Splits code and docblocks into alternating chunks.
-  - `options.tagParse` `{RegExp}` - Matches the various parts of a tag where parts are captured in the following order:
+  - `property` `{RegExp}` - Name of property that the AST should be assigned to on Vinyl files. _Default: `"ast"`._
+  - `extension` `{RegExp}` - Matches the file extension or extensions which are handled by this parser.
+  - `blockIndent` `{RegExp}` - Matches any leading characters that are valid as DocBlock indentation, such as whitespace or asterisks. Used for normalization.
+  - `blockParse` `{RegExp}` - Matches the content of a DocBlock, where the first capturing group is the content without the start and end comment characters. Used for normalization.
+  - `blockSplit` `{RegExp}` - Splits code and docblocks into alternating chunks.
+  - `tagParse` `{RegExp}` - Matches the various parts of a tag where parts are captured in the following order:
     - 1: `tag`
     - 2: `type`
     - 3: `name`
     - 4: `description`
-  - `options.tagSplit` `{RegExp}` - Matches characters used to split description and tags from each other.
-  - `options.namedTags` `{Array.<String>}` - Which tags should be considered "named" tags. Non-named tags will have their name prepended to the description and set to `undefined`.
+  - `tagSplit` `{RegExp}` - Matches characters used to split description and tags from each other.
+  - `namedTags` `{Array.<String>}` - Which tags should be considered "named" tags. Non-named tags will have their name prepended to the description and set to `undefined`.
 
 Creates a reusable parser based on the given options. Defaults to parsing C-style comment blocks.
-
-### `tunic([options]) : Tunic`
-
-Functional shorthand of the constructor, if that's how you operate.
 
 ### `#parse(block) : AST`
 
@@ -76,37 +72,39 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
 
 ### Default Options
 
-    var tunic = require('tunic'),
-        ast = tunic().parse('/** ... */');
+    var Tunic = require('tunic'),
+        ast = new Tunic().parse('/** ... */');
 
 ### Custom Options
 
-    var tunic = require('tunic'),
-        handlebars = tunic({
+    var Tunic = require('tunic'),
+
+        hbs = new Tunic({
+            extension: /\.(hbs|html?)$/,
             blockIndent: /^[\t !]/gm,
             blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
             blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
             namedTags: ['arg', 'argument', 'data', 'prop', 'property']
         }),
-        ast = handlebars.parse('{{!--- ... --}}\n<div> ...');
 
-### Using `new` Operator
+        handlebarsAst = hbs.parse('{{!--- ... --}}\n<div> ...'),
 
-    var Tunic = require('tunic'),
         pod = new Tunic({
-            blockParse: /^=doc\n([\s\S]*?)\n=cut$/m,
-            blockSplit: /(^=doc\n[\s\S]*?\n=cut$)/m,
+            extension: /\.(pl|pm)$/,
+            blockParse: /^=pod\n([\s\S]*?)\n=cut$/m,
+            blockSplit: /(^=pod\n[\s\S]*?\n=cut$)/m,
             namedTags: ['arg', 'argument', 'data', 'prop', 'property']
         }),
-        ast = pod.parse('=doc\n ... \n=cut');
+
+        perlAst = pod.parse('=pod\n ... \n=cut');
 
 ### Streams
 
     var toga = require('toga'),
-        tunic = require('tunic');
+        Tunic = require('tunic');
 
     toga.src('./lib/**/*.js')
-        .pipe(tunic()) // generates and adds `.ast` property to `file` object
+        .pipe(new Tunic()) // generates and adds `.ast` property to `file` objects
         .pipe(toga.dest('./docs'));
 
 ## Test
