@@ -4,7 +4,7 @@ import Tunic from '../src/tunic';
 import expect from 'expect';
 import streamArray from 'stream-array';
 import supply from 'mtil/function/supply';
-import vinylFs from 'vinyl-fs';
+import toga from 'toga';
 import { join } from 'path';
 import { readFileSync } from 'fs';
 
@@ -69,7 +69,7 @@ describe('tunic e2e', function () {
 				expect(actual).toEqual(String(readFileSync(expected)));
 			}
 
-			vinylFs
+			toga
 				.src(fixture)
 				.pipe(stream)
 				.on('data', expectFile)
@@ -99,10 +99,6 @@ describe('tunic e2e', function () {
 
 		it('should parse names', function (done) {
 			testWithFile('name.js', new Tunic(), done);
-		});
-
-		it('should make navigation nodes', function (done) {
-			testWithFile('nav.js', new Tunic(), done);
 		});
 
 		it('should parse tags', function (done) {
@@ -143,7 +139,7 @@ describe('tunic e2e', function () {
 				expect(file.ast).toBe(undefined);
 			}
 
-			vinylFs
+			toga
 				.src(join(config.fixtures, 'unused.coffee'))
 				.pipe(stream)
 				.on('data', expectFile)

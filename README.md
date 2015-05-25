@@ -4,15 +4,13 @@
 
 [![NPM version][npm-img]][npm-url] [![Downloads][downloads-img]][npm-url] [![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url] [![Chat][gitter-img]][gitter-url]
 
-The stupid doc-block parser.
-
-Generates a [Toga](http://togajs.github.io)-compatible abstract syntax tree based on a customizable regular-expression grammar. Defaults to C-style comment blocks, so it supports JavaScript, PHP, C++, and even CSS right out of the box.
+A base parser for [Toga](http://togajs.github.io) documentation. Generates an abstract syntax tree based on a customizable regular-expression grammar. Defaults to C-style comment blocks, so it supports JavaScript, PHP, C++, and even CSS right out of the box.
 
 Tags are parsed greedily. If it looks like a tag, it's a tag. What you do with them is completely up to you. Render something human-readable, perhaps?
 
 ## Install
 
-    $ npm install tunic
+    $ npm install --save tunic
 
 ## Documentation Blocks
 
@@ -62,9 +60,9 @@ Creates a reusable parser based on the given options. Defaults to parsing C-styl
 
 Generates a sensible syntax tree format of doc-blocks and surrounding code.
 
-### `#pipe(stream) : Stream`
+### `#pipe(stream) : Stream.Readable`
 
-- `stream` `{Readable}` - Readable stream.
+- `stream` `{Stream.Writable}` - Writable stream.
 
 Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_stream_transform), working in object mode, compatible with `String`, `Buffer`, and [Vinyl](https://github.com/wearefractal/vinyl). Strings and buffers are parsed and the resulting AST is emitted as data. Vinyl objects are augmented with the AST stored as the `.ast` property.
 
@@ -72,40 +70,48 @@ Tunic is a [Transform Stream](http://nodejs.org/api/stream.html#stream_class_str
 
 ### Default Options
 
-    var Tunic = require('tunic'),
-        ast = new Tunic().parse('/** ... */');
+```js
+var Tunic = require('tunic'),
+    ast = new Tunic().parse('/** ... */');
+```
 
 ### Custom Options
 
-    var Tunic = require('tunic'),
+```js
+var Tunic = require('tunic'),
 
-        hbs = new Tunic({
-            extension: /\.(hbs|html?)$/,
-            blockIndent: /^[\t !]/gm,
-            blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
-            blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
-            namedTags: ['arg', 'argument', 'data', 'prop', 'property']
-        }),
+    hbs = new Tunic({
+        extension: /\.(hbs|html?)$/,
+        blockIndent: /^[\t !]/gm,
+        blockParse: /^[\t ]*\{\{!---(?!-)([\s\S]*?)\s*--\}\}/m,
+        blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
+        namedTags: ['arg', 'argument', 'data', 'prop', 'property']
+    }),
 
-        handlebarsAst = hbs.parse('{{!--- ... --}}\n<div> ...'),
+    handlebarsAst = hbs.parse('{{!--- ... --}}\n<div> ...'),
 
-        pod = new Tunic({
-            extension: /\.(pl|pm)$/,
-            blockParse: /^=pod\n([\s\S]*?)\n=cut$/m,
-            blockSplit: /(^=pod\n[\s\S]*?\n=cut$)/m,
-            namedTags: ['arg', 'argument', 'data', 'prop', 'property']
-        }),
+    pod = new Tunic({
+        extension: /\.(pl|pm)$/,
+        blockParse: /^=pod\n([\s\S]*?)\n=cut$/m,
+        blockSplit: /(^=pod\n[\s\S]*?\n=cut$)/m,
+        namedTags: ['arg', 'argument', 'data', 'prop', 'property']
+    }),
 
-        perlAst = pod.parse('=pod\n ... \n=cut');
+    perlAst = pod.parse('=pod\n ... \n=cut');
+```
 
 ### Streams
 
-    var toga = require('toga'),
-        Tunic = require('tunic');
+```js
+var toga = require('toga'),
+    Tunic = require('tunic');
 
-    toga.src('./lib/**/*.js')
-        .pipe(new Tunic()) // generates and adds `.ast` property to `file` objects
-        .pipe(toga.dest('./docs'));
+toga.src('./lib/**/*.js')
+    .pipe(new Tunic()) // generates and adds `.ast` property to `file` objects
+    // ... formatter(s)
+    // ... copmiler(s)
+    .pipe(toga.dest('./docs'));
+```
 
 ## Test
 

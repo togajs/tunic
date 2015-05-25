@@ -217,6 +217,5 @@
       "type": "Code",
       "contents": "{{! ignore }}\n{{!-- ignore --}}\n{{!\n  ! ignore\n  !}}\n<!-- {{!--- ignore -->\n<!-- ignore }} -->"
     }
-  ],
-  "nav": {}
+  ]
 }

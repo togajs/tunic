@@ -1,18 +1,13 @@
 /**
  * # Tunic
  *
- * Generates an abstract syntax tree (AST) based on a customizable regular-
- * expression grammar. Defaults to C-style comment blocks, so it supports
- * JavaScript, PHP, C++, and even CSS right out of the box.
- *
- * Tags are parsed greedily. If it looks like a tag, it's a tag. What you do
- * with them is completely up to you. Render something human-readable, perhaps?
+ * A base parser for [Toga](http://togajs.con) documentation. Generates an
+ * abstract syntax tree based on a customizable regular-expression grammar.
  *
  * @title Tunic
  * @name tunic
  */
 
-import mixin from 'mtil/object/mixin';
 import { Transform } from 'stream';
 
 /**
@@ -21,26 +16,93 @@ import { Transform } from 'stream';
  */
 export default class Tunic extends Transform {
 	/**
+	 * @property {Object} options
+	 */
+	options = null;
+
+	/**
+	 * Default options.
+	 *
+	 * @property {Object} defaults
+	 * @static
+	 */
+	static defaults = {
+		/** The name of this plugin. */
+		name: 'tunic',
+
+		/** The name of the property in which to store the AST. */
+		property: 'ast',
+
+		/** Matches any file extension. */
+		extension: /.\w+$/,
+
+		/** Matches allowed indention characters. */
+		blockIndent: /^[\t \*]/gm,
+
+		/** Splits code blocks from documentation blocks. */
+		blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
+
+		/** Parses documentation blocks. */
+		blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
+
+		/** Splits tags on leading `@` symbols. */
+		tagSplit: /^[\t ]*@/m,
+
+		/** Parses `@tag {type} name - Description.` chunks. */
+		tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
+
+		/** Which tags have a `name` in addition to a `description`. */
+		namedTags: [
+			'module',
+			'imports',
+			'exports',
+			'class',
+			'extends',
+			'method',
+			'arg',
+			'argument',
+			'param',
+			'parameter',
+			'prop',
+			'property'
+		]
+	};
+
+	/**
+	 * Line matching patterns.
+	 *
+	 * @property {Object} matchLines
+	 */
+	static matchLines = {
+		/** Matches any newline. */
+		any: /^/gm,
+
+		/** Matches empty lines. */
+		empty: /^$/gm,
+
+		/** Matches any trailing whitespace including newlines. */
+		trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g,
+
+		/** Matches outermost whitespace including first and last newlines. */
+		edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g
+	};
+
+	/**
 	 * @constructor
 	 * @param {Object} options
 	 * @param {RegExp} options.blockIndent
 	 * @param {RegExp} options.blockParse
 	 * @param {RegExp} options.blockSplit
 	 * @param {RegExp} options.extension
-	 * @param {Function(Vinyl,Object)} options.parseNav
 	 * @param {Array.<String>} options.namedTags
 	 * @param {String} options.property
 	 * @param {RegExp} options.tagParse
 	 * @param {RegExp} options.tagSplit
 	 */
-	constructor(options = {}) {
+	constructor(options) {
 		super({ objectMode: true });
 
-		/**
-		 * @property options
-		 * @type {Object}
-		 */
-		this.options = mixin({}, Tunic.defaults, options);
+		this.options = { ...Tunic.defaults, ...options };
 	}
 
 	/**
@@ -190,144 +252,23 @@ export default class Tunic extends Transform {
 	 */
 	_transform(file, enc, cb) {
 		var ast,
-			options = this.options,
-			extension = options.extension;
+			{ extension, property } = this.options;
 
 		if (typeof file === 'string' || file instanceof Buffer) {
-			// Parse string or buffer
-			file = this.parse(file);
+			return cb(null, this.parse(file));
 		}
 
-		if (file.contents != null && extension.test(file.path)) {
-			// Parse Vinyl file
-			ast = this.parse(file.contents);
-
-			// Generate nav data
-			ast.nav = options.parseNav(file, ast);
-
-			// Store ast on file
-			file[options.property] = ast;
+		if (!file || file.isAsset || !extension.test(file.path)) {
+			return cb(null, file);
 		}
 
-		this.push(file);
+		// Parse Vinyl file
+		ast = this.parse(file.contents);
 
-		return cb();
-	}
+		// Store ast on file
+		file[property] = ast;
 
-	/**
-	 * Generates navigation object. Looks for `title`, `name`, and `parent` tags
-	 * in the first comment of a file.
-	 *
-	 * @method parseNav
-	 * @param {Vinyl} file Vinyl file being parsed.
-	 * @param {Object} ast Toga AST.
-	 * @return {Object} Contains `title`, `name`, and `parent` values.
-	 * @static
-	 */
-	static parseNav(file, ast) {
-		var tagNode,
-			blocks = ast && ast.blocks,
-			firstComment = blocks && blocks[1],
-			tags = firstComment && firstComment.tags,
-			i = tags && tags.length,
-			nav = {};
-
-		// Visit each tag of the first comment block
-		while (i--) {
-			tagNode = tags[i];
-
-			switch (tagNode.tag) {
-				case 'title':
-					// falls through
-
-				case 'name':
-					// falls through
-
-				case 'parent': {
-					// Copy value to nav object
-					nav[tagNode.tag] = tagNode.description.trim();
-
-					// Remove tag from block
-					tags.splice(i, 1);
-				}
-
-				// no default
-			}
-		}
-
-		return nav;
+		cb(null, file);
 	}
 }
 
-/**
- * Default options.
- *
- * @property defaults
- * @type {Object.<String,RegExp>}
- * @static
- */
-Tunic.defaults = {
-	/** The name of this plugin. */
-	name: 'tunic',
-
-	/** The name of the property in which to store the AST. */
-	property: 'ast',
-
-	/** Matches any file extension. */
-	extension: /.\w+$/,
-
-	/** Matches allowed indention characters. */
-	blockIndent: /^[\t \*]/gm,
-
-	/** Splits code blocks from documentation blocks. */
-	blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
-
-	/** Parses documentation blocks. */
-	blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
-
-	/** Splits tags on leading `@` symbols. */
-	tagSplit: /^[\t ]*@/m,
-
-	/** Parses `@tag {type} name - Description.` chunks. */
-	tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
-
-	/** Which tags have a `name` in addition to a `description`. */
-	namedTags: [
-		'module',
-		'imports',
-		'exports',
-		'class',
-		'extends',
-		'method',
-		'arg',
-		'argument',
-		'param',
-		'parameter',
-		'prop',
-		'property'
-	],
-
-	/** Navigation parser. */
-	parseNav: Tunic.parseNav
-};
-
-/**
- * Line matching patterns.
- *
- * @property matchLines
- * @type {Object.<String,RegExp>}
- * @static
- */
-Tunic.matchLines = {
-	/** Matches any newline. */
-	any: /^/gm,
-
-	/** Matches empty lines. */
-	empty: /^$/gm,
-
-	/** Matches any trailing whitespace including newlines. */
-	trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g,
-
-	/** Matches outermost whitespace including first and last newlines. */
-	edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g
-};

@@ -1,38 +1,28 @@
+/**
+ * # Tunic
+ *
+ * A base parser for [Toga](http://togajs.con) documentation. Generates an
+ * abstract syntax tree based on a customizable regular-expression grammar.
+ *
+ * @title Tunic
+ * @name tunic
+ */
+
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
 	value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { desc = parent = getter = undefined; _again = false; var object = _x2,
-    property = _x3,
-    receiver = _x4; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
-
-/**
- * # Tunic
- *
- * Generates an abstract syntax tree (AST) based on a customizable regular-
- * expression grammar. Defaults to C-style comment blocks, so it supports
- * JavaScript, PHP, C++, and even CSS right out of the box.
- *
- * Tags are parsed greedily. If it looks like a tag, it's a tag. What you do
- * with them is completely up to you. Render something human-readable, perhaps?
- *
- * @title Tunic
- * @name tunic
- */
-
-var _mtilObjectMixin = require('mtil/object/mixin');
-
-var _mtilObjectMixin2 = _interopRequireDefault(_mtilObjectMixin);
 
 var _stream = require('stream');
 
@@ -42,6 +32,7 @@ var _stream = require('stream');
  */
 
 var Tunic = (function (_Transform) {
+
 	/**
   * @constructor
   * @param {Object} options
@@ -49,25 +40,20 @@ var Tunic = (function (_Transform) {
   * @param {RegExp} options.blockParse
   * @param {RegExp} options.blockSplit
   * @param {RegExp} options.extension
-  * @param {Function(Vinyl,Object)} options.parseNav
   * @param {Array.<String>} options.namedTags
   * @param {String} options.property
   * @param {RegExp} options.tagParse
   * @param {RegExp} options.tagSplit
   */
 
-	function Tunic() {
-		var options = arguments[0] === undefined ? {} : arguments[0];
-
+	function Tunic(options) {
 		_classCallCheck(this, Tunic);
 
 		_get(Object.getPrototypeOf(Tunic.prototype), 'constructor', this).call(this, { objectMode: true });
 
-		/**
-   * @property options
-   * @type {Object}
-   */
-		this.options = _mtilObjectMixin2['default']({}, Tunic.defaults, options);
+		this.__initializeProperties();
+
+		this.options = _extends({}, Tunic.defaults, options);
 	}
 
 	_inherits(Tunic, _Transform);
@@ -230,141 +216,99 @@ var Tunic = (function (_Transform) {
    * @param {Function} cb
    */
 		value: function _transform(file, enc, cb) {
-			var ast,
-			    options = this.options,
-			    extension = options.extension;
+			var ast;var _options = this.options;
+			var extension = _options.extension;
+			var property = _options.property;
 
 			if (typeof file === 'string' || file instanceof Buffer) {
-				// Parse string or buffer
-				file = this.parse(file);
+				return cb(null, this.parse(file));
 			}
 
-			if (file.contents != null && extension.test(file.path)) {
-				// Parse Vinyl file
-				ast = this.parse(file.contents);
-
-				// Generate nav data
-				ast.nav = options.parseNav(file, ast);
-
-				// Store ast on file
-				file[options.property] = ast;
+			if (!file || file.isAsset || !extension.test(file.path)) {
+				return cb(null, file);
 			}
 
-			this.push(file);
+			// Parse Vinyl file
+			ast = this.parse(file.contents);
 
-			return cb();
+			// Store ast on file
+			file[property] = ast;
+
+			cb(null, file);
+		}
+	}, {
+		key: '__initializeProperties',
+		value: function __initializeProperties() {
+			this.options = null;
 		}
 	}], [{
-		key: 'parseNav',
+		key: 'defaults',
 
 		/**
-   * Generates navigation object. Looks for `title`, `name`, and `parent` tags
-   * in the first comment of a file.
+   * Default options.
    *
-   * @method parseNav
-   * @param {Vinyl} file Vinyl file being parsed.
-   * @param {Object} ast Toga AST.
-   * @return {Object} Contains `title`, `name`, and `parent` values.
+   * @property {Object} defaults
    * @static
    */
-		value: function parseNav(file, ast) {
-			var tagNode,
-			    blocks = ast && ast.blocks,
-			    firstComment = blocks && blocks[1],
-			    tags = firstComment && firstComment.tags,
-			    i = tags && tags.length,
-			    nav = {};
+		value: {
+			/** The name of this plugin. */
+			name: 'tunic',
 
-			// Visit each tag of the first comment block
-			while (i--) {
-				tagNode = tags[i];
+			/** The name of the property in which to store the AST. */
+			property: 'ast',
 
-				switch (tagNode.tag) {
-					case 'title':
-					// falls through
+			/** Matches any file extension. */
+			extension: /.\w+$/,
 
-					case 'name':
-					// falls through
+			/** Matches allowed indention characters. */
+			blockIndent: /^[\t \*]/gm,
 
-					case 'parent':
-						{
-							// Copy value to nav object
-							nav[tagNode.tag] = tagNode.description.trim();
+			/** Splits code blocks from documentation blocks. */
+			blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
 
-							// Remove tag from block
-							tags.splice(i, 1);
-						}
+			/** Parses documentation blocks. */
+			blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
 
-						// no default
-				}
-			}
+			/** Splits tags on leading `@` symbols. */
+			tagSplit: /^[\t ]*@/m,
 
-			return nav;
-		}
+			/** Parses `@tag {type} name - Description.` chunks. */
+			tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
+
+			/** Which tags have a `name` in addition to a `description`. */
+			namedTags: ['module', 'imports', 'exports', 'class', 'extends', 'method', 'arg', 'argument', 'param', 'parameter', 'prop', 'property']
+		},
+		enumerable: true
+	}, {
+		key: 'matchLines',
+
+		/**
+   * Line matching patterns.
+   *
+   * @property {Object} matchLines
+   */
+		value: {
+			/** Matches any newline. */
+			any: /^/gm,
+
+			/** Matches empty lines. */
+			empty: /^$/gm,
+
+			/** Matches any trailing whitespace including newlines. */
+			trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g,
+
+			/** Matches outermost whitespace including first and last newlines. */
+			edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g
+		},
+		enumerable: true
 	}]);
 
 	return Tunic;
 })(_stream.Transform);
 
 exports['default'] = Tunic;
-
-/**
- * Default options.
- *
- * @property defaults
- * @type {Object.<String,RegExp>}
- * @static
- */
-Tunic.defaults = {
-	/** The name of this plugin. */
-	name: 'tunic',
-
-	/** The name of the property in which to store the AST. */
-	property: 'ast',
-
-	/** Matches any file extension. */
-	extension: /.\w+$/,
-
-	/** Matches allowed indention characters. */
-	blockIndent: /^[\t \*]/gm,
-
-	/** Splits code blocks from documentation blocks. */
-	blockSplit: /(^[\t ]*\/\*\*(?!\/)[\s\S]*?\s*\*\/)/m,
-
-	/** Parses documentation blocks. */
-	blockParse: /^[\t ]*\/\*\*(?!\/)([\s\S]*?)\s*\*\//m,
-
-	/** Splits tags on leading `@` symbols. */
-	tagSplit: /^[\t ]*@/m,
-
-	/** Parses `@tag {type} name - Description.` chunks. */
-	tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
-
-	/** Which tags have a `name` in addition to a `description`. */
-	namedTags: ['module', 'imports', 'exports', 'class', 'extends', 'method', 'arg', 'argument', 'param', 'parameter', 'prop', 'property'],
-
-	/** Navigation parser. */
-	parseNav: Tunic.parseNav
-};
-
-/**
- * Line matching patterns.
- *
- * @property matchLines
- * @type {Object.<String,RegExp>}
- * @static
- */
-Tunic.matchLines = {
-	/** Matches any newline. */
-	any: /^/gm,
-
-	/** Matches empty lines. */
-	empty: /^$/gm,
-
-	/** Matches any trailing whitespace including newlines. */
-	trailing: /^\s*[\r\n]+|[\r\n]+\s*$/g,
-
-	/** Matches outermost whitespace including first and last newlines. */
-	edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g
-};
 module.exports = exports['default'];
+
+/**
+ * @property {Object} options
+ */
