@@ -1,18 +1,18 @@
 /*eslint-env mocha */
 
-import Tunic from '../src/tunic';
-import expect from 'expect';
-import streamArray from 'stream-array';
-import supply from 'mtil/function/supply';
-import toga from 'toga';
-import { join } from 'path';
-import { readFileSync } from 'fs';
+var Tunic = require('../src/tunic'),
+	expect = require('expect'),
+	streamArray = require('stream-array'),
+	supply = require('mtil/function/supply'),
+	toga = require('toga'),
+	join = require('path').join,
+	readFileSync = require('fs').readFileSync,
 
-var config = {
-	fixtures: join(__dirname, '/fixtures'),
-	expected: join(__dirname, '/expected'),
-	actual: join(__dirname, '/actual')
-};
+	config = {
+		fixtures: join(__dirname, '/fixtures'),
+		expected: join(__dirname, '/expected'),
+		actual: join(__dirname, '/actual')
+	};
 
 describe('tunic e2e', function () {
 	describe('raw streams', function () {

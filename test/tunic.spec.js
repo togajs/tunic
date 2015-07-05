@@ -1,7 +1,7 @@
 /*eslint-env mocha */
 
-import Tunic from '../src/tunic';
-import expect from 'expect';
+var Tunic = require('../src/tunic'),
+	expect = require('expect');
 
 describe('tunic spec', function () {
 	it('should create an instance', function () {
