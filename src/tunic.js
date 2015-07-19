@@ -8,6 +8,9 @@
  * @name tunic
  */
 
+import contains from 'mout/array/contains';
+import flatten from 'mout/array/flatten';
+import toString from 'mout/lang/toString';
 import { Transform } from 'stream';
 
 /**
@@ -27,11 +30,8 @@ export default class Tunic extends Transform {
 	 * @static
 	 */
 	static defaults = {
-		/** The name of this plugin. */
-		name: 'tunic',
-
 		/** The name of the property in which to store the AST. */
-		property: 'ast',
+		property: 'docAst',
 
 		/** Matches any file extension. */
 		extension: /.\w+$/,
@@ -48,8 +48,8 @@ export default class Tunic extends Transform {
 		/** Splits tags on leading `@` symbols. */
 		tagSplit: /^[\t ]*@/m,
 
-		/** Parses `@tag {type} name - Description.` chunks. */
-		tagParse: /^(\w+)[\t \-]*(\{[^\}]+\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t \-]*([\s\S]+)?$/m,
+		/** Parses `@tag {kind} name - description` chunks. */
+		tagParse: /^(\w+)[\t \-]*(?:\{([^\}]+)\})?[\t \-]*(\[[^\]]*\]\*?|\S*)?[\t ]*(-?)[\t ]*([\s\S]+)?$/m,
 
 		/** Which tags have a `name` in addition to a `description`. */
 		namedTags: [
@@ -90,139 +90,159 @@ export default class Tunic extends Transform {
 	/**
 	 * @constructor
 	 * @param {Object} options
-	 * @param {RegExp} options.blockIndent
-	 * @param {RegExp} options.blockParse
-	 * @param {RegExp} options.blockSplit
-	 * @param {RegExp} options.extension
-	 * @param {Array.<String>} options.namedTags
-	 * @param {String} options.property
-	 * @param {RegExp} options.tagParse
-	 * @param {RegExp} options.tagSplit
 	 */
 	constructor(options) {
 		super({ objectMode: true });
 
-		this.options = { ...Tunic.defaults, ...options };
+		this.options = {
+			...Tunic.defaults,
+			...options
+		};
 	}
 
 	/**
-	 * Splits a chunk into blocks and generates root ast object.
+	 * Splits a chunk into blocks and generates the root AST node.
 	 *
 	 * @method parse
 	 * @param {String} chunk
 	 * @return {Object}
 	 */
 	parse(chunk) {
-		var blocks = String(chunk)
-			.split(this.options.blockSplit)
-			.map(this.parseBlock.bind(this));
+		chunk = toString(chunk);
 
+		var { blockSplit } = this.options,
+
+			[firstCodeBlock, ...blocks] = chunk
+				.split(blockSplit);
+
+		/**
+		 * The blocks array will always start with a code block. If that block
+		 * is empty, we can skip it. Otherwise we need an empty comment block
+		 * to own it as trailing code.
+		 */
+		if (firstCodeBlock && firstCodeBlock.trim()) {
+			blocks.unshift('', firstCodeBlock);
+		}
+
+		/**
+		 * The blocks array is guaranteed to start with a comment now, so we
+		 * can proceed with processing and generate the root AST node.
+		 */
 		return {
-			type: 'Document',
-			blocks: blocks
+			type: 'Documentation',
+			body: this.parseBlocks(blocks)
 		};
 	}
 
 	/**
-	 * Determines whether to parse a block as a comment or as code.
-	 *
-	 * @method parseBlock
-	 * @param {String} block
-	 * @return {Object}
+	 * @method parseBlocks
+	 * @param {Array.<String>} blocks
+	 * @return {Array}
 	 */
-	parseBlock(block) {
-		if (this.options.blockParse.test(block)) {
-			return this.parseComment(block);
+	parseBlocks() {
+		var retval = [],
+			blocks = flatten(arguments),
+			length = blocks.length,
+			i = 0;
+
+		while (i < length) {
+			retval.push(this.parseComment(
+				blocks[i++], // comment block
+				blocks[i++]  // code block
+			));
 		}
 
-		return this.parseCode(block);
+		return retval;
 	}
 
 	/**
-	 * Cleans up a code block and generates a Code ast node.
+	 * Splits a comment block by tag and generates a comment AST node.
 	 *
-	 * @method parseCode
+	 * @method parseComment
+	 * @param {String} commentBlock
 	 * @param {String} codeBlock
 	 * @return {Object}
 	 */
-	parseCode(codeBlock) {
-		var matchLines = Tunic.matchLines;
+	parseComment(commentBlock, codeBlock) {
+		commentBlock = toString(commentBlock);
+		codeBlock = toString(codeBlock);
+
+		var { tagSplit } = this.options,
+			{ matchLines } = Tunic,
+
+			[description, ...tags] = this
+				.unwrap(commentBlock)
+				.split(tagSplit),
+
+			trailingCode = codeBlock
+				.replace(matchLines.trailing, '');
 
 		return {
-			type: 'Code',
-			contents: codeBlock.replace(matchLines.trailing, '')
+			description, trailingCode,
+			type: 'CommentBlock',
+			tags: tags.map(this.parseTag, this)
 		};
 	}
 
 	/**
-	 * Splits a comment block by tag and generates a Comment ast node.
-	 *
-	 * @method parseComment
-	 * @param {String} commentBlcok
-	 * @return {Object}
-	 */
-	parseComment(commentBlock) {
-		var tags = this
-			.unwrap(commentBlock)
-			.split(this.options.tagSplit);
-
-		return {
-			type: 'Comment',
-			description: tags.shift(),
-			tags: tags.map(this.parseTag.bind(this))
-		};
-	}
-
-	/**
-	 * Splits a tag into its various bits and generates a Tag ast node.
+	 * Splits a tag into its various bits and generates a tag AST node.
 	 *
 	 * @method parseTag
 	 * @param {String} tagBlock
 	 * @return {Object}
 	 */
 	parseTag(tagBlock) {
-		var options = this.options,
+		tagBlock = toString(tagBlock);
 
-			// Splits `@label {type} name - description`
-			parts = tagBlock.match(options.tagParse),
+		var { namedTags, tagParse } = this.options,
 
-			tag = parts[1],         // `@tag` as `tag`
-			type = parts[2],        // `{type}` as `type`
-			name = parts[3],        // name
-			description = parts[4]; // description
+			tagBlockSegments = tagBlock
+				.match(tagParse) || [],
 
-		// Join `name` and `description` if this isn't a named tag
-		if (name && options.namedTags.indexOf(tag) === -1) {
-			description = description
-				? name + ' ' + description
-				: name;
+			[, tag, kind, name, delimiter, description] = tagBlockSegments;
+
+		/**
+		 * The regular expression has no way to know if a tag is supposed to
+		 * have a name segment, so we have to help it out. In some cases the
+		 * name is really just the first word of the description.
+		 */
+		if (name && !delimiter && !contains(namedTags, tag)) {
+			description = [name, description]
+				.filter(x => x != null)
+				.join(' ')
+				.trim();
 
 			name = undefined;
 		}
 
-		return { tag, type, name, description };
+		return {
+			tag, kind, name, description,
+			type: 'CommentBlockTag'
+		};
 	}
 
 	/**
-	 * Strips open- and close-comment markers, then unindents a comment's content.
+	 * Strips open- and close-comment markers and unindents the content.
 	 *
 	 * @method unwrap
 	 * @param {String} block
 	 * @return {Object}
 	 */
 	unwrap(block) {
+		block = toString(block);
+
 		var lines, emptyLines, indentedLines,
-			matchLines = Tunic.matchLines,
-			options = this.options,
-			indent = options.blockIndent;
+			{ blockIndent, blockParse } = this.options,
+			{ matchLines } = Tunic;
 
 		// Trim comment wrappers
 		block = block
-			.replace(options.blockParse, '$1')
+			.replace(blockParse, '$1')
 			.replace(matchLines.edge, '');
 
 		// Total line count
-		lines = block.match(matchLines.any).length;
+		lines = block
+			.match(matchLines.any).length;
 
 		// Attempt to unindent
 		while (lines > 0) {
@@ -230,7 +250,7 @@ export default class Tunic extends Transform {
 			emptyLines = (block.match(matchLines.empty) || []).length;
 
 			// Indented line count
-			indentedLines = (block.match(indent) || []).length;
+			indentedLines = (block.match(blockIndent) || []).length;
 
 			// Only continue if every line still starts with an indent character
 			if (!indentedLines || emptyLines + indentedLines !== lines) {
@@ -238,7 +258,7 @@ export default class Tunic extends Transform {
 			}
 
 			// Strip leading indent characters
-			block = block.replace(indent, '');
+			block = block.replace(blockIndent, '');
 		}
 
 		return block;
@@ -251,10 +271,10 @@ export default class Tunic extends Transform {
 	 * @param {Function} cb
 	 */
 	_transform(file, enc, cb) {
-		var ast,
+		var docAst,
 			{ extension, property } = this.options;
 
-		if (typeof file === 'string' || file instanceof Buffer) {
+		if (typeof file === 'string' || Buffer.isBuffer(file)) {
 			return cb(null, this.parse(file));
 		}
 
@@ -263,12 +283,11 @@ export default class Tunic extends Transform {
 		}
 
 		// Parse Vinyl file
-		ast = this.parse(file.contents);
+		docAst = this.parse(file.contents);
 
-		// Store ast on file
-		file[property] = ast;
+		// Store AST on file
+		file[property] = docAst;
 
 		cb(null, file);
 	}
 }
-
