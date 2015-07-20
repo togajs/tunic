@@ -13,6 +13,10 @@ import flatten from 'mout/array/flatten';
 import toString from 'mout/lang/toString';
 import { Transform } from 'stream';
 
+const AST_TYPE_DOCUMENTATION = 'Documentation',
+	AST_TYPE_BLOCK = 'CommentBlock',
+	AST_TYPE_TAG = 'CommentBlockTag';
+
 /**
  * @class Tunic
  * @extends Stream.Transform
@@ -53,14 +57,14 @@ export default class Tunic extends Transform {
 
 		/** Which tags have a `name` in addition to a `description`. */
 		namedTags: [
-			'module',
-			'imports',
-			'exports',
-			'class',
-			'extends',
-			'method',
 			'arg',
 			'argument',
+			'class',
+			'exports',
+			'extends',
+			'imports',
+			'method',
+			'module',
 			'param',
 			'parameter',
 			'prop',
@@ -111,9 +115,7 @@ export default class Tunic extends Transform {
 		chunk = toString(chunk);
 
 		var { blockSplit } = this.options,
-
-			[firstCodeBlock, ...blocks] = chunk
-				.split(blockSplit);
+			[firstCodeBlock, ...blocks] = chunk.split(blockSplit);
 
 		/**
 		 * The blocks array will always start with a code block. If that block
@@ -129,7 +131,7 @@ export default class Tunic extends Transform {
 		 * can proceed with processing and generate the root AST node.
 		 */
 		return {
-			type: 'Documentation',
+			type: AST_TYPE_DOCUMENTATION,
 			body: this.parseBlocks(blocks)
 		};
 	}
@@ -145,10 +147,10 @@ export default class Tunic extends Transform {
 			length = blocks.length,
 			i = 0;
 
-		while (i < length) {
+		for (; i < length; i += 2) {
 			retval.push(this.parseComment(
-				blocks[i++], // comment block
-				blocks[i++]  // code block
+				blocks[i],    // comment block
+				blocks[i + 1] // code block
 			));
 		}
 
@@ -178,8 +180,8 @@ export default class Tunic extends Transform {
 				.replace(matchLines.trailing, '');
 
 		return {
+			type: AST_TYPE_BLOCK,
 			description, trailingCode,
-			type: 'CommentBlock',
 			tags: tags.map(this.parseTag, this)
 		};
 	}
@@ -195,10 +197,7 @@ export default class Tunic extends Transform {
 		tagBlock = toString(tagBlock);
 
 		var { namedTags, tagParse } = this.options,
-
-			tagBlockSegments = tagBlock
-				.match(tagParse) || [],
-
+			tagBlockSegments = tagBlock.match(tagParse) || [],
 			[, tag, kind, name, delimiter, description] = tagBlockSegments;
 
 		/**
@@ -208,7 +207,7 @@ export default class Tunic extends Transform {
 		 */
 		if (name && !delimiter && !contains(namedTags, tag)) {
 			description = [name, description]
-				.filter(x => x != null)
+				.filter(x => x && x.trim())
 				.join(' ')
 				.trim();
 
@@ -216,8 +215,8 @@ export default class Tunic extends Transform {
 		}
 
 		return {
-			tag, kind, name, description,
-			type: 'CommentBlockTag'
+			type: AST_TYPE_TAG,
+			tag, kind, name, description
 		};
 	}
 
@@ -231,7 +230,9 @@ export default class Tunic extends Transform {
 	unwrap(block) {
 		block = toString(block);
 
-		var lines, emptyLines, indentedLines,
+		var lines,
+			emptyLines,
+			indentedLines,
 			{ blockIndent, blockParse } = this.options,
 			{ matchLines } = Tunic;
 
@@ -241,8 +242,7 @@ export default class Tunic extends Transform {
 			.replace(matchLines.edge, '');
 
 		// Total line count
-		lines = block
-			.match(matchLines.any).length;
+		lines = block.match(matchLines.any).length;
 
 		// Attempt to unindent
 		while (lines > 0) {
@@ -252,7 +252,7 @@ export default class Tunic extends Transform {
 			// Indented line count
 			indentedLines = (block.match(blockIndent) || []).length;
 
-			// Only continue if every line still starts with an indent character
+			// Only continue if every line is still indented
 			if (!indentedLines || emptyLines + indentedLines !== lines) {
 				break;
 			}

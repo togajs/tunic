@@ -1,9 +1,11 @@
 {
-  "type": "Document",
-  "blocks": [
+  "type": "Documentation",
+  "body": [
     {
-      "type": "Code",
-      "contents": "// ignore\n/* ignore */\n/*! ignore */\n\n//\n// ignore\n//\n/*\n * ignore\n */\n/*!\n * ignore\n */\n\n// /** ignore\nvar ignore = '/** ignore */';\nvar foo = function(/** ignore */) {};\nconsole.log(foo(ignore));\n// ignore */"
+      "type": "CommentBlock",
+      "description": "",
+      "trailingCode": "// ignore\n/* ignore */\n/*! ignore */\n\n//\n// ignore\n//\n/*\n * ignore\n */\n/*!\n * ignore\n */\n\n// /** ignore\nvar ignore = '/** ignore */';\nvar foo = function(/** ignore */) {};\nconsole.log(foo(ignore));\n// ignore */",
+      "tags": []
     }
   ]
 }

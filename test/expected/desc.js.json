@@ -1,36 +1,23 @@
 {
-  "type": "Document",
-  "blocks": [
+  "type": "Documentation",
+  "body": [
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "description",
+      "trailingCode": "",
       "tags": []
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "description",
+      "trailingCode": "",
       "tags": []
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "description",
+      "trailingCode": "",
       "tags": []
-    },
-    {
-      "type": "Code",
-      "contents": ""
     }
   ]
 }

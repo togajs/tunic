@@ -1,66 +1,54 @@
 {
-  "type": "Document",
-  "blocks": [
+  "type": "Documentation",
+  "body": [
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}"
+          "kind": "Type"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{String|Object}"
+          "kind": "String|Object"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Array.<Object.<String,Number>>}"
+          "kind": "Array.<Object.<String,Number>>"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Function(String, ...[Number]): Number}",
+          "kind": "Function(String, ...[Number]): Number",
           "name": "callback"
         }
       ]
-    },
-    {
-      "type": "Code",
-      "contents": ""
     }
   ]
 }

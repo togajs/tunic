@@ -1,243 +1,257 @@
 {
-  "type": "Document",
-  "blocks": [
+  "type": "Documentation",
+  "body": [
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "example",
           "description": "\n\n    var foo = 'bar';\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "description": "Foo bar.\n"
+          "description": "Foo bar."
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "example",
           "description": "\n\n    var foo = 'bar';\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "description": "Foo bar.\n"
+          "description": "Foo bar."
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "example",
           "description": "\n\n    var foo = 'bar';\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "description": "Foo bar.\n"
+          "description": "Foo bar."
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "example",
           "description": "\n\n    var foo = 'bar';\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "description": "Foo bar.\n"
+          "description": "Foo bar."
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "example",
           "description": "\n\n    var foo = 'bar';\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "description": "Foo bar.\n"
+          "description": "Foo bar."
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag"
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "# Title\n\nLong description that spans multiple\nlines and even has other markdown\ntype things.\n\nLike more paragraphs.\n\n* Like\n* Lists\n\n    var code = 'samples';\n\n",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "arg",
-          "type": "{Type}",
+          "kind": "Type",
           "name": "name",
           "description": "Description that is really long\n  and wraps to other lines.\n\n  And has line breaks, etc.\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "example",
           "description": "\n\n    var foo = 'bar';\n\n"
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "description": "Foo bar.\n"
+          "description": "Foo bar."
         },
         {
+          "type": "CommentBlockTag",
           "tag": "tag"
         }
       ]
-    },
-    {
-      "type": "Code",
-      "contents": ""
     }
   ]
 }

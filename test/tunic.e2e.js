@@ -20,19 +20,23 @@ describe('tunic e2e', function () {
 			var expectChunk = supply(
 				function (chunk) {
 					expect(chunk).toEqual({
-						type: 'Document',
-						blocks: [{
-							contents: 'hello',
-							type: 'Code'
+						type: 'Documentation',
+						body: [{
+							type: 'CommentBlock',
+							description: '',
+							trailingCode: 'hello',
+							tags: []
 						}]
 					});
 				},
 				function (chunk) {
 					expect(chunk).toEqual({
-						type: 'Document',
-						blocks: [{
-							contents: 'world',
-							type: 'Code'
+						type: 'Documentation',
+						body: [{
+							type: 'CommentBlock',
+							description: '',
+							trailingCode: 'world',
+							tags: []
 						}]
 					});
 				}
@@ -64,7 +68,7 @@ describe('tunic e2e', function () {
 				expected = join(config.expected, filename + '.json');
 
 			function expectFile(file) {
-				var actual = JSON.stringify(file.ast, null, 2) + '\n';
+				var actual = JSON.stringify(file.docAst, null, 2) + '\n';
 
 				expect(actual).toEqual(String(readFileSync(expected)));
 			}
@@ -72,8 +76,7 @@ describe('tunic e2e', function () {
 			toga
 				.src(fixture)
 				.pipe(stream)
-				// .on('data', expectFile)
-				.pipe(toga.dest(config.actual))
+				.on('data', expectFile)
 				.on('error', done)
 				.on('end', done);
 		}

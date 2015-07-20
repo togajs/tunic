@@ -3,7 +3,7 @@
 var Tunic = require('../src/tunic'),
 	expect = require('expect');
 
-describe.only('tunic spec', function () {
+describe('tunic spec', function () {
 	var tunic;
 
 	beforeEach(function () {
@@ -20,20 +20,28 @@ describe.only('tunic spec', function () {
 				type: 'Documentation',
 				body: []
 			});
+		});
 
-			expect(tunic.parse('/**\nFoo\n*/\nvar foo = "bar";\n/**\nBaz\n*/\nvar baz = "bat";')).toEqual({
+		it('should parse text', function () {
+			expect(tunic.parse('var a = 1;\n/**\nFoo\n*/\nvar b = 2;\n/**\nBaz\n*/\nvar c = 3;')).toEqual({
 				type: 'Documentation',
 				body: [
 					{
 						type: 'CommentBlock',
+						description: '',
+						trailingCode: 'var a = 1;',
+						tags: []
+					},
+					{
+						type: 'CommentBlock',
 						description: 'Foo',
-						trailingCode: 'var foo = "bar";',
+						trailingCode: 'var b = 2;',
 						tags: []
 					},
 					{
 						type: 'CommentBlock',
 						description: 'Baz',
-						trailingCode: 'var baz = "bat";',
+						trailingCode: 'var c = 3;',
 						tags: []
 					}
 				]

@@ -1,80 +1,66 @@
 {
-  "type": "Document",
-  "blocks": [
+  "type": "Documentation",
+  "body": [
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "type": "{Type}",
+          "kind": "Type",
           "description": "Description here."
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
-          "type": "{Type}",
+          "kind": "Type",
           "description": "Description here."
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
           "description": "Description."
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "tag",
           "description": "Description."
         }
       ]
     },
     {
-      "type": "Code",
-      "contents": ""
-    },
-    {
-      "type": "Comment",
+      "type": "CommentBlock",
       "description": "",
+      "trailingCode": "",
       "tags": [
         {
+          "type": "CommentBlockTag",
           "tag": "tag"
         }
       ]
-    },
-    {
-      "type": "Code",
-      "contents": ""
     }
   ]
 }
