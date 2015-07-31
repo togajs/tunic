@@ -34,7 +34,7 @@ export default class Tunic extends Transform {
 	 * @static
 	 */
 	static defaults = {
-		/** The name of the property in which to store the AST. */
+		/** The name of the property in which to store the documentation AST. */
 		property: 'docAst',
 
 		/** Matches any file extension. */
@@ -98,8 +98,12 @@ export default class Tunic extends Transform {
 	constructor(options) {
 		super({ objectMode: true });
 
+		var { defaults } = Tunic,
+			namedTags = defaults.namedTags.slice();
+
 		this.options = {
-			...Tunic.defaults,
+			...defaults,
+			namedTags,
 			...options
 		};
 	}
@@ -267,27 +271,20 @@ export default class Tunic extends Transform {
 	/**
 	 * @method _transform
 	 * @param {String} file
-	 * @param {String} enc
-	 * @param {Function} cb
+	 * @param {String} encoding
+	 * @param {Function} next
 	 */
-	_transform(file, enc, cb) {
-		var docAst,
-			{ extension, property } = this.options;
-
-		if (typeof file === 'string' || Buffer.isBuffer(file)) {
-			return cb(null, this.parse(file));
-		}
+	_transform(file, encoding, next) {
+		var { extension, property } = this.options;
 
 		if (!file || file.isAsset || !extension.test(file.path)) {
-			return cb(null, file);
+			this.push(file);
+			return next();
 		}
 
-		// Parse Vinyl file
-		docAst = this.parse(file.contents);
+		file[property] = this.parse(file.contents);
 
-		// Store AST on file
-		file[property] = docAst;
-
-		cb(null, file);
+		this.push(file);
+		next();
 	}
 }

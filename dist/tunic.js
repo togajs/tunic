@@ -66,7 +66,7 @@ var Tunic = (function (_Transform) {
    * @static
    */
 		value: {
-			/** The name of the property in which to store the AST. */
+			/** The name of the property in which to store the documentation AST. */
 			property: 'docAst',
 
 			/** Matches any file extension. */
@@ -126,7 +126,12 @@ var Tunic = (function (_Transform) {
 		_get(Object.getPrototypeOf(Tunic.prototype), 'constructor', this).call(this, { objectMode: true });
 
 		this.options = null;
-		this.options = _extends({}, Tunic.defaults, options);
+		var defaults = Tunic.defaults,
+		    namedTags = defaults.namedTags.slice();
+
+		this.options = _extends({}, defaults, {
+			namedTags: namedTags
+		}, options);
 	}
 
 	_createClass(Tunic, [{
@@ -321,30 +326,28 @@ var Tunic = (function (_Transform) {
 		/**
    * @method _transform
    * @param {String} file
-   * @param {String} enc
-   * @param {Function} cb
+   * @param {String} encoding
+   * @param {Function} next
    */
-		value: function _transform(file, enc, cb) {
-			var docAst;
+		value: function _transform(file, encoding, next) {
 			var _options3 = this.options;
 			var extension = _options3.extension;
 			var property = _options3.property;
 
 			if (typeof file === 'string' || Buffer.isBuffer(file)) {
-				return cb(null, this.parse(file));
+				this.push(this.parse(file));
+				return next();
 			}
 
 			if (!file || file.isAsset || !extension.test(file.path)) {
-				return cb(null, file);
+				this.push(file);
+				return next();
 			}
 
-			// Parse Vinyl file
-			docAst = this.parse(file.contents);
+			file[property] = this.parse(file.contents);
 
-			// Store AST on file
-			file[property] = docAst;
-
-			cb(null, file);
+			this.push(file);
+			next();
 		}
 	}]);
 

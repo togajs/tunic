@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
-var Tunic = require('../src/tunic'),
-	expect = require('expect');
+import Tunic from '../src/tunic';
+import expect from 'expect';
 
 describe('tunic spec', function () {
 	var tunic;
@@ -10,8 +10,11 @@ describe('tunic spec', function () {
 		tunic = new Tunic();
 	});
 
-	it('should create an instance', function () {
+	it('should create a duplex stream', function () {
 		expect(tunic).toBeA(Tunic);
+		expect(tunic.pipe).toBeA(Function);
+		expect(tunic.readable).toBe(true);
+		expect(tunic.writable).toBe(true);
 	});
 
 	describe('#parse', function () {
