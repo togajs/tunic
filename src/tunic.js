@@ -124,7 +124,7 @@ export default class Tunic extends Transform {
 		/**
 		 * The blocks array will always start with a code block. If that block
 		 * is empty, we can skip it. Otherwise we need an empty comment block
-		 * to own it as trailing code.
+		 * to own the code block as trailing code.
 		 */
 		if (firstCodeBlock && firstCodeBlock.trim()) {
 			blocks.unshift('', firstCodeBlock);
@@ -205,9 +205,9 @@ export default class Tunic extends Transform {
 			[, tag, kind, name, delimiter, description] = tagBlockSegments;
 
 		/**
-		 * The regular expression has no way to know if a tag is supposed to
-		 * have a name segment, so we have to help it out. In some cases the
-		 * name is really just the first word of the description.
+		 * The regular expression needs help to know if a tag is supposed to
+		 * have a name segment. In some cases the name is really just the first
+		 * word of the description, so we merge them back together.
 		 */
 		if (name && !delimiter && !contains(namedTags, tag)) {
 			description = [name, description]
@@ -279,12 +279,14 @@ export default class Tunic extends Transform {
 
 		if (!file || file.isAsset || !extension.test(file.path)) {
 			this.push(file);
+
 			return next();
 		}
 
 		file[property] = this.parse(file.contents);
 
 		this.push(file);
+
 		next();
 	}
 }
