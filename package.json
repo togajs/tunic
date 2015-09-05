@@ -1,6 +1,6 @@
 {
   "name": "tunic",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "A doc-block tag parser.",
   "keywords": [
     "toga",
