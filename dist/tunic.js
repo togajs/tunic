@@ -28,7 +28,7 @@ function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _moutArrayContains = require('mout/array/contains');
 
@@ -90,15 +90,15 @@ var Tunic = (function (_Transform) {
 			/** Which tags have a `name` in addition to a `description`. */
 			namedTags: ['arg', 'argument', 'class', 'exports', 'extends', 'imports', 'method', 'module', 'param', 'parameter', 'prop', 'property']
 		},
-		enumerable: true
-	}, {
-		key: 'matchLines',
 
 		/**
    * Line matching patterns.
    *
    * @property {Object} matchLines
    */
+		enumerable: true
+	}, {
+		key: 'matchLines',
 		value: {
 			/** Matches any newline. */
 			any: /^/gm,
@@ -112,13 +112,13 @@ var Tunic = (function (_Transform) {
 			/** Matches outermost whitespace including first and last newlines. */
 			edge: /^[\t ]*[\r\n]|[\r\n][\t ]*$/g
 		},
+
+		/**
+   * @constructor
+   * @param {Object} options
+   */
 		enumerable: true
 	}]);
-
-	/**
-  * @constructor
-  * @param {Object} options
-  */
 
 	function Tunic(options) {
 		_classCallCheck(this, Tunic);
@@ -126,24 +126,24 @@ var Tunic = (function (_Transform) {
 		_get(Object.getPrototypeOf(Tunic.prototype), 'constructor', this).call(this, { objectMode: true });
 
 		this.options = null;
-		var defaults = Tunic.defaults,
-		    namedTags = defaults.namedTags.slice();
+		var defaults = Tunic.defaults;
+		var namedTags = defaults.namedTags.slice();
 
 		this.options = _extends({}, defaults, {
 			namedTags: namedTags
 		}, options);
 	}
 
+	/**
+  * Splits a chunk into blocks and generates the root AST node.
+  *
+  * @method parse
+  * @param {String} chunk
+  * @return {Object}
+  */
+
 	_createClass(Tunic, [{
 		key: 'parse',
-
-		/**
-   * Splits a chunk into blocks and generates the root AST node.
-   *
-   * @method parse
-   * @param {String} chunk
-   * @return {Object}
-   */
 		value: function parse(chunk) {
 			chunk = (0, _moutLangToString2['default'])(chunk);
 
@@ -175,14 +175,14 @@ var Tunic = (function (_Transform) {
 				body: this.parseBlocks(blocks)
 			};
 		}
-	}, {
-		key: 'parseBlocks',
 
 		/**
    * @method parseBlocks
    * @param {Array.<String>} blocks
    * @return {Array}
    */
+	}, {
+		key: 'parseBlocks',
 		value: function parseBlocks() {
 			var retval = [],
 			    blocks = (0, _moutArrayFlatten2['default'])(arguments),
@@ -197,8 +197,6 @@ var Tunic = (function (_Transform) {
 
 			return retval;
 		}
-	}, {
-		key: 'parseComment',
 
 		/**
    * Splits a comment block by tag and generates a comment AST node.
@@ -208,6 +206,8 @@ var Tunic = (function (_Transform) {
    * @param {String} codeBlock
    * @return {Object}
    */
+	}, {
+		key: 'parseComment',
 		value: function parseComment(commentBlock, codeBlock) {
 			commentBlock = (0, _moutLangToString2['default'])(commentBlock);
 			codeBlock = (0, _moutLangToString2['default'])(codeBlock);
@@ -230,8 +230,6 @@ var Tunic = (function (_Transform) {
 				tags: tags.map(this.parseTag, this)
 			};
 		}
-	}, {
-		key: 'parseTag',
 
 		/**
    * Splits a tag into its various bits and generates a tag AST node.
@@ -240,6 +238,8 @@ var Tunic = (function (_Transform) {
    * @param {String} tagBlock
    * @return {Object}
    */
+	}, {
+		key: 'parseTag',
 		value: function parseTag(tagBlock) {
 			tagBlock = (0, _moutLangToString2['default'])(tagBlock);
 
@@ -274,8 +274,6 @@ var Tunic = (function (_Transform) {
 				tag: tag, kind: kind, name: name, description: description
 			};
 		}
-	}, {
-		key: 'unwrap',
 
 		/**
    * Strips open- and close-comment markers and unindents the content.
@@ -284,6 +282,8 @@ var Tunic = (function (_Transform) {
    * @param {String} block
    * @return {Object}
    */
+	}, {
+		key: 'unwrap',
 		value: function unwrap(block) {
 			block = (0, _moutLangToString2['default'])(block);
 
@@ -320,8 +320,6 @@ var Tunic = (function (_Transform) {
 
 			return block;
 		}
-	}, {
-		key: '_transform',
 
 		/**
    * @method _transform
@@ -329,15 +327,12 @@ var Tunic = (function (_Transform) {
    * @param {String} encoding
    * @param {Function} next
    */
+	}, {
+		key: '_transform',
 		value: function _transform(file, encoding, next) {
 			var _options3 = this.options;
 			var extension = _options3.extension;
 			var property = _options3.property;
-
-			if (typeof file === 'string' || Buffer.isBuffer(file)) {
-				this.push(this.parse(file));
-				return next();
-			}
 
 			if (!file || file.isAsset || !extension.test(file.path)) {
 				this.push(file);

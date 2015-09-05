@@ -153,7 +153,7 @@
 
     // Style
     "indent": [2, "tab", {                    // this option sets a specific tab width for your code (off by default)
-      "indentSwitchCase": true
+      "SwitchCase": 1
     }],
     "brace-style": [2, "stroustrup"],         // enforce one true brace style (off by default)
     "camelcase": [2, {                        // require camel case names
