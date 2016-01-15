@@ -63,9 +63,18 @@ Several pre-defined [grammars][grammars] are available. To use, import the desir
 
 ```js
 var parse = require('tunic').parse;
-var grammer = require('tunic/grammar/javascript');
+var grammar = require('tunic/grammar/css');
 
-var jsDocAst = parse('/** ... */', grammar); // -> ast object
+var cssDocAst = parse('/** ... */', grammar); // -> ast object
+```
+
+Supports ES2015 and [`jsnext:main`][jsnext]:
+
+```js
+import {parse} from 'tunic';
+import * as grammar from 'tunic/grammar/css';
+
+const cssDocAst = parse('/** ... */', grammar); // -> ast object
 ```
 
 ## Test
@@ -88,6 +97,7 @@ Licensed under [MIT](http://shannonmoeller.com/mit.txt)
 
 [doctree]:       https://github.com/togajs/doctree
 [grammars]:      https://github.com/togajs/tunic/tree/master/src/grammars
+[jsnext]:        https://github.com/rollup/rollup/wiki/jsnext:main
 
 [amazon-img]:    https://img.shields.io/badge/amazon-tip_jar-yellow.svg?style=flat-square
 [amazon-url]:    https://www.amazon.com/gp/registry/wishlist/1VQM9ID04YPC5?sort=universal-price
