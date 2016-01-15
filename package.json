@@ -13,6 +13,8 @@
     "docs",
     "doc"
   ],
+  "main": "dist/tunic.js",
+  "jsnext:main": "src/tunic.js",
   "dependencies": {},
   "devDependencies": {
     "ava": "^0.9.1",
