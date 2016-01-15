@@ -17,8 +17,8 @@ const astTypeDocumentation = 'Documentation';
 const astTypeBlock = 'CommentBlock';
 const astTypeTag = 'CommentBlockTag';
 const whitespacePatterns = {
-	/** Matches any line start. */
-	line: /^/gm,
+	/** Matches any line. */
+	line: /^.*$/gm,
 
 	/** Matches empty lines. */
 	emptyLine: /^$/gm,
@@ -26,6 +26,19 @@ const whitespacePatterns = {
 	/** Matches any surrounding whitespace, including newlines. */
 	surrounding: /^\s*[\r\n]+|[\r\n]+\s*$/g
 };
+
+/**
+ * Regular-expression runner and match counter.
+ *
+ * @param {?String} str
+ * @param {RegExp} rx
+ * @return {Number}
+ */
+function countMatches(str, rx) {
+	const matches = String(str).match(rx);
+
+	return matches && matches.length || 0;
+}
 
 /**
  * Creates a new options object based on defaults and overrides.
@@ -125,7 +138,6 @@ export function parseComment(commentBlock = '', codeBlock = '', options) {
 export function parseTag(tagBlock = '', options) {
 	const {namedTags, tagParse} = normalizeOptions(options);
 	const tagBlockSegments = tagBlock.match(tagParse) || [];
-
 	const tag = tagBlockSegments[1] || '';
 	let kind = tagBlockSegments[2] || '';
 	let name = tagBlockSegments[3] || '';
@@ -162,7 +174,7 @@ export function parseTag(tagBlock = '', options) {
 }
 
 /**
- * Strips open- and close-comment markers and unindents the content.
+ * Strips open and close markers and unindents the content of a comment.
  *
  * @method unwrap
  * @param {?String} block
@@ -180,15 +192,15 @@ export function unwrap(commentBlock = '', options) {
 		.replace(whitespacePatterns.surrounding, '');
 
 	// Total line count
-	lines = commentBlock.match(whitespacePatterns.line).length;
+	lines = countMatches(commentBlock, whitespacePatterns.line);
 
 	// Attempt to unindent
 	while (lines > 0) {
 		// Empty line count
-		emptyLines = (commentBlock.match(whitespacePatterns.emptyLine) || []).length;
+		emptyLines = countMatches(commentBlock, whitespacePatterns.emptyLine);
 
 		// Indented line count
-		indentedLines = (commentBlock.match(blockIndent) || []).length;
+		indentedLines = countMatches(commentBlock, blockIndent);
 
 		// Only continue if every line is still indented
 		if (!indentedLines || emptyLines + indentedLines !== lines) {

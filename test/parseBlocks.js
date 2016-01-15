@@ -7,7 +7,7 @@ test('should handle empty arguments', async assert => {
 	assert.same(parseBlocks(), expected);
 });
 
-test('should join alternating blocks', async assert => {
+test('should parse a list of alternating blocks', async assert => {
 	const fixture = [
 		'/** foo */',
 		'var a = 1;',

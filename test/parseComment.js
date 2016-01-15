@@ -12,7 +12,22 @@ test('should handle empty arguments', async assert => {
 	assert.same(parseComment(), expected);
 });
 
-test('should create a DocTree CommentBlock', async assert => {
+test('should parse a simple comment', async assert => {
+	const commentFixture = '/** foo */';
+
+	const codeFixture = 'var a = 1;';
+
+	const expected = {
+		type: 'CommentBlock',
+		description: 'foo',
+		tags: [],
+		trailingCode: 'var a = 1;'
+	};
+
+	assert.same(parseComment(commentFixture, codeFixture), expected);
+});
+
+test('should parse a tagged comment', async assert => {
 	const commentFixture = `
 		/**
 		 * foo

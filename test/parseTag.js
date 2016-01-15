@@ -13,7 +13,7 @@ test('should handle empty arguments', async assert => {
 	assert.same(parseTag(), expected);
 });
 
-test('should create a DocTree CommentBlockTag from a simple tag', async assert => {
+test('should parse a simple tag', async assert => {
 	const fixture = 'foo bar';
 
 	const expected = {
@@ -27,7 +27,21 @@ test('should create a DocTree CommentBlockTag from a simple tag', async assert =
 	assert.same(parseTag(fixture), expected);
 });
 
-test('should create a DocTree CommentBlockTag from a complex tag', async assert => {
+test('should parse a named tag', async assert => {
+	const fixture = 'param foo bar';
+
+	const expected = {
+		type: 'CommentBlockTag',
+		tag: 'param',
+		kind: '',
+		name: 'foo',
+		description: 'bar'
+	};
+
+	assert.same(parseTag(fixture), expected);
+});
+
+test('should parse a complex tag', async assert => {
 	const fixture = 'foo {qux} bar - baz';
 
 	const expected = {

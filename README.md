@@ -29,9 +29,15 @@ var hbDocAst = tunic.parse('{{!--- ... --}}', {
     blockSplit: /(^[\t ]*\{\{!---(?!-)[\s\S]*?\s*--\}\})/m,
     namedTags: ['element', 'attribute']
 });
+```
+
+Or with ES6:
+
+```js
+import {parse} from 'tunic';
 
 // parse perlpod-style comments
-var perlDocAst = tunic.parse('=pod\n ... \n=cut', {
+const perlDocAst = parse('=pod\n ... \n=cut', {
     blockParse: /^=pod\n([\s\S]*?)\n=cut$/m,
     blockSplit: /(^=pod\n[\s\S]*?\n=cut$)/m,
     tagSplit: false
@@ -68,7 +74,7 @@ var grammar = require('tunic/grammars/css');
 var cssDocAst = parse('/** ... */', grammar); // -> ast object
 ```
 
-Supports ES2015 and [`jsnext:main`][jsnext]:
+Or with ES6:
 
 ```js
 import {parse} from 'tunic';
