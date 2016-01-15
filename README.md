@@ -63,7 +63,7 @@ Several pre-defined [grammars][grammars] are available. To use, import the desir
 
 ```js
 var parse = require('tunic').parse;
-var grammar = require('tunic/grammar/css');
+var grammar = require('tunic/grammars/css');
 
 var cssDocAst = parse('/** ... */', grammar); // -> ast object
 ```
@@ -72,7 +72,7 @@ Supports ES2015 and [`jsnext:main`][jsnext]:
 
 ```js
 import {parse} from 'tunic';
-import * as grammar from 'tunic/grammar/css';
+import * as grammar from 'tunic/grammars/css';
 
 const cssDocAst = parse('/** ... */', grammar); // -> ast object
 ```
