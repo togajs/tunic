@@ -1,9 +1,9 @@
 /**
- * # JavaScript Grammar
+ * # CSS Grammar
  *
  * A C-style grammar with custom named tags.
  *
- * @module tunic/grammars/javascript
+ * @module tunic/grammars/css
  */
 
 export {blockIndent, blockSplit, blockParse, tagSplit, tagParse} from './c';
@@ -16,14 +16,9 @@ export {blockIndent, blockSplit, blockParse, tagSplit, tagParse} from './c';
 export const namedTags = [
 	'arg',
 	'argument',
-	'class',
-	'exports',
-	'extends',
-	'imports',
-	'method',
+	'mixin',
 	'module',
+	'object',
 	'param',
-	'parameter',
-	'prop',
-	'property'
+	'parameter'
 ];

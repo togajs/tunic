@@ -3,7 +3,7 @@
  *
  * Parses CoffeeScript-style comments and Javadoc-style tags.
  *
- * @module tunic/grammar/coffeescript
+ * @module tunic/grammars/coffeescript
  */
 
 /**
