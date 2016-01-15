@@ -87,7 +87,7 @@ Standards for this project, including tests, code coverage, and semantics are en
 Licensed under [MIT](http://shannonmoeller.com/mit.txt)
 
 [doctree]:       https://github.com/togajs/doctree
-[grammars]:      https://github.com/togajs/tunic/tree/master/src/grammar
+[grammars]:      https://github.com/togajs/tunic/tree/master/src/grammars
 
 [amazon-img]:    https://img.shields.io/badge/amazon-tip_jar-yellow.svg?style=flat-square
 [amazon-url]:    https://www.amazon.com/gp/registry/wishlist/1VQM9ID04YPC5?sort=universal-price
