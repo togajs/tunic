@@ -1,0 +1,111 @@
+/**
+ * # Descriptions
+ *
+ * Long description that spans multiple
+ * lines and even has markdown type things.
+ *
+ * Like more paragraphs.
+ *
+ * * And
+ * * Lists
+ *
+ *     char code[] = "sample";
+ *
+ * @arg {Type} name Description.
+ * @arg {Type} name Description that is really long
+ *   and wraps to other lines.
+ * @arg {Type} name Description that is really long
+ *   and wraps to other lines.
+ *
+ *   And has line breaks, etc.
+ *
+ * @example
+ *
+ *     int value = 1;
+ *
+ * @tag Foo bar.
+ * @tag
+ */
+
+/**
+ * # Named Tags
+ *
+ * @arg        name  Description here.
+ * @argument   name  Description here.
+ * @const      name  Description here.
+ * @func       name  Description here.
+ * @function   name  Description here.
+ * @param      name  Description here.
+ * @parameter  name  Description here.
+ * @type       name  Description here.
+ *
+ * @arg {Type} name - Description here.
+ * @arg {Type} name Description here.
+ * @arg {Type} - Description here.
+ * @arg name - Description here.
+ * @arg name Description here.
+ * @arg - Description here.
+ * @arg
+ */
+
+/**
+ * # Unnamed Tags
+ *
+ * @tag {Type} name - Description here.
+ * @tag {Type} name Description here.
+ * @tag {Type} - Description here.
+ * @tag name - Description here.
+ * @tag name Description here.
+ * @tag - Description here.
+ * @tag
+ */
+
+/**
+ * # Complex Names
+ *
+ * @arg [name="hello world"] Description here.
+ * @arg [name={}] Description here.
+ * @arg [name] Description here.
+ * @arg name Description here.
+ * @arg name
+ */
+
+/**
+ * # Complex Types
+ *
+ * @tag {Function(String|Object, ...[Number]): Number} Description here.
+ * @tag {Array.<Object.<String,Number>>} Description here.
+ * @tag {String|Object} Description here.
+ * @tag {Type} Description here.
+ * @tag {Type}
+ */
+
+/**
+ * # Non-matching Patterns
+ */
+
+// ignore
+
+/* ignore */
+
+/*! ignore */
+
+//
+// ignore
+//
+
+/*
+ * ignore
+ */
+
+/*!
+ * ignore
+ */
+
+// /** ignore
+#import <stdio.h>
+int main(/** ignore */) {
+	printf("/** ignore */");
+	return 0;
+}
+// ignore */
