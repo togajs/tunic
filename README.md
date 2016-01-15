@@ -65,7 +65,7 @@ Parses a given string and returns the resulting DocTree AST object. Defaults to 
 
 ## Languages
 
-Several pre-defined [grammars][grammars] are available. To use, import the desired grammar and pass it to the Tunic constructor.
+Several pre-defined [grammars][grammars] are available. To use, import the desired grammar and pass it to the parser.
 
 ```js
 var parse = require('tunic').parse;
