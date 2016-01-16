@@ -11,7 +11,7 @@
  * @module tunic
  */
 
-import * as defaultOptions from './grammars/c';
+import * as defaultOptions from './grammars/javascript';
 
 const astTypeDocumentation = 'Documentation';
 const astTypeBlock = 'CommentBlock';
