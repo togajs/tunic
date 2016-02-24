@@ -39,4 +39,12 @@ test('should create a named comment node', async assert => {
 		name: '[baz]',
 		description: 'qux'
 	});
+
+	assert.same(createCommentTagNode('param', undefined, '[baz]', undefined, 'qux', {namedTags: ['foo']}), {
+		type: 'CommentTag',
+		tag: 'param',
+		kind: '',
+		name: '',
+		description: '[baz] qux'
+	});
 });

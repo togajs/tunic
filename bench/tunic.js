@@ -9,8 +9,6 @@ function parse() {
 		 * Long description that spans multiple
 		 * lines and even has markdown type things.
 		 *
-		 * Like more paragraphs.
-		 *
 		 * * And
 		 * * Lists
 		 *
@@ -30,6 +28,8 @@ function parse() {
 		 *
 		 * @tag Foo bar.
 		 * @tag
+		 *
+		 * Like more paragraphs.
 		 */
 
 		/**

@@ -18,10 +18,10 @@ const defaultOptions = {
 	indent: /[\t \*]/,
 
 	// @tag {kind} name - description
-	tag: /[\r\n]?[\t ]*@(\w+)[\t \-]*/,
-	kind: /(?:\{(.*[^\\])?\})?[\t \-]*/,
-	name: /(\[[^\]]*\]\*?|\S*)?[\t ]*/,
-	delimiter: /(-?)[\t ]*/,
+	tag: /[\r\n]?[\t ]*@(\w+)[\t \-]*?/,
+	kind: /(?:\{(.*[^\\])?\})?[\t \-]*?/,
+	name: /(\[[^\]]*\]\*?|\S*)?[\t ]*?/,
+	delimiter: /(-?)[\t ]*?/,
 	description: /(.*(?:[\r\n]+[\t ]+.*)*)/
 };
 
@@ -141,16 +141,7 @@ function unwrapComment(comment, options) {
 	return block;
 }
 
-// API
-
-export default function tunic(defaults) {
-	return {
-		parse: (doc, opts) => createDocumentationNode(doc, {
-			...defaults,
-			...opts
-		})
-	};
-}
+// Parser
 
 function createDocumentationNode(documentation = '', options) {
 	const commentMatcher = compileCommentMatcher(options);
@@ -196,8 +187,8 @@ function createCommentNode(comment = '', line = 0, options) {
 	const tagMatcher = compileTagMatcher(options);
 	const tagNodes = [];
 
-	function aggregateTags(...parts) {
-		tagNodes.push(createCommentTagNode(...parts.slice(1, -1), options));
+	function aggregateTags(match, tag, kind, name, delimiter, description) {
+		tagNodes.push(createCommentTagNode(tag, kind, name, delimiter, description, options));
 
 		return '';
 	}
@@ -222,7 +213,7 @@ function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', de
 
 	if (name && !delimiter && namedTags.indexOf(tag) === -1) {
 		description = [name, description]
-			.filter(x => x && x.trim())
+			.filter(Boolean)
 			.join(' ')
 			.trim();
 
@@ -243,6 +234,14 @@ function createCodeNode(code = '', line = 0) {
 		type: AST_TYPE_CODE,
 		code,
 		line
+	};
+}
+
+// API
+
+export default function tunic(opts) {
+	return {
+		parse: doc => createDocumentationNode(doc, opts)
 	};
 }
 

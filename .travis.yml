@@ -7,7 +7,9 @@ os:
   - linux
   - osx
 before_install:
-  - curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+  - rm -rf ~/.nvm/
+  - git clone --depth 1 https://github.com/creationix/nvm.git ~/.nvm
+  - source ~/.nvm/nvm.sh
   - nvm install $NODE_VERSION
   - nvm use $NODE_VERSION
   - node -v && npm -v
