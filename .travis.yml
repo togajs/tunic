@@ -7,15 +7,14 @@ os:
   - linux
   - osx
 before_install:
-  - echo $TRAVIS_OS_NAME
-  - export PATH=./node_modules/.bin/:$PATH
-  - rm -rf ~/.nvm/ && git clone --depth 1 https://github.com/creationix/nvm.git ~/.nvm
-  - source ~/.nvm/nvm.sh
+  - curl -o- https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
   - nvm install $NODE_VERSION
   - nvm use $NODE_VERSION
-  - node -v
+  - node -v && npm -v
 install:
   - npm install
 script:
-  - npm test
+  - npm run test
+after_script:
+  - npm run coveralls
 sudo: false
