@@ -1,201 +1,242 @@
 'use strict';
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; /**
-                                                                                                                                                                                                                                                                   * # Tunic
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   * A documentation-block parser. Generates a [DocTree][doctree] abstract syntax
-                                                                                                                                                                                                                                                                   * tree based on a customizable regular-expression grammar. Defaults to parsing
-                                                                                                                                                                                                                                                                   * C-style comment blocks, so it supports C, C++, Java, JavaScript, PHP, and
-                                                                                                                                                                                                                                                                   * even CSS right out of the box.
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   * [doctree]: https://github.com/togajs/doctree
-                                                                                                                                                                                                                                                                   *
-                                                                                                                                                                                                                                                                   * @module tunic
-                                                                                                                                                                                                                                                                   */
-
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
-exports.normalizeOptions = normalizeOptions;
-exports.parse = parse;
-exports.parseBlocks = parseBlocks;
-exports.parseComment = parseComment;
-exports.parseTag = parseTag;
-exports.unwrap = unwrap;
 
-var _c = require('./grammars/c');
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var defaultOptions = _interopRequireWildcard(_c);
+var _templateObject = _taggedTemplateLiteral(['\n\t\t(\n\t\t\t^[\t ]*\n\t\t\t', '\n\t\t\t[sS]*?\n\t\t\t', '\n\t\t\t[\r\n]*\n\t\t)\n\t'], ['\n\t\t(\n\t\t\t^[\\t ]*\n\t\t\t', '\n\t\t\t[\\s\\S]*?\n\t\t\t', '\n\t\t\t[\\r\\n]*\n\t\t)\n\t']),
+    _templateObject2 = _taggedTemplateLiteral(['\n\t\t^[\t ]*\n\t\t', '\n\t\ts*?\n\t\t[\r\n]*\n\t\t(\n\t\t\t[sS]*?\n\t\t)\n\t\t[\r\n]*\n\t\ts*?\n\t\t', '\n\t\t[\r\n]*\n\t'], ['\n\t\t^[\\t ]*\n\t\t', '\n\t\t\\s*?\n\t\t[\\r\\n]*\n\t\t(\n\t\t\t[\\s\\S]*?\n\t\t)\n\t\t[\\r\\n]*\n\t\t\\s*?\n\t\t', '\n\t\t[\\r\\n]*\n\t']),
+    _templateObject3 = _taggedTemplateLiteral(['\n\t\t^', '\n\t'], ['\n\t\t^', '\n\t']),
+    _templateObject4 = _taggedTemplateLiteral(['\n\t\t', '\n\t\t', '\n\t\t', '\n\t\t', '\n\t\t', '\n\t'], ['\n\t\t', '\n\t\t', '\n\t\t', '\n\t\t', '\n\t\t', '\n\t']);
 
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+exports.default = tunic;
+
+var _regx = require('regx');
+
+var _regx2 = _interopRequireDefault(_regx);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
-var astTypeDocumentation = 'Documentation';
-var astTypeBlock = 'CommentBlock';
-var astTypeTag = 'CommentBlockTag';
-var whitespacePatterns = {
-	/** Matches any line start. */
-	line: /^/gm,
+function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defineProperties(strings, { raw: { value: Object.freeze(raw) } })); }
 
-	/** Matches empty lines. */
-	emptyLine: /^$/gm,
+var AST_TYPE_DOCUMENTATION = 'Documentation';
+var AST_TYPE_BLOCK = 'Block';
+var AST_TYPE_COMMENT = 'Comment';
+var AST_TYPE_COMMENT_TAG = 'CommentTag';
+var AST_TYPE_CODE = 'Code';
 
-	/** Matches any surrounding whitespace, including newlines. */
-	surrounding: /^\s*[\r\n]+|[\r\n]+\s*$/g
+var RX_LINES = /^/mg;
+var RX_LINES_EMPTY = /^$/mg;
+var RX_LINES_NEW = /\r?\n/g;
+var RX_BRACES_ESCAPED = /\\([\{\}])/g;
+
+var defaultOptions = {
+	// slash star
+	open: /^[\t ]*\/\*\*/,
+	close: /\*\//,
+	indent: /[\t \*]/,
+
+	// @tag {kind} name - description
+	tag: /[\r\n]?[\t ]*@(\w+)[\t \-]*/,
+	kind: /(?:\{(.*[^\\])?\})?[\t \-]*/,
+	name: /(\[[^\]]*\]\*?|\S*)?[\t ]*/,
+	delimiter: /(-?)[\t ]*/,
+	description: /(.*(?:[\r\n]+[\t ]+.*)*)/
 };
 
-/**
- * Creates a new options object based on defaults and overrides.
- *
- * @method normalizeOptions
- * @param {?Object} options - Parsing options.
- * @return {Object} Normalizes options.
- */
-function normalizeOptions(options) {
-	return _extends({}, defaultOptions, options);
+var defaultNamedTags = ['arg', 'argument', 'class', 'exports', 'extends', 'imports', 'method', 'module', 'param', 'parameter', 'prop', 'property'];
+
+// Utilities
+
+function countMatches(str, rx) {
+	return (String(str).match(rx) || []).length;
 }
 
-/**
- * Splits a string of code into blocks and generates the root AST node.
- *
- * @method parse
- * @param {String} code - Code to parse.
- * @param {?Object} options - Parsing options.
- * @return {Object} DocTree AST.
- */
-function parse() {
-	var code = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+function memoize(fn) {
+	var cache = new WeakMap();
+	var nullKey = {};
+
+	return function (obj) {
+		var key = obj || nullKey;
+
+		if (cache.has(key)) {
+			return cache.get(key);
+		}
+
+		var value = fn(obj);
+
+		cache.set(key, value);
+
+		return value;
+	};
+}
+
+var compileCommentMatcher = memoize(function (options) {
+	options = _extends({}, defaultOptions, options);
+
+	return (0, _regx2.default)('m')(_templateObject, options.open, options.close);
+});
+
+var compileCommentContentMatcher = memoize(function (options) {
+	options = _extends({}, defaultOptions, options);
+
+	return (0, _regx2.default)('m')(_templateObject2, options.open, options.close);
+});
+
+var compileIndentMatcher = memoize(function (options) {
+	options = _extends({}, defaultOptions, options);
+
+	return (0, _regx2.default)('gm')(_templateObject3, options.indent);
+});
+
+var compileTagMatcher = memoize(function (options) {
+	options = _extends({}, defaultOptions, options);
+
+	return (0, _regx2.default)('gm')(_templateObject4, options.tag, options.kind, options.name, options.delimiter, options.description);
+});
+
+function unwrapComment(comment, options) {
+	var commentContentMatcher = compileCommentContentMatcher(options);
+	var indentMatcher = compileIndentMatcher(options);
+	var block = comment.replace(commentContentMatcher, '$1');
+
+	while (block) {
+		var lineCount = countMatches(block, RX_LINES);
+		var emptyLineCount = countMatches(block, RX_LINES_EMPTY);
+		var indentedLines = block.match(indentMatcher);
+
+		if (!indentedLines || emptyLineCount + indentedLines.length !== lineCount) {
+			break;
+		}
+
+		if (!indentedLines.reduce(function (a, b) {
+			return a === b ? a : false;
+		})) {
+			break;
+		}
+
+		block = block.replace(indentMatcher, '');
+	}
+
+	return block;
+}
+
+// API
+
+function tunic(defaults) {
+	return {
+		parse: function parse(doc, opts) {
+			return createDocumentationNode(doc, _extends({}, defaults, opts));
+		}
+	};
+}
+
+function createDocumentationNode() {
+	var documentation = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
 	var options = arguments[1];
 
-	var _normalizeOptions = normalizeOptions(options);
+	var commentMatcher = compileCommentMatcher(options);
 
-	var blockSplit = _normalizeOptions.blockSplit;
+	var _documentation$split = documentation.split(commentMatcher);
 
-	var _String$split = String(code).split(blockSplit);
+	var _documentation$split2 = _toArray(_documentation$split);
 
-	var _String$split2 = _toArray(_String$split);
+	var firstBlock = _documentation$split2[0];
 
-	var firstBlock = _String$split2[0];
+	var blocks = _documentation$split2.slice(1);
 
-	var blocks = _String$split2.slice(1);
+	// always lead with a comment
 
-	/**
-  * The blocks array should always start with a code block. If that block is
-  * empty, we can skip it. Otherwise we need an empty comment block to own
-  * the code block as trailing code.
-  */
 
-	if (firstBlock && firstBlock.trim()) {
+	if (firstBlock.trim()) {
 		blocks.unshift('', firstBlock);
 	}
 
-	/**
-  * The blocks array is guaranteed to start with a comment now, so we may
-  * proceed with parsing and generate the root DocTree AST node.
-  */
-	return {
-		type: astTypeDocumentation,
-		blocks: parseBlocks(blocks, options)
-	};
-}
-
-/**
- * Accepts an alternating list of comment blocks and code blocks, pairs them
- * together, and creates a list of DocTree CommentBlock nodes.
-
- * @method parseBlocks
- * @param {?Array.<String>} blocks
- * @param {?Object} options - Parsing options.
- * @return {Array}
- */
-function parseBlocks() {
-	var blocks = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
-	var options = arguments[1];
-
-	var commentNodes = [];
-	var length = blocks.length;
+	var blockNodes = [];
+	var blockCount = blocks.length;
 	var i = 0;
+	var line = 1;
 
-	for (; i < length; i += 2) {
-		commentNodes.push(parseComment(blocks[i], blocks[i + 1], options));
+	while (i < blockCount) {
+		var comment = blocks[i++];
+		var code = blocks[i++];
+
+		blockNodes.push(createBlockNode(comment, code, line, options));
+
+		line += countMatches(comment + code, RX_LINES_NEW);
 	}
 
-	return commentNodes;
-}
-
-/**
- * Splits a comment block by tags and generates a Doctree CommentBlock AST node.
- *
- * @method parseComment
- * @param {?String} commentBlock
- * @param {?String} codeBlock
- * @param {?Object} options - Parsing options.
- * @return {Object}
- */
-function parseComment() {
-	var commentBlock = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-	var codeBlock = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
-	var options = arguments[2];
-
-	var _normalizeOptions2 = normalizeOptions(options);
-
-	var tagSplit = _normalizeOptions2.tagSplit;
-
-	var _unwrap$split = unwrap(commentBlock).split(tagSplit);
-
-	var _unwrap$split2 = _toArray(_unwrap$split);
-
-	var description = _unwrap$split2[0];
-
-	var tags = _unwrap$split2.slice(1);
-
 	return {
-		type: astTypeBlock,
-		description: description,
-		trailingCode: codeBlock.replace(whitespacePatterns.surrounding, ''),
-		tags: tags.map(function (tag) {
-			return parseTag(tag, options);
-		})
+		type: AST_TYPE_DOCUMENTATION,
+		blocks: blockNodes
 	};
 }
 
-/**
- * Splits a tag into its various bits and generates a tag AST node.
- *
- * @method parseTag
- * @param {?String} tagBlock
- * @return {Object}
- */
-function parseTag() {
-	var tagBlock = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-	var options = arguments[1];
+function createBlockNode() {
+	var comment = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+	var code = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+	var line = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
+	var options = arguments[3];
 
-	var _normalizeOptions3 = normalizeOptions(options);
+	var commentLine = line;
+	var codeLine = line + countMatches(comment, RX_LINES_NEW);
 
-	var namedTags = _normalizeOptions3.namedTags;
-	var tagParse = _normalizeOptions3.tagParse;
+	return {
+		type: AST_TYPE_BLOCK,
+		comment: createCommentNode(comment, commentLine, options),
+		code: createCodeNode(code, codeLine, options)
+	};
+}
 
-	var tagBlockSegments = tagBlock.match(tagParse) || [];
+function createCommentNode() {
+	var comment = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+	var line = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+	var options = arguments[2];
 
-	var tag = tagBlockSegments[1] || '';
-	var kind = tagBlockSegments[2] || '';
-	var name = tagBlockSegments[3] || '';
-	var delimiter = tagBlockSegments[4] || '';
-	var description = tagBlockSegments[5] || '';
+	var tagMatcher = compileTagMatcher(options);
+	var tagNodes = [];
 
-	/**
-  * The kind may contain escaped curly braces, so we should clean up the
-  * leading back-slashes.
-  */
-	kind = kind.replace(/\\([\{\}])/g, '$1');
+	function aggregateTags() {
+		for (var _len = arguments.length, parts = Array(_len), _key = 0; _key < _len; _key++) {
+			parts[_key] = arguments[_key];
+		}
 
-	/**
-  * The regular expression needs help to know if a tag is supposed to
-  * have a name segment. In some cases the name is really just the first
-  * word of the description, so we merge them back together.
-  */
-	if (name && !delimiter && !namedTags.includes(tag)) {
+		tagNodes.push(createCommentTagNode.apply(undefined, _toConsumableArray(parts.slice(1, -1)).concat([options])));
+
+		return '';
+	}
+
+	comment = unwrapComment(comment, options).replace(tagMatcher, aggregateTags);
+
+	return {
+		type: AST_TYPE_COMMENT,
+		description: comment,
+		tags: tagNodes,
+		line: line
+	};
+}
+
+function createCommentTagNode() {
+	var tag = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+	var kind = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
+	var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
+	var delimiter = arguments.length <= 3 || arguments[3] === undefined ? '' : arguments[3];
+	var description = arguments.length <= 4 || arguments[4] === undefined ? '' : arguments[4];
+	var options = arguments.length <= 5 || arguments[5] === undefined ? {} : arguments[5];
+
+	var namedTags = options.namedTags || defaultNamedTags;
+
+	if (kind) {
+		kind = kind.replace(RX_BRACES_ESCAPED, '$1');
+	}
+
+	if (name && !delimiter && namedTags.indexOf(tag) === -1) {
 		description = [name, description].filter(function (x) {
 			return x && x.trim();
 		}).join(' ').trim();
@@ -204,7 +245,7 @@ function parseTag() {
 	}
 
 	return {
-		type: astTypeTag,
+		type: AST_TYPE_COMMENT_TAG,
 		tag: tag,
 		kind: kind,
 		name: name,
@@ -212,48 +253,22 @@ function parseTag() {
 	};
 }
 
-/**
- * Strips open- and close-comment markers and unindents the content.
- *
- * @method unwrap
- * @param {?String} block
- * @return {Object}
- */
-function unwrap() {
-	var commentBlock = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
-	var options = arguments[1];
+function createCodeNode() {
+	var code = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
+	var line = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
 
-	var _normalizeOptions4 = normalizeOptions(options);
-
-	var blockIndent = _normalizeOptions4.blockIndent;
-	var blockParse = _normalizeOptions4.blockParse;
-
-	var lines = undefined;
-	var emptyLines = undefined;
-	var indentedLines = undefined;
-
-	// Trim comment wrappers
-	commentBlock = commentBlock.replace(blockParse, '$1').replace(whitespacePatterns.surrounding, '');
-
-	// Total line count
-	lines = commentBlock.match(whitespacePatterns.line).length;
-
-	// Attempt to unindent
-	while (lines > 0) {
-		// Empty line count
-		emptyLines = (commentBlock.match(whitespacePatterns.emptyLine) || []).length;
-
-		// Indented line count
-		indentedLines = (commentBlock.match(blockIndent) || []).length;
-
-		// Only continue if every line is still indented
-		if (!indentedLines || emptyLines + indentedLines !== lines) {
-			break;
-		}
-
-		// Strip leading indent characters
-		commentBlock = commentBlock.replace(blockIndent, '');
-	}
-
-	return commentBlock;
+	return {
+		type: AST_TYPE_CODE,
+		code: code,
+		line: line
+	};
 }
+
+Object.assign(tunic, {
+	parse: createDocumentationNode,
+	createDocumentationNode: createDocumentationNode,
+	createBlockNode: createBlockNode,
+	createCommentNode: createCommentNode,
+	createCommentTagNode: createCommentTagNode,
+	createCodeNode: createCodeNode
+});

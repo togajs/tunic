@@ -1,8 +1,22 @@
+language: c
+env:
+  - NODE_VERSION="5"
+  - NODE_VERSION="4"
+  - NODE_VERSION="0.12"
+  - NODE_VERSION="0.10"
+os:
+  - linux
+  - osx
+before_install:
+  - echo $TRAVIS_OS_NAME
+  - export PATH=./node_modules/.bin/:$PATH
+  - rm -rf ~/.nvm/ && git clone --depth 1 https://github.com/togajs/tunic.git ~/.nvm
+  - source ~/.nvm/nvm.sh
+  - nvm install $NODE_VERSION
+  - nvm use $NODE_VERSION
+  - node -v
+install:
+  - npm install
+script:
+  - npm run ci-test
 sudo: false
-language: node_js
-node_js:
-  - 'stable'
-  - '0.12'
-  - '0.10'
-after_script:
-  - npm run coverage

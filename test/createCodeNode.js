@@ -1,7 +1,9 @@
-import {createCodeNode} from '../src2/tunic';
+import tunic from '../src/tunic';
 import test from 'ava';
 
-test('should create a blank comment node', async assert => {
+const {createCodeNode} = tunic;
+
+test('should create an empty comment node', async assert => {
 	assert.same(createCodeNode(), {
 		type: 'Code',
 		code: '',

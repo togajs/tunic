@@ -1,15 +1,21 @@
-import {parse} from '../src2/tunic';
+import tunic from '../src/tunic';
 import test from 'ava';
 
-test('should create a blank documentation node', async assert => {
-	assert.same(parse(), {
+const {createDocumentationNode} = tunic;
+
+test('should be aliased as `parse`', async assert => {
+	assert.is(tunic.parse, createDocumentationNode);
+});
+
+test('should create an empty documentation node', async assert => {
+	assert.same(createDocumentationNode(), {
 		type: 'Documentation',
 		blocks: []
 	});
 });
 
 test('should create a plain documentation node', async assert => {
-	assert.same(parse('var a = 1;'), {
+	assert.same(createDocumentationNode('var a = 1;'), {
 		type: 'Documentation',
 		blocks: [{
 			type: 'Block',
@@ -28,8 +34,8 @@ test('should create a plain documentation node', async assert => {
 	});
 });
 
-test('should create a commented documentation node', async assert => {
-	assert.same(parse('/** foo */\nvar a = 1;'), {
+test('should create a plain documentation node', async assert => {
+	assert.same(createDocumentationNode('/** foo */\nvar a = 1;'), {
 		type: 'Documentation',
 		blocks: [{
 			type: 'Block',

@@ -4,11 +4,11 @@
   "description": "A documentation-block parser.",
   "main": "dist/tunic.js",
   "scripts": {
+    "bench": "babel-node bench/tunic",
     "build": "babel src --out-dir dist",
     "coverage": "nyc report -r text-lcov | coveralls",
     "test": "xo && nyc ava --verbose",
-    "watch": "chokidar '{src,test}/**/*.js' -c 'npm test'",
-    "watch2": "chokidar '{src,test}2/**/*.js' -c 'npm test test2'"
+    "watch": "chokidar '{src,test}/**/*.js' -c 'npm test'"
   },
   "repository": {
     "type": "git",
@@ -36,17 +36,21 @@
     "babel-cli": "^6.5.1",
     "babel-polyfill": "^6.5.0",
     "babel-preset-es2015": "^6.5.0",
-    "babel-preset-stage-0": "^6.5.0",
+    "babel-preset-stage-2": "^6.5.0",
     "babel-register": "^6.5.2",
+    "benchmark": "^2.1.0",
     "chokidar-cli": "^1.2.0",
     "coveralls": "^2.11.6",
     "nyc": "^5.6.0",
     "xo": "^0.12.1"
   },
+  "engines": {
+    "node": ">= 0.12"
+  },
   "babel": {
     "presets": [
       "es2015",
-      "stage-0"
+      "stage-2"
     ]
   },
   "nyc": {

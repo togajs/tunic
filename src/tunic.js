@@ -1,161 +1,226 @@
-/**
- * # Tunic
- *
- * A documentation-block parser. Generates a [DocTree][doctree] abstract syntax
- * tree based on a customizable regular-expression grammar. Defaults to parsing
- * C-style comment blocks, so it supports C, C++, Java, JavaScript, PHP, and
- * even CSS right out of the box.
- *
- * [doctree]: https://github.com/togajs/doctree
- *
- * @module tunic
- */
+import rx from 'regx';
 
-import * as defaultOptions from './grammars/javascript';
+const AST_TYPE_DOCUMENTATION = 'Documentation';
+const AST_TYPE_BLOCK = 'Block';
+const AST_TYPE_COMMENT = 'Comment';
+const AST_TYPE_COMMENT_TAG = 'CommentTag';
+const AST_TYPE_CODE = 'Code';
 
-const astTypeDocumentation = 'Documentation';
-const astTypeBlock = 'CommentBlock';
-const astTypeTag = 'CommentBlockTag';
-const whitespacePatterns = {
-	/** Matches any line. */
-	line: /^.*$/gm,
+const RX_LINES = /^/mg;
+const RX_LINES_EMPTY = /^$/mg;
+const RX_LINES_NEW = /\r?\n/g;
+const RX_BRACES_ESCAPED = /\\([\{\}])/g;
 
-	/** Matches empty lines. */
-	emptyLine: /^$/gm,
+const defaultOptions = {
+	// slash star
+	open: /^[\t ]*\/\*\*/,
+	close: /\*\//,
+	indent: /[\t \*]/,
 
-	/** Matches any surrounding whitespace, including newlines. */
-	surrounding: /^\s*[\r\n]+|[\r\n]+\s*$/g
+	// @tag {kind} name - description
+	tag: /[\r\n]?[\t ]*@(\w+)[\t \-]*/,
+	kind: /(?:\{(.*[^\\])?\})?[\t \-]*/,
+	name: /(\[[^\]]*\]\*?|\S*)?[\t ]*/,
+	delimiter: /(-?)[\t ]*/,
+	description: /(.*(?:[\r\n]+[\t ]+.*)*)/
 };
 
-/**
- * Regular-expression runner and match counter.
- *
- * @param {?String} str
- * @param {RegExp} rx
- * @return {Number}
- */
+const defaultNamedTags = [
+	'arg',
+	'argument',
+	'class',
+	'exports',
+	'extends',
+	'imports',
+	'method',
+	'module',
+	'param',
+	'parameter',
+	'prop',
+	'property'
+];
+
+// Utilities
+
 function countMatches(str, rx) {
-	const matches = String(str).match(rx);
-
-	return matches && matches.length || 0;
+	return (String(str).match(rx) || []).length;
 }
 
-/**
- * Creates a new options object based on defaults and overrides.
- *
- * @method normalizeOptions
- * @param {?Object} options - Parsing options.
- * @return {Object} Normalizes options.
- */
-export function normalizeOptions(options) {
-	return {...defaultOptions, ...options};
+function memoize(fn) {
+	const cache = new WeakMap();
+	const nullKey = {};
+
+	return obj => {
+		const key = obj || nullKey;
+
+		if (cache.has(key)) {
+			return cache.get(key);
+		}
+
+		const value = fn(obj);
+
+		cache.set(key, value);
+
+		return value;
+	};
 }
 
-/**
- * Splits a string of code into blocks and generates the root AST node.
- *
- * @method parse
- * @param {String} code - Code to parse.
- * @param {?Object} options - Parsing options.
- * @return {Object} DocTree AST.
- */
-export function parse(code = '', options) {
-	const {blockSplit} = normalizeOptions(options);
-	const [firstBlock, ...blocks] = String(code).split(blockSplit);
+const compileCommentMatcher = memoize(options => {
+	options = {...defaultOptions, ...options};
 
-	/**
-	 * The blocks array should always start with a code block. If that block is
-	 * empty, we can skip it. Otherwise we need an empty comment block to own
-	 * the code block as trailing code.
-	 */
-	if (firstBlock && firstBlock.trim()) {
+	return rx('m')`
+		(
+			^[\t ]*
+			${options.open}
+			[\s\S]*?
+			${options.close}
+			[\r\n]*
+		)
+	`;
+});
+
+const compileCommentContentMatcher = memoize(options => {
+	options = {...defaultOptions, ...options};
+
+	return rx('m')`
+		^[\t ]*
+		${options.open}
+		\s*?
+		[\r\n]*
+		(
+			[\s\S]*?
+		)
+		[\r\n]*
+		\s*?
+		${options.close}
+		[\r\n]*
+	`;
+});
+
+const compileIndentMatcher = memoize(options => {
+	options = {...defaultOptions, ...options};
+
+	return rx('gm')`
+		^${options.indent}
+	`;
+});
+
+const compileTagMatcher = memoize(options => {
+	options = {...defaultOptions, ...options};
+
+	return rx('gm')`
+		${options.tag}
+		${options.kind}
+		${options.name}
+		${options.delimiter}
+		${options.description}
+	`;
+});
+
+function unwrapComment(comment, options) {
+	const commentContentMatcher = compileCommentContentMatcher(options);
+	const indentMatcher = compileIndentMatcher(options);
+	let block = comment.replace(commentContentMatcher, '$1');
+
+	while (block) {
+		const lineCount = countMatches(block, RX_LINES);
+		const emptyLineCount = countMatches(block, RX_LINES_EMPTY);
+		const indentedLines = block.match(indentMatcher);
+
+		if (!indentedLines || emptyLineCount + indentedLines.length !== lineCount) {
+			break;
+		}
+
+		if (!indentedLines.reduce((a, b) => a === b ? a : false)) {
+			break;
+		}
+
+		block = block.replace(indentMatcher, '');
+	}
+
+	return block;
+}
+
+// API
+
+export default function tunic(defaults) {
+	return {
+		parse: (doc, opts) => createDocumentationNode(doc, {
+			...defaults,
+			...opts
+		})
+	};
+}
+
+function createDocumentationNode(documentation = '', options) {
+	const commentMatcher = compileCommentMatcher(options);
+	const [firstBlock, ...blocks] = documentation.split(commentMatcher);
+
+	// always lead with a comment
+	if (firstBlock.trim()) {
 		blocks.unshift('', firstBlock);
 	}
 
-	/**
-	 * The blocks array is guaranteed to start with a comment now, so we may
-	 * proceed with parsing and generate the root DocTree AST node.
-	 */
-	return {
-		type: astTypeDocumentation,
-		blocks: parseBlocks(blocks, options)
-	};
-}
-
-/**
- * Accepts an alternating list of comment blocks and code blocks, pairs them
- * together, and creates a list of DocTree CommentBlock nodes.
-
- * @method parseBlocks
- * @param {?Array.<String>} blocks
- * @param {?Object} options - Parsing options.
- * @return {Array}
- */
-export function parseBlocks(blocks = [], options) {
-	const commentNodes = [];
-	const length = blocks.length;
+	const blockNodes = [];
+	const blockCount = blocks.length;
 	let i = 0;
+	let line = 1;
 
-	for (; i < length; i += 2) {
-		commentNodes.push(parseComment(
-			blocks[i],
-			blocks[i + 1],
-			options
-		));
+	while (i < blockCount) {
+		const comment = blocks[i++];
+		const code = blocks[i++];
+
+		blockNodes.push(createBlockNode(comment, code, line, options));
+
+		line += countMatches(comment + code, RX_LINES_NEW);
 	}
 
-	return commentNodes;
-}
-
-/**
- * Splits a comment block by tags and generates a Doctree CommentBlock AST node.
- *
- * @method parseComment
- * @param {?String} commentBlock
- * @param {?String} codeBlock
- * @param {?Object} options - Parsing options.
- * @return {Object}
- */
-export function parseComment(commentBlock = '', codeBlock = '', options) {
-	const {tagSplit} = normalizeOptions(options);
-	const [description, ...tags] = unwrap(commentBlock).split(tagSplit);
-
 	return {
-		type: astTypeBlock,
-		description,
-		trailingCode: codeBlock.replace(whitespacePatterns.surrounding, ''),
-		tags: tags.map(tag => parseTag(tag, options))
+		type: AST_TYPE_DOCUMENTATION,
+		blocks: blockNodes
 	};
 }
 
-/**
- * Splits a tag into its various bits and generates a tag AST node.
- *
- * @method parseTag
- * @param {?String} tagBlock
- * @return {Object}
- */
-export function parseTag(tagBlock = '', options) {
-	const {namedTags, tagParse} = normalizeOptions(options);
-	const tagBlockSegments = tagBlock.match(tagParse) || [];
-	const tag = tagBlockSegments[1] || '';
-	let kind = tagBlockSegments[2] || '';
-	let name = tagBlockSegments[3] || '';
-	const delimiter = tagBlockSegments[4] || '';
-	let description = tagBlockSegments[5] || '';
+function createBlockNode(comment = '', code = '', line = 0, options) {
+	const commentLine = line;
+	const codeLine = line + countMatches(comment, RX_LINES_NEW);
 
-	/**
-	 * The kind may contain escaped curly braces, so we should clean up the
-	 * leading back-slashes.
-	 */
-	kind = kind.replace(/\\([\{\}])/g, '$1');
+	return {
+		type: AST_TYPE_BLOCK,
+		comment: createCommentNode(comment, commentLine, options),
+		code: createCodeNode(code, codeLine, options)
+	};
+}
 
-	/**
-	 * The regular expression needs help to know if a tag is supposed to
-	 * have a name segment. In some cases the name is really just the first
-	 * word of the description, so we merge them back together.
-	 */
-	if (name && !delimiter && !namedTags.includes(tag)) {
+function createCommentNode(comment = '', line = 0, options) {
+	const tagMatcher = compileTagMatcher(options);
+	const tagNodes = [];
+
+	function aggregateTags(...parts) {
+		tagNodes.push(createCommentTagNode(...parts.slice(1, -1), options));
+
+		return '';
+	}
+
+	comment = unwrapComment(comment, options)
+		.replace(tagMatcher, aggregateTags);
+
+	return {
+		type: AST_TYPE_COMMENT,
+		description: comment,
+		tags: tagNodes,
+		line
+	};
+}
+
+function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', description = '', options = {}) {
+	const namedTags = options.namedTags || defaultNamedTags;
+
+	if (kind) {
+		kind = kind.replace(RX_BRACES_ESCAPED, '$1');
+	}
+
+	if (name && !delimiter && namedTags.indexOf(tag) === -1) {
 		description = [name, description]
 			.filter(x => x && x.trim())
 			.join(' ')
@@ -165,7 +230,7 @@ export function parseTag(tagBlock = '', options) {
 	}
 
 	return {
-		type: astTypeTag,
+		type: AST_TYPE_COMMENT_TAG,
 		tag,
 		kind,
 		name,
@@ -173,43 +238,19 @@ export function parseTag(tagBlock = '', options) {
 	};
 }
 
-/**
- * Strips open and close markers and unindents the content of a comment.
- *
- * @method unwrap
- * @param {?String} block
- * @return {Object}
- */
-export function unwrap(commentBlock = '', options) {
-	const {blockIndent, blockParse} = normalizeOptions(options);
-	let lines;
-	let emptyLines;
-	let indentedLines;
-
-	// Trim comment wrappers
-	commentBlock = commentBlock
-		.replace(blockParse, '$1')
-		.replace(whitespacePatterns.surrounding, '');
-
-	// Total line count
-	lines = countMatches(commentBlock, whitespacePatterns.line);
-
-	// Attempt to unindent
-	while (lines > 0) {
-		// Empty line count
-		emptyLines = countMatches(commentBlock, whitespacePatterns.emptyLine);
-
-		// Indented line count
-		indentedLines = countMatches(commentBlock, blockIndent);
-
-		// Only continue if every line is still indented
-		if (!indentedLines || emptyLines + indentedLines !== lines) {
-			break;
-		}
-
-		// Strip leading indent characters
-		commentBlock = commentBlock.replace(blockIndent, '');
-	}
-
-	return commentBlock;
+function createCodeNode(code = '', line = 0) {
+	return {
+		type: AST_TYPE_CODE,
+		code,
+		line
+	};
 }
+
+Object.assign(tunic, {
+	parse: createDocumentationNode,
+	createDocumentationNode,
+	createBlockNode,
+	createCommentNode,
+	createCommentTagNode,
+	createCodeNode
+});
