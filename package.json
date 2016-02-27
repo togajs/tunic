@@ -6,7 +6,8 @@
   "scripts": {
     "bench": "babel-node bench/tunic",
     "build": "babel src --out-dir dist",
-    "coverage": "nyc report -r text-lcov | coveralls",
+    "cover": "nyc report -r html",
+    "coveralls": "nyc report -r text-lcov | coveralls",
     "test": "xo && nyc ava --verbose",
     "watch": "chokidar '{src,test}/**/*.js' -c 'npm test'"
   },

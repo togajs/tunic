@@ -1,3 +1,4 @@
+sudo: false
 language: c
 env:
   - NODE_VERSION="5"
@@ -15,7 +16,8 @@ before_install:
 install:
   - npm install
 script:
-  - npm run test
+  - node -v
+  - npm -v
+  - npm test
 after_script:
   - npm run coveralls
-sudo: false
