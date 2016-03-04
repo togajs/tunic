@@ -1,29 +1,12 @@
 import rx from 'regx';
+import {slashStarStar} from './commentStyles';
+import {atCurlyDash} from './tagStyles';
 
 const AST_TYPE_DOCUMENTATION = 'Documentation';
 const AST_TYPE_BLOCK = 'Block';
 const AST_TYPE_COMMENT = 'Comment';
 const AST_TYPE_COMMENT_TAG = 'CommentTag';
 const AST_TYPE_CODE = 'Code';
-
-const RX_LINES = /^/mg;
-const RX_LINES_EMPTY = /^$/mg;
-const RX_LINES_NEW = /\r?\n/g;
-const RX_BRACES_ESCAPED = /\\([\{\}])/g;
-
-const defaultOptions = {
-	// slash star
-	open: /^[\t ]*\/\*\*/,
-	close: /\*\//,
-	indent: /[\t \*]/,
-
-	// @tag {kind} name - description
-	tag: /[\r\n]?[\t ]*@(\w+)[\t \-]*?/,
-	kind: /(?:\{(.*[^\\])?\})?[\t \-]*?/,
-	name: /(\[[^\]]*\]\*?|\S*)?[\t ]*?/,
-	delimiter: /(-?)[\t ]*?/,
-	description: /(.*(?:[\r\n]+[\t ]+.*)*)/
-};
 
 const defaultNamedTags = [
 	'arg',
@@ -41,10 +24,6 @@ const defaultNamedTags = [
 ];
 
 // Utilities
-
-function countMatches(str, rx) {
-	return (String(str).match(rx) || []).length;
-}
 
 function memoize(fn) {
 	const cache = new WeakMap();
@@ -66,47 +45,35 @@ function memoize(fn) {
 }
 
 const compileCommentMatcher = memoize(options => {
-	options = {...defaultOptions, ...options};
+	options = options || {};
+	options = {...slashStarStar, ...options.commentStyle};
 
 	return rx('m')`
-		(
-			^[\t ]*
-			${options.open}
-			[\s\S]*?
-			${options.close}
-			[\r\n]*
-		)
-	`;
-});
-
-const compileCommentContentMatcher = memoize(options => {
-	options = {...defaultOptions, ...options};
-
-	return rx('m')`
-		^[\t ]*
 		${options.open}
 		\s*?
-		[\r\n]*
+		\n?
 		(
 			[\s\S]*?
 		)
-		[\r\n]*
+		\n?
 		\s*?
 		${options.close}
-		[\r\n]*
 	`;
 });
 
 const compileIndentMatcher = memoize(options => {
-	options = {...defaultOptions, ...options};
+	options = options || {};
+	options = {...slashStarStar, ...options.commentStyle};
 
-	return rx('gm')`
-		^${options.indent}
+	return rx('m')`
+		^
+		${options.indent}
 	`;
 });
 
 const compileTagMatcher = memoize(options => {
-	options = {...defaultOptions, ...options};
+	options = options || {};
+	options = {...atCurlyDash, ...options.tagStyle};
 
 	return rx('gm')`
 		${options.tag}
@@ -117,35 +84,32 @@ const compileTagMatcher = memoize(options => {
 	`;
 });
 
-function unwrapComment(comment, options) {
-	const commentContentMatcher = compileCommentContentMatcher(options);
-	const indentMatcher = compileIndentMatcher(options);
-	let block = comment.replace(commentContentMatcher, '$1');
-
-	while (block) {
-		const lineCount = countMatches(block, RX_LINES);
-		const emptyLineCount = countMatches(block, RX_LINES_EMPTY);
-		const indentedLines = block.match(indentMatcher);
-
-		if (!indentedLines || emptyLineCount + indentedLines.length !== lineCount) {
-			break;
-		}
-
-		if (!indentedLines.reduce((a, b) => a === b ? a : false)) {
-			break;
-		}
-
-		block = block.replace(indentMatcher, '');
+function unindentComment(comment, options) {
+	if (!comment) {
+		return comment;
 	}
 
-	return block;
+	const indentMatcher = compileIndentMatcher(options);
+	const firstIndent = comment.match(indentMatcher);
+	const indentLength = firstIndent && firstIndent[0].length;
+
+	if (!indentLength) {
+		return comment;
+	}
+
+	return comment
+		.split('\n')
+		.map(x => x.slice(indentLength))
+		.join('\n');
 }
 
 // Parser
 
 function createDocumentationNode(documentation = '', options) {
 	const commentMatcher = compileCommentMatcher(options);
-	const [firstBlock, ...blocks] = documentation.split(commentMatcher);
+	const [firstBlock, ...blocks] = documentation
+		.replace(/\r\n/g, '\n')
+		.split(commentMatcher);
 
 	// always lead with a comment
 	if (firstBlock.trim()) {
@@ -155,15 +119,12 @@ function createDocumentationNode(documentation = '', options) {
 	const blockNodes = [];
 	const blockCount = blocks.length;
 	let i = 0;
-	let line = 1;
 
 	while (i < blockCount) {
 		const comment = blocks[i++];
 		const code = blocks[i++];
 
-		blockNodes.push(createBlockNode(comment, code, line, options));
-
-		line += countMatches(comment + code, RX_LINES_NEW);
+		blockNodes.push(createBlockNode(comment, code, options));
 	}
 
 	return {
@@ -172,44 +133,43 @@ function createDocumentationNode(documentation = '', options) {
 	};
 }
 
-function createBlockNode(comment = '', code = '', line = 0, options) {
-	const commentLine = line;
-	const codeLine = line + countMatches(comment, RX_LINES_NEW);
-
+function createBlockNode(comment = '', code = '', options) {
 	return {
 		type: AST_TYPE_BLOCK,
-		comment: createCommentNode(comment, commentLine, options),
-		code: createCodeNode(code, codeLine, options)
+		comment: createCommentNode(comment, options),
+		code: createCodeNode(code, options)
 	};
 }
 
-function createCommentNode(comment = '', line = 0, options) {
+function createCommentNode(comment = '', options) {
+	options = options || {};
+
 	const tagMatcher = compileTagMatcher(options);
 	const tagNodes = [];
 
-	function aggregateTags(match, tag, kind, name, delimiter, description) {
+	function extractTag(match, tag, kind, name, delimiter, description) {
 		tagNodes.push(createCommentTagNode(tag, kind, name, delimiter, description, options));
 
 		return '';
 	}
 
-	comment = unwrapComment(comment, options)
-		.replace(tagMatcher, aggregateTags);
+	comment = unindentComment(comment, options);
+
+	if (options.tagStyle !== false) {
+		comment = comment.replace(tagMatcher, extractTag);
+	}
 
 	return {
 		type: AST_TYPE_COMMENT,
 		description: comment,
-		tags: tagNodes,
-		line
+		tags: tagNodes
 	};
 }
 
-function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', description = '', options = {}) {
-	const namedTags = options.namedTags || defaultNamedTags;
+function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', description = '', options) {
+	options = options || {};
 
-	if (kind) {
-		kind = kind.replace(RX_BRACES_ESCAPED, '$1');
-	}
+	const namedTags = options.namedTags || defaultNamedTags;
 
 	if (name && !delimiter && namedTags.indexOf(tag) === -1) {
 		description = [name, description]
@@ -229,11 +189,10 @@ function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', de
 	};
 }
 
-function createCodeNode(code = '', line = 0) {
+function createCodeNode(code = '') {
 	return {
 		type: AST_TYPE_CODE,
-		code,
-		line
+		code
 	};
 }
 

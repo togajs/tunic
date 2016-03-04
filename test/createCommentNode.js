@@ -7,46 +7,36 @@ test('should create an empty comment node', async assert => {
 	assert.same(createCommentNode(), {
 		type: 'Comment',
 		description: '',
-		tags: [],
-		line: 0
+		tags: []
 	});
 });
 
 test('should create a plain comment node', async assert => {
-	assert.same(createCommentNode('/** foo */', 1), {
+	assert.same(createCommentNode('foo'), {
 		type: 'Comment',
 		description: 'foo',
-		tags: [],
-		line: 1
+		tags: []
 	});
 });
 
 test('should create a tagged comment node', async assert => {
-	assert.same(createCommentNode('/**\n * foo\n * @bar\n*/', 1), {
+	assert.same(createCommentNode(' * foo\n * @bar\n *   baz\n * qux'), {
 		type: 'Comment',
-		description: 'foo',
+		description: 'foo\n\nqux',
 		tags: [{
 			type: 'CommentTag',
 			tag: 'bar',
 			kind: '',
 			name: '',
-			description: ''
-		}],
-		line: 1
+			description: '\n  baz'
+		}]
 	});
 });
 
-test('should handle mismatched indents', async assert => {
-	assert.same(createCommentNode('/**\n * foo\n  @bar\n*/', 1), {
+test('should create an untagged comment node', async assert => {
+	assert.same(createCommentNode(' * foo\n * @bar\n *   baz\n * qux', {tagStyle: false}), {
 		type: 'Comment',
-		description: '* foo',
-		tags: [{
-			type: 'CommentTag',
-			tag: 'bar',
-			kind: '',
-			name: '',
-			description: ''
-		}],
-		line: 1
+		description: 'foo\n@bar\n  baz\nqux',
+		tags: []
 	});
 });

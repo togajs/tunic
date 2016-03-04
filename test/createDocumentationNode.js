@@ -22,13 +22,11 @@ test('should create a plain documentation node', async assert => {
 			comment: {
 				type: 'Comment',
 				description: '',
-				tags: [],
-				line: 1
+				tags: []
 			},
 			code: {
 				type: 'Code',
-				code: 'var a = 1;',
-				line: 1
+				code: 'var a = 1;'
 			}
 		}]
 	});
@@ -42,13 +40,11 @@ test('should create a plain documentation node', async assert => {
 			comment: {
 				type: 'Comment',
 				description: 'foo',
-				tags: [],
-				line: 1
+				tags: []
 			},
 			code: {
 				type: 'Code',
-				code: 'var a = 1;',
-				line: 2
+				code: '\nvar a = 1;'
 			}
 		}]
 	});

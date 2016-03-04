@@ -1,33 +1,30 @@
-import tunic from '../src/tunic';
 import test from 'ava';
+import tunic from '../src/tunic';
+import {hashHashHash} from '../src/commentStyles';
 
 test('should create a reusable parser', async assert => {
-	const hashHashHash = tunic({
-		open: /^###/,
-		close: /^###/,
-		indent: /[\t #]/
-	});
+	const parser = tunic({commentStyle: hashHashHash});
 
-	assert.same(hashHashHash.parse(), {
+	assert.same(parser.parse(), {
 		type: 'Documentation',
 		blocks: []
 	});
 
-	assert.same(hashHashHash.parse('###\n# foo\n###\na = 1'), {
+	assert.same(parser.parse('###\n# foo\n###\na = 1'), {
 		type: 'Documentation',
-		blocks: [{
-			type: 'Block',
-			comment: {
-				type: 'Comment',
-				description: 'foo',
-				tags: [],
-				line: 1
-			},
-			code: {
-				type: 'Code',
-				code: 'a = 1',
-				line: 4
+		blocks: [
+			{
+				type: 'Block',
+				comment: {
+					type: 'Comment',
+					description: 'foo',
+					tags: []
+				},
+				code: {
+					type: 'Code',
+					code: '\na = 1'
+				}
 			}
-		}]
+		]
 	});
 });

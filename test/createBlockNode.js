@@ -9,30 +9,26 @@ test('should create an empty block node', async assert => {
 		comment: {
 			type: 'Comment',
 			description: '',
-			tags: [],
-			line: 0
+			tags: []
 		},
 		code: {
 			type: 'Code',
-			code: '',
-			line: 0
+			code: ''
 		}
 	});
 });
 
 test('should create a plain block node', async assert => {
-	assert.same(createBlockNode('/** foo */\n', 'var a = 1;', 1), {
+	assert.same(createBlockNode('foo', 'var a = 1;'), {
 		type: 'Block',
 		comment: {
 			type: 'Comment',
 			description: 'foo',
-			tags: [],
-			line: 1
+			tags: []
 		},
 		code: {
 			type: 'Code',
-			code: 'var a = 1;',
-			line: 2
+			code: 'var a = 1;'
 		}
 	});
 });
