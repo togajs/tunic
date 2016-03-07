@@ -13,7 +13,16 @@ export const angleBangDashDash = {
 export const bangBang = {
 	open: /^(?=[\t ]*?![<!>])/,
 	close: /^(?![\t ]*?![<!>])/,
-	indent: /[\t ]*![<!>][\t ]*/
+	indent: /[\t <!>]*/
+};
+
+// =begin
+// Foo
+// =end
+export const beginEnd = {
+	open: /^=begin/,
+	close: /^=end/,
+	indent: /[\t ]*/
 };
 
 // {-|
@@ -49,25 +58,24 @@ export const curlyPercPerc = {
 export const dashDashBang = {
 	open: /^(?=[\t ]*?--!)/,
 	close: /^(?![\t ]*?--!)/,
-	indent: /[\t ]*--![\t ]*/
+	indent: /[\t !\-]*/
 };
 
-// =begin
-// Foo
-// =end
-export const eqBegin = {
-	open: /^=begin/,
-	close: /^=end/,
-	indent: /[\t ]*/
+// ""
+// " Foo
+export const doubleDouble = {
+	open: /^[\t ]*?""/,
+	close: /^(?![\t ]*?")/,
+	indent: /[\t "]*/
 };
 
-// =pod
-// Foo
-// =cut
-export const eqPod = {
-	open: /^=pod/,
-	close: /^=cut/,
-	indent: /[\t ]*/
+// """
+// " Foo
+// """
+export const doubleDoubleDouble = {
+	open: /^[\t ]*?"""/,
+	close: /^[\t ]*?"""/,
+	indent: /[\t "]*/
 };
 
 // ##
@@ -75,7 +83,7 @@ export const eqPod = {
 export const hashHash = {
 	open: /^[\t ]*?##/,
 	close: /^(?![\t ]*?#)/,
-	indent: /[\t ]*#[\t ]*/
+	indent: /[\t #]*/
 };
 
 // ###
@@ -84,7 +92,7 @@ export const hashHash = {
 export const hashHashHash = {
 	open: /^[\t ]*?###/,
 	close: /^[\t ]*?###/,
-	indent: /[\t ]*#[\t ]*/
+	indent: /[\t #]*/
 };
 
 // (**
@@ -101,7 +109,7 @@ export const parenStarStar = {
 export const percPerc = {
 	open: /^[\t ]*?%%/,
 	close: /^(?![\t ]*?%)/,
-	indent: /[\t ]*%[\t ]*/
+	indent: /[\t %]*/
 };
 
 // %%%
@@ -110,41 +118,33 @@ export const percPerc = {
 export const percPercPerc = {
 	open: /^[\t ]*?%%%/,
 	close: /^[\t ]*?%%%/,
-	indent: /[\t ]*%[\t ]*/
+	indent: /[\t %]*/
 };
 
-// ""
-// " Foo
-export const quoteQuote = {
-	open: /^[\t ]*?""/,
-	close: /^(?![\t ]*?")/,
-	indent: /[\t ]*"[\t ]*/
-};
-
-// """
-// " Foo
-// """
-export const quoteQuoteQuote = {
-	open: /^[\t ]*?"""/,
-	close: /^[\t ]*?"""/,
-	indent: /[\t ]*"[\t ]*/
+// =pod
+// Foo
+// =cut
+export const podCut = {
+	open: /^=pod/,
+	close: /^=cut/,
+	indent: /[\t ]*/
 };
 
 // ''
 // ' Foo
-export const singSing = {
+export const singleSingle = {
 	open: /^[\t ]*?''/,
 	close: /^(?![\t ]*?')/,
-	indent: /[\t ]*'[\t ]*/
+	indent: /[\t ']*/
 };
 
 // '''
 // ' Foo
 // '''
-export const singSingSing = {
+export const singleSingleSingle = {
 	open: /^[\t ]*?'''/,
 	close: /^[\t ]*?'''/,
-	indent: /[\t ]*'[\t ]*/
+	indent: /[\t ']*/
 };
 
 // /// Foo
@@ -153,7 +153,7 @@ export const singSingSing = {
 export const slashSlashSlash = {
 	open: /^(?=[\t ]*?\/\/\/)/,
 	close: /^(?![\t ]*?\/\/)/,
-	indent: /[\t ]*\/\/\/?[\t ]*/
+	indent: /[\t \/]*/
 };
 
 // /**

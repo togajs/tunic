@@ -80,6 +80,46 @@ test('bangBang', async assert => {
 	});
 });
 
+test('beginEnd', async assert => {
+	const src = `
+=begin
+# Description
+
+Long description that spans multiple
+lines and even has markdown type things.
+
+@arg {Type} name Description.
+=end
+hello world
+	`;
+
+	assert.same(tunic.parse(src, {commentStyle: commentStyles.beginEnd}), {
+		type: 'Documentation',
+		blocks: [
+			{
+				type: 'Block',
+				comment: {
+					type: 'Comment',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					tags: [
+						{
+							type: 'CommentTag',
+							tag: 'arg',
+							kind: 'Type',
+							name: 'name',
+							description: 'Description.'
+						}
+					]
+				},
+				code: {
+					type: 'Code',
+					code: '\nhello world\n\t'
+				}
+			}
+		]
+	});
+});
+
 test('curlyDashPipe', async assert => {
 	const src = `
 		{-|
@@ -239,20 +279,19 @@ test('dashDashBang', async assert => {
 	});
 });
 
-test('eqBegin', async assert => {
+test('doubleDouble', async assert => {
 	const src = `
-=begin
-# Description
-
-Long description that spans multiple
-lines and even has markdown type things.
-
-@arg {Type} name Description.
-=end
-hello world
+		""
+		" # Description
+		"
+		" Long description that spans multiple
+		" lines and even has markdown type things.
+		"
+		" @arg {Type} name Description.
+		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.eqBegin}), {
+	assert.same(tunic.parse(src, {commentStyle: commentStyles.doubleDouble}), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -272,27 +311,27 @@ hello world
 				},
 				code: {
 					type: 'Code',
-					code: '\nhello world\n\t'
+					code: '\t\thello world\n\t'
 				}
 			}
 		]
 	});
 });
 
-test('eqPod', async assert => {
+test('doubleDoubleDouble', async assert => {
 	const src = `
-=pod
-# Description
-
-Long description that spans multiple
-lines and even has markdown type things.
-
-@arg {Type} name Description.
-=cut
-hello world
+		"""
+		" # Description
+		"
+		" Long description that spans multiple
+		" lines and even has markdown type things.
+		"
+		" @arg {Type} name Description.
+		"""
+		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.eqPod}), {
+	assert.same(tunic.parse(src, {commentStyle: commentStyles.doubleDoubleDouble}), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -312,7 +351,7 @@ hello world
 				},
 				code: {
 					type: 'Code',
-					code: '\nhello world\n\t'
+					code: '\n\t\thello world\n\t'
 				}
 			}
 		]
@@ -519,19 +558,20 @@ test('percPercPerc', async assert => {
 	});
 });
 
-test('quoteQuote', async assert => {
+test('podCut', async assert => {
 	const src = `
-		""
-		" # Description
-		"
-		" Long description that spans multiple
-		" lines and even has markdown type things.
-		"
-		" @arg {Type} name Description.
-		hello world
+=pod
+# Description
+
+Long description that spans multiple
+lines and even has markdown type things.
+
+@arg {Type} name Description.
+=cut
+hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.quoteQuote}), {
+	assert.same(tunic.parse(src, {commentStyle: commentStyles.podCut}), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -551,54 +591,14 @@ test('quoteQuote', async assert => {
 				},
 				code: {
 					type: 'Code',
-					code: '\t\thello world\n\t'
+					code: '\nhello world\n\t'
 				}
 			}
 		]
 	});
 });
 
-test('quoteQuoteQuote', async assert => {
-	const src = `
-		"""
-		" # Description
-		"
-		" Long description that spans multiple
-		" lines and even has markdown type things.
-		"
-		" @arg {Type} name Description.
-		"""
-		hello world
-	`;
-
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.quoteQuoteQuote}), {
-		type: 'Documentation',
-		blocks: [
-			{
-				type: 'Block',
-				comment: {
-					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
-					tags: [
-						{
-							type: 'CommentTag',
-							tag: 'arg',
-							kind: 'Type',
-							name: 'name',
-							description: 'Description.'
-						}
-					]
-				},
-				code: {
-					type: 'Code',
-					code: '\n\t\thello world\n\t'
-				}
-			}
-		]
-	});
-});
-
-test('singSing', async assert => {
+test('singleSingle', async assert => {
 	const src = `
 		''
 		' # Description
@@ -610,7 +610,7 @@ test('singSing', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.singSing}), {
+	assert.same(tunic.parse(src, {commentStyle: commentStyles.singleSingle}), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -637,7 +637,7 @@ test('singSing', async assert => {
 	});
 });
 
-test('singSingSing', async assert => {
+test('singleSingleSingle', async assert => {
 	const src = `
 		'''
 		' # Description
@@ -650,7 +650,7 @@ test('singSingSing', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.singSingSing}), {
+	assert.same(tunic.parse(src, {commentStyle: commentStyles.singleSingleSingle}), {
 		type: 'Documentation',
 		blocks: [
 			{

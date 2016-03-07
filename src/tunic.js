@@ -7,6 +7,7 @@ const AST_TYPE_BLOCK = 'Block';
 const AST_TYPE_COMMENT = 'Comment';
 const AST_TYPE_COMMENT_TAG = 'CommentTag';
 const AST_TYPE_CODE = 'Code';
+const RX_NEWLINE_DOS = /\r\n/g;
 
 const defaultNamedTags = [
 	'arg',
@@ -45,8 +46,9 @@ function memoize(fn) {
 }
 
 const compileCommentMatcher = memoize(options => {
-	options = options || {};
-	options = {...slashStarStar, ...options.commentStyle};
+	const {commentStyle} = options || {};
+
+	options = {...slashStarStar, ...commentStyle};
 
 	return rx('m')`
 		${options.open}
@@ -62,8 +64,9 @@ const compileCommentMatcher = memoize(options => {
 });
 
 const compileIndentMatcher = memoize(options => {
-	options = options || {};
-	options = {...slashStarStar, ...options.commentStyle};
+	const {commentStyle} = options || {};
+
+	options = {...slashStarStar, ...commentStyle};
 
 	return rx('m')`
 		^
@@ -72,8 +75,9 @@ const compileIndentMatcher = memoize(options => {
 });
 
 const compileTagMatcher = memoize(options => {
-	options = options || {};
-	options = {...atCurlyDash, ...options.tagStyle};
+	const {tagStyle} = options || {};
+
+	options = {...atCurlyDash, ...tagStyle};
 
 	return rx('gm')`
 		${options.tag}
@@ -108,7 +112,7 @@ function unindentComment(comment, options) {
 function createDocumentationNode(documentation = '', options) {
 	const commentMatcher = compileCommentMatcher(options);
 	const [firstBlock, ...blocks] = documentation
-		.replace(/\r\n/g, '\n')
+		.replace(RX_NEWLINE_DOS, '\n')
 		.split(commentMatcher);
 
 	// always lead with a comment
@@ -121,10 +125,7 @@ function createDocumentationNode(documentation = '', options) {
 	let i = 0;
 
 	while (i < blockCount) {
-		const comment = blocks[i++];
-		const code = blocks[i++];
-
-		blockNodes.push(createBlockNode(comment, code, options));
+		blockNodes.push(createBlockNode(blocks[i++], blocks[i++], options));
 	}
 
 	return {
@@ -142,8 +143,7 @@ function createBlockNode(comment = '', code = '', options) {
 }
 
 function createCommentNode(comment = '', options) {
-	options = options || {};
-
+	const {tagStyle} = options || {};
 	const tagMatcher = compileTagMatcher(options);
 	const tagNodes = [];
 
@@ -155,7 +155,7 @@ function createCommentNode(comment = '', options) {
 
 	comment = unindentComment(comment, options);
 
-	if (options.tagStyle !== false) {
+	if (tagStyle !== false) {
 		comment = comment.replace(tagMatcher, extractTag);
 	}
 
@@ -167,9 +167,7 @@ function createCommentNode(comment = '', options) {
 }
 
 function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', description = '', options) {
-	options = options || {};
-
-	const namedTags = options.namedTags || defaultNamedTags;
+	const namedTags = options && options.namedTags || defaultNamedTags;
 
 	if (name && !delimiter && namedTags.indexOf(tag) === -1) {
 		description = [name, description]
