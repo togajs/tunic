@@ -1,5 +1,5 @@
 import test from 'ava';
-import tunic from '../src/tunic';
+import { parse } from '../src/tunic';
 import * as commentStyles from '../src/commentStyles';
 
 test('angleBangDashDash', async assert => {
@@ -15,17 +15,17 @@ test('angleBangDashDash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.angleBangDashDash }), {
+	assert.same(parse(src, { commentStyle: commentStyles.angleBangDashDash }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -53,17 +53,17 @@ test('bangBang', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.bangBang }), {
+	assert.same(parse(src, { commentStyle: commentStyles.bangBang }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -93,17 +93,17 @@ lines and even has markdown type things.
 hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.beginEnd }), {
+	assert.same(parse(src, { commentStyle: commentStyles.beginEnd }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -133,17 +133,17 @@ test('curlyDashPipe', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.curlyDashPipe }), {
+	assert.same(parse(src, { commentStyle: commentStyles.curlyDashPipe }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -174,17 +174,17 @@ test('curlyHashHash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.curlyHashHash }), {
+	assert.same(parse(src, { commentStyle: commentStyles.curlyHashHash }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: 'Description\n===========\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: 'Description\n===========\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -214,17 +214,17 @@ test('curlyPercPerc', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.curlyPercPerc }), {
+	assert.same(parse(src, { commentStyle: commentStyles.curlyPercPerc }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -252,17 +252,17 @@ test('dashDashBang', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.dashDashBang }), {
+	assert.same(parse(src, { commentStyle: commentStyles.dashDashBang }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -291,17 +291,17 @@ test('doubleDouble', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.doubleDouble }), {
+	assert.same(parse(src, { commentStyle: commentStyles.doubleDouble }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -331,17 +331,17 @@ test('doubleDoubleDouble', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.doubleDoubleDouble }), {
+	assert.same(parse(src, { commentStyle: commentStyles.doubleDoubleDouble }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -371,17 +371,17 @@ test('hashHash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.hashHash }), {
+	assert.same(parse(src, { commentStyle: commentStyles.hashHash }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: 'Description\n===========\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: 'Description\n===========\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -412,17 +412,17 @@ test('hashHashHash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.hashHashHash }), {
+	assert.same(parse(src, { commentStyle: commentStyles.hashHashHash }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: 'Description\n===========\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: 'Description\n===========\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -452,17 +452,17 @@ test('parenStarStar', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.parenStarStar }), {
+	assert.same(parse(src, { commentStyle: commentStyles.parenStarStar }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -491,17 +491,17 @@ test('percPerc', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.percPerc }), {
+	assert.same(parse(src, { commentStyle: commentStyles.percPerc }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -531,17 +531,17 @@ test('percPercPerc', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.percPercPerc }), {
+	assert.same(parse(src, { commentStyle: commentStyles.percPercPerc }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -571,17 +571,17 @@ lines and even has markdown type things.
 hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.podCut }), {
+	assert.same(parse(src, { commentStyle: commentStyles.podCut }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -610,17 +610,17 @@ test('singleSingle', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.singleSingle }), {
+	assert.same(parse(src, { commentStyle: commentStyles.singleSingle }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -650,17 +650,17 @@ test('singleSingleSingle', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.singleSingleSingle }), {
+	assert.same(parse(src, { commentStyle: commentStyles.singleSingleSingle }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -688,17 +688,17 @@ test('slashSlashSlash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.slashSlashSlash }), {
+	assert.same(parse(src, { commentStyle: commentStyles.slashSlashSlash }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',
@@ -728,17 +728,17 @@ test('slashStarStar', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, { commentStyle: commentStyles.slashStarStar }), {
+	assert.same(parse(src, { commentStyle: commentStyles.slashStarStar }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n',
 					tags: [
 						{
-							type: 'CommentTag',
+							type: 'Tag',
 							tag: 'arg',
 							kind: 'Type',
 							name: 'name',

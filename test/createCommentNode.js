@@ -1,7 +1,5 @@
-import tunic from '../src/tunic';
 import test from 'ava';
-
-const { createCommentNode } = tunic;
+import { createCommentNode } from '../src/tunic';
 
 test('should create an empty comment node', async assert => {
 	assert.same(createCommentNode(), {
@@ -22,9 +20,9 @@ test('should create a plain comment node', async assert => {
 test('should create a tagged comment node', async assert => {
 	assert.same(createCommentNode(' * foo\n * @bar\n *   baz\n * qux'), {
 		type: 'Comment',
-		description: 'foo\n\nqux',
+		description: 'foo\nqux',
 		tags: [{
-			type: 'CommentTag',
+			type: 'Tag',
 			tag: 'bar',
 			kind: '',
 			name: '',

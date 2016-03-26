@@ -5,7 +5,7 @@ import { atCurlyDash } from './tagStyles';
 const AST_TYPE_DOCUMENTATION = 'Documentation';
 const AST_TYPE_BLOCK = 'Block';
 const AST_TYPE_COMMENT = 'Comment';
-const AST_TYPE_COMMENT_TAG = 'CommentTag';
+const AST_TYPE_COMMENT_TAG = 'Tag';
 const AST_TYPE_CODE = 'Code';
 const RX_NEWLINE_DOS = /\r\n/g;
 
@@ -80,6 +80,7 @@ const compileTagMatcher = memoize(options => {
 	options = { ...atCurlyDash, ...tagStyle };
 
 	return rx('gm')`
+		\n?
 		${options.tag}
 		${options.kind}
 		${options.name}
@@ -109,7 +110,7 @@ function unindentComment(comment, options) {
 
 // Parser
 
-function createDocumentationNode(documentation = '', options) {
+export function createDocumentationNode(documentation = '', options) {
 	const commentMatcher = compileCommentMatcher(options);
 	const [firstBlock, ...blocks] = documentation
 		.replace(RX_NEWLINE_DOS, '\n')
@@ -134,7 +135,7 @@ function createDocumentationNode(documentation = '', options) {
 	};
 }
 
-function createBlockNode(comment = '', code = '', options) {
+export function createBlockNode(comment = '', code = '', options) {
 	return {
 		type: AST_TYPE_BLOCK,
 		comment: createCommentNode(comment, options),
@@ -142,13 +143,13 @@ function createBlockNode(comment = '', code = '', options) {
 	};
 }
 
-function createCommentNode(comment = '', options) {
+export function createCommentNode(comment = '', options) {
 	const { tagStyle } = options || {};
 	const tagMatcher = compileTagMatcher(options);
 	const tagNodes = [];
 
 	function extractTag(match, tag, kind, name, delimiter, description) {
-		tagNodes.push(createCommentTagNode(tag, kind, name, delimiter, description, options));
+		tagNodes.push(createTagNode(tag, kind, name, delimiter, description, options));
 
 		return '';
 	}
@@ -166,7 +167,7 @@ function createCommentNode(comment = '', options) {
 	};
 }
 
-function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', description = '', options) {
+export function createTagNode(tag = '', kind = '', name = '', delimiter = '', description = '', options) {
 	const namedTags = options && options.namedTags || defaultNamedTags;
 
 	if (name && !delimiter && namedTags.indexOf(tag) === -1) {
@@ -187,7 +188,7 @@ function createCommentTagNode(tag = '', kind = '', name = '', delimiter = '', de
 	};
 }
 
-function createCodeNode(code = '') {
+export function createCodeNode(code = '') {
 	return {
 		type: AST_TYPE_CODE,
 		code
@@ -202,11 +203,4 @@ export default function tunic(opts) {
 	};
 }
 
-Object.assign(tunic, {
-	parse: createDocumentationNode,
-	createDocumentationNode,
-	createBlockNode,
-	createCommentNode,
-	createCommentTagNode,
-	createCodeNode
-});
+export { createDocumentationNode as parse };

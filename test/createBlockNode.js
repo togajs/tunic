@@ -1,7 +1,5 @@
-import tunic from '../src/tunic';
 import test from 'ava';
-
-const { createBlockNode } = tunic;
+import { createBlockNode } from '../src/tunic';
 
 test('should create an empty block node', async assert => {
 	assert.same(createBlockNode(), {

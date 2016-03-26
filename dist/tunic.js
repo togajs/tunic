@@ -28,7 +28,7 @@ function _taggedTemplateLiteral(strings, raw) { return Object.freeze(Object.defi
 var AST_TYPE_DOCUMENTATION = 'Documentation';
 var AST_TYPE_BLOCK = 'Block';
 var AST_TYPE_COMMENT = 'Comment';
-var AST_TYPE_COMMENT_TAG = 'CommentTag';
+var AST_TYPE_COMMENT_TAG = 'Tag';
 var AST_TYPE_CODE = 'Code';
 
 var RX_LINES = /^/mg;
@@ -207,7 +207,7 @@ function createCommentNode() {
 			parts[_key] = arguments[_key];
 		}
 
-		tagNodes.push(createCommentTagNode.apply(undefined, _toConsumableArray(parts.slice(1, -1)).concat([options])));
+		tagNodes.push(createTagNode.apply(undefined, _toConsumableArray(parts.slice(1, -1)).concat([options])));
 
 		return '';
 	}
@@ -222,7 +222,7 @@ function createCommentNode() {
 	};
 }
 
-function createCommentTagNode() {
+function createTagNode() {
 	var tag = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
 	var kind = arguments.length <= 1 || arguments[1] === undefined ? '' : arguments[1];
 	var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
@@ -269,6 +269,6 @@ Object.assign(tunic, {
 	createDocumentationNode: createDocumentationNode,
 	createBlockNode: createBlockNode,
 	createCommentNode: createCommentNode,
-	createCommentTagNode: createCommentTagNode,
+	createTagNode: createTagNode,
 	createCodeNode: createCodeNode
 });
