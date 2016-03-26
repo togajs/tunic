@@ -1,164 +1,164 @@
-// <!--
-//  ! Foo
-//  !-->
+//  <!--
+//   ! Foo
+//   !-->
 export const angleBangDashDash = {
 	open: /^[\t ]*?<!--/,
-	close: /-->/,
+	close: /!-->/,
 	indent: /[\t !\-]*/
 };
 
-// !>
-// !! Foo
-// !!
+//  !>
+//  !! Foo
+//  !!
 export const bangBang = {
 	open: /^(?=[\t ]*?![<!>])/,
 	close: /^(?![\t ]*?![<!>])/,
 	indent: /[\t <!>]*/
 };
 
-// =begin
-// Foo
-// =end
+//  =begin
+//  Foo
+//  =end
 export const beginEnd = {
 	open: /^=begin/,
 	close: /^=end/,
 	indent: /[\t ]*/
 };
 
-// {-|
-//  - Foo
-//  -}
+//  {-|
+//   - Foo
+//   -}
 export const curlyDashPipe = {
 	open: /^[\t ]*?\{-\|/,
 	close: /-\}/,
 	indent: /[\t \-]*/
 };
 
-// {##
-//  # Foo
-//  #}
+//  {##
+//   # Foo
+//   #}
 export const curlyHashHash = {
 	open: /^[\t ]*?\{##/,
 	close: /#\}/,
 	indent: /[\t #]*/
 };
 
-// {%%
-//  % Foo
-//  %}
+//  {%%
+//   % Foo
+//   %}
 export const curlyPercPerc = {
 	open: /^[\t ]*?\{%%/,
 	close: /%\}/,
 	indent: /[\t %]*/
 };
 
-// --!
-// --! Foo
-// --!
+//  --!
+//  --! Foo
+//  --!
 export const dashDashBang = {
 	open: /^(?=[\t ]*?--!)/,
 	close: /^(?![\t ]*?--!)/,
 	indent: /[\t !\-]*/
 };
 
-// ""
-// " Foo
+//  ""
+//  " Foo
 export const doubleDouble = {
 	open: /^[\t ]*?""/,
 	close: /^(?![\t ]*?")/,
 	indent: /[\t "]*/
 };
 
-// """
-// " Foo
-// """
+//  """
+//  " Foo
+//  """
 export const doubleDoubleDouble = {
 	open: /^[\t ]*?"""/,
 	close: /^[\t ]*?"""/,
 	indent: /[\t "]*/
 };
 
-// ##
-// # Foo
+//  ##
+//  # Foo
 export const hashHash = {
 	open: /^[\t ]*?##/,
 	close: /^(?![\t ]*?#)/,
 	indent: /[\t #]*/
 };
 
-// ###
-// # Foo
-// ###
+//  ###
+//  # Foo
+//  ###
 export const hashHashHash = {
 	open: /^[\t ]*?###/,
 	close: /^[\t ]*?###/,
 	indent: /[\t #]*/
 };
 
-// (**
-//  * Foo
-//  *)
+//  (**
+//   * Foo
+//   *)
 export const parenStarStar = {
 	open: /^[\t ]*?\(\*\*/,
 	close: /\*\)/,
 	indent: /[\t \*]*/
 };
 
-// %%
-// % Foo
+//  %%
+//  % Foo
 export const percPerc = {
 	open: /^[\t ]*?%%/,
 	close: /^(?![\t ]*?%)/,
 	indent: /[\t %]*/
 };
 
-// %%%
-// % Foo
-// %%%
+//  %%%
+//  % Foo
+//  %%%
 export const percPercPerc = {
 	open: /^[\t ]*?%%%/,
 	close: /^[\t ]*?%%%/,
 	indent: /[\t %]*/
 };
 
-// =pod
-// Foo
-// =cut
+//  =pod
+//  Foo
+//  =cut
 export const podCut = {
 	open: /^=pod/,
 	close: /^=cut/,
 	indent: /[\t ]*/
 };
 
-// ''
-// ' Foo
+//  ''
+//  ' Foo
 export const singleSingle = {
 	open: /^[\t ]*?''/,
 	close: /^(?![\t ]*?')/,
 	indent: /[\t ']*/
 };
 
-// '''
-// ' Foo
-// '''
+//  '''
+//  ' Foo
+//  '''
 export const singleSingleSingle = {
 	open: /^[\t ]*?'''/,
 	close: /^[\t ]*?'''/,
 	indent: /[\t ']*/
 };
 
-// /// Foo
-// /// Bar
-// /// Baz
+//  /// Foo
+//  /// Bar
+//  /// Baz
 export const slashSlashSlash = {
 	open: /^(?=[\t ]*?\/\/\/)/,
 	close: /^(?![\t ]*?\/\/)/,
 	indent: /[\t \/]*/
 };
 
-// /**
-//  * Foo
-//  */
+//  /**
+//   * Foo
+//   */
 export const slashStarStar = {
 	open: /^[\t ]*?\/\*\*/,
 	close: /\*\//,

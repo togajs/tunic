@@ -1,9 +1,9 @@
 import test from 'ava';
 import tunic from '../src/tunic';
-import {hashHashHash} from '../src/commentStyles';
+import { hashHashHash } from '../src/commentStyles';
 
 test('should create a reusable parser', async assert => {
-	const parser = tunic({commentStyle: hashHashHash});
+	const parser = tunic({ commentStyle: hashHashHash });
 
 	assert.same(parser.parse(), {
 		type: 'Documentation',

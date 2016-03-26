@@ -6,15 +6,13 @@
   "scripts": {
     "bench": "babel-node bench/tunic",
     "build": "babel src --out-dir dist",
-    "cover": "nyc report -r html",
     "coveralls": "nyc report -r text-lcov | coveralls",
-    "test": "xo && nyc ava -v",
-    "watch": "chokidar '{src,test}/*.js' -c 'npm test'"
+    "pretest": "xo '{src,test}/**'",
+    "test": "nyc ava -v",
+    "posttest": "nyc report -r lcov",
+    "watch": "chokidar '{src,test}/**' -c 'npm test'"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/togajs/tunic"
-  },
+  "repository": "togajs/tunic",
   "keywords": [
     "tunic",
     "parser",
@@ -33,20 +31,19 @@
     "regx": "^1.0.4"
   },
   "devDependencies": {
-    "ava": "^0.12.0",
-    "babel-cli": "^6.6.0",
-    "babel-core": "^6.6.0",
-    "babel-polyfill": "^6.6.1",
+    "ava": "^0.13.0",
+    "babel-cli": "^6.6.5",
+    "babel-core": "^6.7.4",
+    "babel-polyfill": "^6.7.4",
     "babel-preset-es2015": "^6.6.0",
     "babel-preset-stage-2": "^6.5.0",
-    "babel-register": "^6.6.0",
+    "babel-register": "^6.7.2",
     "benchmark": "^2.1.0",
     "chokidar-cli": "^1.2.0",
-    "coveralls": "^2.11.8",
-    "difflet": "^1.0.1",
+    "coveralls": "^2.11.9",
     "highlight.js": "^9.2.0",
-    "nyc": "^5.6.0",
-    "xo": "^0.12.1"
+    "nyc": "^6.1.1",
+    "xo": "^0.13.0"
   },
   "engines": {
     "node": ">= 0.12"
@@ -64,6 +61,28 @@
     ]
   },
   "xo": {
-    "esnext": true
+    "rules": {
+      "brace-style": [
+        2,
+        "stroustrup"
+      ],
+      "eqeqeq": [
+        2,
+        "allow-null"
+      ],
+      "no-eq-null": 0,
+      "object-curly-spacing": [
+        2,
+        "always"
+      ],
+      "operator-linebreak": [
+        2,
+        "before"
+      ],
+      "babel/object-curly-spacing": [
+        2,
+        "always"
+      ]
+    }
   }
 }

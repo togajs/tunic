@@ -1,7 +1,7 @@
 import tunic from '../src/tunic';
 import test from 'ava';
 
-const {createDocumentationNode} = tunic;
+const { createDocumentationNode } = tunic;
 
 test('should be aliased as `parse`', async assert => {
 	assert.is(tunic.parse, createDocumentationNode);

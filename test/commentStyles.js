@@ -15,14 +15,14 @@ test('angleBangDashDash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.angleBangDashDash}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.angleBangDashDash }), {
 		type: 'Documentation',
 		blocks: [
 			{
 				type: 'Block',
 				comment: {
 					type: 'Comment',
-					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n\n',
+					description: '# Description\n\nLong description that spans multiple\nlines and even has markdown type things.\n\n',
 					tags: [
 						{
 							type: 'CommentTag',
@@ -53,7 +53,7 @@ test('bangBang', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.bangBang}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.bangBang }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -93,7 +93,7 @@ lines and even has markdown type things.
 hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.beginEnd}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.beginEnd }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -133,7 +133,7 @@ test('curlyDashPipe', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.curlyDashPipe}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.curlyDashPipe }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -174,7 +174,7 @@ test('curlyHashHash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.curlyHashHash}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.curlyHashHash }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -214,7 +214,7 @@ test('curlyPercPerc', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.curlyPercPerc}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.curlyPercPerc }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -252,7 +252,7 @@ test('dashDashBang', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.dashDashBang}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.dashDashBang }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -291,7 +291,7 @@ test('doubleDouble', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.doubleDouble}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.doubleDouble }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -331,7 +331,7 @@ test('doubleDoubleDouble', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.doubleDoubleDouble}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.doubleDoubleDouble }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -371,7 +371,7 @@ test('hashHash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.hashHash}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.hashHash }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -412,7 +412,7 @@ test('hashHashHash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.hashHashHash}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.hashHashHash }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -452,7 +452,7 @@ test('parenStarStar', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.parenStarStar}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.parenStarStar }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -491,7 +491,7 @@ test('percPerc', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.percPerc}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.percPerc }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -531,7 +531,7 @@ test('percPercPerc', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.percPercPerc}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.percPercPerc }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -571,7 +571,7 @@ lines and even has markdown type things.
 hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.podCut}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.podCut }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -610,7 +610,7 @@ test('singleSingle', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.singleSingle}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.singleSingle }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -650,7 +650,7 @@ test('singleSingleSingle', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.singleSingleSingle}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.singleSingleSingle }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -688,7 +688,7 @@ test('slashSlashSlash', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.slashSlashSlash}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.slashSlashSlash }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -728,7 +728,7 @@ test('slashStarStar', async assert => {
 		hello world
 	`;
 
-	assert.same(tunic.parse(src, {commentStyle: commentStyles.slashStarStar}), {
+	assert.same(tunic.parse(src, { commentStyle: commentStyles.slashStarStar }), {
 		type: 'Documentation',
 		blocks: [
 			{

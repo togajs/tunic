@@ -1,6 +1,6 @@
 import rx from 'regx';
-import {slashStarStar} from './commentStyles';
-import {atCurlyDash} from './tagStyles';
+import { slashStarStar } from './commentStyles';
+import { atCurlyDash } from './tagStyles';
 
 const AST_TYPE_DOCUMENTATION = 'Documentation';
 const AST_TYPE_BLOCK = 'Block';
@@ -46,9 +46,9 @@ function memoize(fn) {
 }
 
 const compileCommentMatcher = memoize(options => {
-	const {commentStyle} = options || {};
+	const { commentStyle } = options || {};
 
-	options = {...slashStarStar, ...commentStyle};
+	options = { ...slashStarStar, ...commentStyle };
 
 	return rx('m')`
 		${options.open}
@@ -64,9 +64,9 @@ const compileCommentMatcher = memoize(options => {
 });
 
 const compileIndentMatcher = memoize(options => {
-	const {commentStyle} = options || {};
+	const { commentStyle } = options || {};
 
-	options = {...slashStarStar, ...commentStyle};
+	options = { ...slashStarStar, ...commentStyle };
 
 	return rx('m')`
 		^
@@ -75,9 +75,9 @@ const compileIndentMatcher = memoize(options => {
 });
 
 const compileTagMatcher = memoize(options => {
-	const {tagStyle} = options || {};
+	const { tagStyle } = options || {};
 
-	options = {...atCurlyDash, ...tagStyle};
+	options = { ...atCurlyDash, ...tagStyle };
 
 	return rx('gm')`
 		${options.tag}
@@ -143,7 +143,7 @@ function createBlockNode(comment = '', code = '', options) {
 }
 
 function createCommentNode(comment = '', options) {
-	const {tagStyle} = options || {};
+	const { tagStyle } = options || {};
 	const tagMatcher = compileTagMatcher(options);
 	const tagNodes = [];
 

@@ -39,7 +39,7 @@ test('atCurlyDash', async assert => {
 		world
 	`;
 
-	assert.same(tunic.parse(src, {tagStyle: tagStyles.atCurlyDash}), {
+	assert.same(tunic.parse(src, { tagStyle: tagStyles.atCurlyDash }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -48,16 +48,16 @@ test('atCurlyDash', async assert => {
 					type: 'Comment',
 					description: 'Description.\n\n\n\n\n\n\n\n\n\n\nDescription.',
 					tags: [
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '\n  Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: ''}
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '\n  Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '' }
 					]
 				},
 				code: {
@@ -71,16 +71,16 @@ test('atCurlyDash', async assert => {
 					type: 'Comment',
 					description: 'Description.\n\n\n\n\n\n\n\n\n\n\nDescription.',
 					tags: [
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'name Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'name Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '\n  Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: ''}
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'name Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'name Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '\n  Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '' }
 					]
 				},
 				code: {
@@ -129,7 +129,7 @@ test('backslashCurlyDash', async assert => {
 		world
 	`;
 
-	assert.same(tunic.parse(src, {tagStyle: tagStyles.backslashCurlyDash}), {
+	assert.same(tunic.parse(src, { tagStyle: tagStyles.backslashCurlyDash }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -138,16 +138,16 @@ test('backslashCurlyDash', async assert => {
 					type: 'Comment',
 					description: 'Description.\n\n\n\n\n\n\n\n\n\n\nDescription.',
 					tags: [
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: ''},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '\n  Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: ''}
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: 'Type', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: 'Description.', description: '' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '\n  Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '' }
 					]
 				},
 				code: {
@@ -161,16 +161,16 @@ test('backslashCurlyDash', async assert => {
 					type: 'Comment',
 					description: 'Description.\n\n\n\n\n\n\n\n\n\n\nDescription.',
 					tags: [
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'name Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: 'name', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'name Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '\n  Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: ''}
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'name Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: 'Type', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: 'name', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'name Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '\n  Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '' }
 					]
 				},
 				code: {
@@ -207,7 +207,7 @@ test('colon', async assert => {
 		world
 	`;
 
-	assert.same(tunic.parse(src, {tagStyle: tagStyles.colon}), {
+	assert.same(tunic.parse(src, { tagStyle: tagStyles.colon }), {
 		type: 'Documentation',
 		blocks: [
 			{
@@ -216,10 +216,10 @@ test('colon', async assert => {
 					type: 'Comment',
 					description: 'Description.\n\n\n\n\nDescription.',
 					tags: [
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '\n  Description.'},
-						{type: 'CommentTag', tag: 'arg', kind: '', name: '', description: ''}
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '\n  Description.' },
+						{ type: 'CommentTag', tag: 'arg', kind: '', name: '', description: '' }
 					]
 				},
 				code: {
@@ -233,10 +233,10 @@ test('colon', async assert => {
 					type: 'Comment',
 					description: 'Description.\n\n\n\n\nDescription.',
 					tags: [
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '\n  Description.'},
-						{type: 'CommentTag', tag: 'tag', kind: '', name: '', description: ''}
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: 'Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '\n  Description.' },
+						{ type: 'CommentTag', tag: 'tag', kind: '', name: '', description: '' }
 					]
 				},
 				code: {
