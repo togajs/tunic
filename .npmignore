@@ -1,7 +1,9 @@
 .nyc_output
+bench
 coverage
-lib
 node_modules
+src
+test
 
 *.db
 *.log

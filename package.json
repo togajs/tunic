@@ -2,11 +2,11 @@
   "name": "tunic",
   "version": "2.0.0",
   "description": "A documentation-block parser.",
-  "main": "dist/tunic.js",
+  "main": "lib/tunic.js",
   "scripts": {
     "bench": "babel-node bench/tunic",
-    "build": "babel src --out-dir dist",
     "coveralls": "nyc report -r text-lcov | coveralls",
+    "prepublish": "babel src --out-dir lib",
     "pretest": "xo '{src,test}/**'",
     "test": "nyc ava -v",
     "posttest": "nyc report -r lcov",
