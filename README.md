@@ -2,7 +2,7 @@
 
 [![NPM version][npm-img]][npm-url] [![Downloads][downloads-img]][npm-url] [![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url] [![Chat][gitter-img]][gitter-url] [![Tip][amazon-img]][amazon-url]
 
-A documentation-block parser which generates a [DocTree][doctree] abstract syntax tree. Defaults to parsing [C-style block comments](https://en.wikipedia.org/wiki/C_syntax#Comments) and [Javadoc-style tags](https://en.wikipedia.org/wiki/Javadoc#Structure_of_a_Javadoc_comment), but many other pre-configured [comment styles](https://github.com/togajs/tunic/blob/master/src/commentStyles.js) and [tag styles](https://github.com/togajs/tunic/blob/master/src/tagStyles.js) are included.
+A documentation-block parser which generates a [DocTree](https://github.com/togajs/doctree) abstract syntax tree. Defaults to parsing [C-style block comments](https://en.wikipedia.org/wiki/C_syntax#Comments) and [Javadoc-style tags](https://en.wikipedia.org/wiki/Javadoc#Structure_of_a_Javadoc_comment), but many other pre-configured [comment styles](https://github.com/togajs/tunic/blob/master/src/commentStyles.js) and [tag styles](https://github.com/togajs/tunic/blob/master/src/tagStyles.js) are included.
 
 Documentation blocks follow the conventions of other standard tools such as Javadoc, JSDoc, Google Closure, PHPDoc, etc. The primary difference is that nothing is inferred from the code. If you want it documented, _you_ must document it. This is why you can use `tunic` to parse inline documentation out of almost any language that supports multi-line comments.
 
