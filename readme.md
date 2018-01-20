@@ -1,4 +1,4 @@
-# `tunic`
+# tunic
 
 [![NPM version][npm-img]][npm-url] [![Downloads][downloads-img]][npm-url] [![Build Status][travis-img]][travis-url] [![Coverage Status][coveralls-img]][coveralls-url] [![Chat][gitter-img]][gitter-url] [![Tip][amazon-img]][amazon-url]
 
@@ -97,9 +97,7 @@ Standards for this project, including tests, code coverage, and semantics are en
 
 ----
 
-© 2016 Shannon Moeller <me@shannonmoeller.com>
-
-Licensed under [MIT](http://shannonmoeller.com/mit.txt)
+MIT © [Shannon Moeller](http://shannonmoeller.com)
 
 [doctree]:       https://github.com/togajs/doctree
 [grammars]:      https://github.com/togajs/tunic/tree/master/src/grammars
